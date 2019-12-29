@@ -1,0 +1,50 @@
+{
+  "name": "jit-sdp-nn",  
+  // Use docker while docker-compose doesn't support --gpus
+  "dockerFile": "pytorch.dockerfile",
+  "context": "..",  
+  "appPort": ["6006:6006"],
+  "workspaceMount": "type=bind,src=${localWorkspaceFolder},dst=/workspace",
+  "workspaceFolder": "/workspace",
+  "runArgs": [
+    "--mount", "type=bind,src=${env:HOME}/.ssh,dst=/home/pytorch/.ssh",
+    "--mount", "type=bind,src=${env:HOME}/.gitconfig,dst=/home/pytorch/.gitconfig",
+    "--mount", "type=volume,src=jit-sdp-nn_devcontainer_vscode-server,dst=/home/pytorch/.vscode-server",
+    "--gpus", "all"],
+  "extensions": [
+    "ms-python.python",
+    "VisualStudioExptTeam.vscodeintellicode",
+    "eamodio.gitlens",
+    "mhutchie.git-graph"
+  ],
+  "settings": {
+    // Save
+    "files.autoSave": "afterDelay",
+    // Format
+    // "editor.formatOnSave": true,
+    "editor.detectIndentation": false,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    // Ignore files
+    "files.exclude": {
+      "**/.git": true,
+      "**/.ipynb_checkpoints": true,
+      "data/": true,
+      "doc/": true,
+      "models/": true
+    },
+    // Ignore for watching
+    "files.watcherExclude": {
+      "**/.git/**": true,
+      "**/data/**": true,
+      "**/doc/**": true,
+      "**/models/BreizhCrops**": true
+    },
+    // GitLens
+    "gitlens.statusBar.command": "gitlens.toggleFileBlame",
+    "gitlens.currentLine.enabled": false,
+    "gitlens.codeLens.enabled": false,
+    // Python
+    "python.pythonPath": "/home/pytorch/.conda/envs/pytorch/bin/python"  
+  }
+}
