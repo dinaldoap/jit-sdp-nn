@@ -29,16 +29,12 @@
     "files.exclude": {
       "**/.git": true,
       "**/.ipynb_checkpoints": true,
-      "data/": true,
-      "doc/": true,
       "models/": true
     },
     // Ignore for watching
     "files.watcherExclude": {
       "**/.git/**": true,
-      "**/data/**": true,
-      "**/doc/**": true,
-      "**/models/BreizhCrops**": true
+      "**/models/**": true
     },
     // GitLens
     "gitlens.statusBar.command": "gitlens.toggleFileBlame",
