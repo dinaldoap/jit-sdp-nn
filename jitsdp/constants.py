@@ -1,0 +1,1 @@
+N_CLASSES = 2
