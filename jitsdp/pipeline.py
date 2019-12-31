@@ -7,21 +7,26 @@ from jitsdp import metrics
 
 class Pipeline:
 
-    def __init__(self, steps, classifier, optimizer, criterion, max_epochs, fading_factor):
+    def __init__(self, steps, classifier, optimizer, criterion, max_epochs, fading_factor, val_size=0.0):
         self.steps = steps
         self.classifier = classifier
         self.optimizer = optimizer
         self.criterion = criterion
         self.max_epochs = max_epochs
         self.fading_factor = fading_factor
+        self.val_size = val_size
 
     def train(self, X, y):
-        X_train, X_val, y_train, y_val = train_test_split(
-            X, y, test_size=0.1, shuffle=False)
+        if self.has_validation():
+            X_train, X_val, y_train, y_val = train_test_split(
+                X, y, test_size=self.val_size, shuffle=False)
+            val_dataloader = self.__dataloader(X_val, y_val)
+        else:
+            X_train, y_train = X, y
+
         sampled_train_dataloader = self.__dataloader(
             X_train, y_train, batch_size=512, sampler=self.__sampler(y_train))
         train_dataloader = self.__dataloader(X_train, y_train)
-        val_dataloader = self.__dataloader(X_val, y_val)
 
         if torch.cuda.is_available():
             self.classifier = self.classifier.cuda()
@@ -43,17 +48,22 @@ class Pipeline:
 
             train_loss = train_loss / len(sampled_train_dataloader)
             train_gmean = metrics.gmean(self.classifier, train_dataloader)
-            val_gmean = metrics.gmean(self.classifier, val_dataloader)
+            val_gmean = None
+            if self.has_validation():
+                val_gmean = metrics.gmean(self.classifier, val_dataloader)
+                # Best classifier
+                if self.classifier.val_gmean is None or val_gmean > self.classifier.val_gmean:
+                    self.classifier.epoch = epoch
+                    self.classifier.val_gmean = val_gmean
+                    self.classifier.save()
+
             print('Epoch: {}, Train loss: {}, Train g-mean: {}, Val g-mean: {}'.format(epoch,
                                                                                        train_loss, train_gmean, val_gmean))
-
-            if self.classifier.val_gmean is None or val_gmean > self.classifier.val_gmean:
-                self.classifier.epoch = epoch
-                self.classifier.val_gmean = val_gmean
-                self.classifier.save()
-
+        # Last classifier
         self.classifier.epoch = epoch
         self.classifier.val_gmean = val_gmean
+        if not self.has_validation():
+            self.classifier.save()
 
     def evaluate(self, X, y):
         dataloader = self.__dataloader(X, y)
@@ -84,6 +94,9 @@ class Pipeline:
         fading_weights = reversed(range(size))
         fading_weights = [self.fading_factor**x for x in fading_weights]
         return np.array(fading_weights)
+
+    def has_validation(self):
+        return self.val_size > 0
 
     @property
     def epoch(self):
