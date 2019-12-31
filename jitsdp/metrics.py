@@ -21,7 +21,7 @@ def loss(classifier, dataloader, criterion):
 
 def __recalls(targets, predictions):
     targets = targets.detach().cpu().numpy()
-    predictions = predictions.squeeze()
+    predictions = predictions.view(predictions.shape[0])
     predictions = predictions.detach().cpu().numpy()
     confusion_matrix, _, _ = np.histogram2d(
         targets, predictions, bins=const.N_CLASSES)
