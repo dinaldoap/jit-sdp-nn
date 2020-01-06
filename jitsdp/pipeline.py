@@ -24,6 +24,8 @@ class Pipeline:
         else:
             X_train, y_train = X, y
 
+        X_train = self.__steps_fit_transform(X_train, y_train)
+
         sampled_train_dataloader = self.__dataloader(
             X_train, y_train, batch_size=512, sampler=self.__sampler(y_train))
         train_dataloader = self.__dataloader(X_train, y_train)
@@ -66,6 +68,7 @@ class Pipeline:
             self.classifier.save()
 
     def evaluate(self, X, y):
+        X = self.__steps_transform(X)
         dataloader = self.__dataloader(X, y)
         return metrics.gmean_recalls(self.classifier, dataloader)
 
@@ -94,6 +97,16 @@ class Pipeline:
         fading_weights = reversed(range(size))
         fading_weights = [self.fading_factor**x for x in fading_weights]
         return np.array(fading_weights)
+
+    def __steps_fit_transform(self, X, y):
+        for step in self.steps:
+            X = step.fit_transform(X, y)
+        return X
+
+    def __steps_transform(self, X):
+        for step in self.steps:
+            X = step.transform(X)
+        return X
 
     def has_validation(self):
         return self.val_size > 0
