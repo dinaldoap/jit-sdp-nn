@@ -20,17 +20,17 @@ def loss(classifier, dataloader, criterion):
 
 
 def __recalls(targets, predictions):
-    targets = targets.detach().cpu().numpy()
-    predictions = predictions.view(predictions.shape[0])
-    predictions = predictions.detach().cpu().numpy()
     confusion_matrix, _, _ = np.histogram2d(
         targets, predictions, bins=const.N_CLASSES)
     recalls = np.diag(confusion_matrix) / \
         ((np.sum(confusion_matrix, axis=1)) + 1e-12)
     return recalls
 
+def gmean_recalls(targets, predictions):
+    recalls = __recalls(targets, predictions)
+    return mstats.gmean(recalls), recalls
 
-def gmean_recalls(classifier, dataloader):
+def classifier_gmean_recalls(classifier, dataloader):
     if torch.cuda.is_available():
         classifier = classifier.cuda()
 
@@ -43,11 +43,12 @@ def gmean_recalls(classifier, dataloader):
 
             outputs = classifier(inputs.float())
             predictions = torch.round(outputs).int()
-            recalls += __recalls(targets, predictions)
+            predictions = predictions.view(predictions.shape[0])
+            recalls += __recalls(targets.detach().cpu().numpy(), predictions.detach().cpu().numpy())
         recalls = recalls / len(dataloader)
         return mstats.gmean(recalls), recalls
 
 
-def gmean(classifier, dataloader):
-    gmean, _ = gmean_recalls(classifier, dataloader)
+def classifier_gmean(classifier, dataloader):
+    gmean, _ = classifier_gmean_recalls(classifier, dataloader)
     return gmean

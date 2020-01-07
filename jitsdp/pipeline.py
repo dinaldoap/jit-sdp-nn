@@ -52,10 +52,10 @@ class Pipeline:
                 self.optimizer.step()
 
             train_loss = train_loss / len(sampled_train_dataloader)
-            train_gmean = metrics.gmean(self.classifier, train_dataloader)
+            train_gmean = metrics.classifier_gmean(self.classifier, train_dataloader)
             val_gmean = None
             if self.has_validation():
-                val_gmean = metrics.gmean(self.classifier, val_dataloader)
+                val_gmean = metrics.classifier_gmean(self.classifier, val_dataloader)
                 # Best classifier
                 if self.classifier.val_gmean is None or val_gmean > self.classifier.val_gmean:
                     self.classifier.epoch = epoch
@@ -70,10 +70,23 @@ class Pipeline:
         if not self.has_validation():
             self.classifier.save()
 
-    def evaluate(self, X, y):
+    def predict(self, X):
         X = self.__steps_transform(X)
+        y = np.zeros(len(X))        
         dataloader = self.__dataloader(X, y)
-        return metrics.gmean_recalls(self.classifier, dataloader)
+        y_hat = []
+        with torch.no_grad():
+            self.classifier.eval()
+            for inputs, targets in dataloader:
+                if torch.cuda.is_available():
+                    inputs, targets = inputs.cuda(), targets.cuda()
+
+                outputs = self.classifier(inputs.float())
+                predictions = torch.round(outputs).int()
+                predictions = predictions.view(predictions.shape[0])
+                y_hat.append(predictions.detach().cpu().numpy())
+
+        return np.concatenate(y_hat)
 
     def __tensor(self, X, y):
         return torch.from_numpy(X), torch.from_numpy(y)
