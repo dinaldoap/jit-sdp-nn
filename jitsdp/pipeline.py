@@ -4,6 +4,9 @@ import torch.utils.data as data
 from sklearn.model_selection import train_test_split
 from jitsdp import metrics
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 class Pipeline:
 
@@ -59,8 +62,8 @@ class Pipeline:
                     self.classifier.val_gmean = val_gmean
                     self.classifier.save()
 
-            print('Epoch: {}, Train loss: {}, Train g-mean: {}, Val g-mean: {}'.format(epoch,
-                                                                                       train_loss, train_gmean, val_gmean))
+            logger.debug('Epoch: {}, Train loss: {}, Train g-mean: {}, Val g-mean: {}'.format(epoch,
+                                                                                              train_loss, train_gmean, val_gmean))
         # Last classifier
         self.classifier.epoch = epoch
         self.classifier.val_gmean = val_gmean
