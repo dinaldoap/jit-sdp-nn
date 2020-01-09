@@ -133,3 +133,6 @@ class Pipeline:
 
     def load(self):
         self.classifier.load()
+
+    def save(self):
+        self.classifier.save()
