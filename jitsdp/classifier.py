@@ -13,11 +13,14 @@ class Classifier(nn.Module):
         self.epoch = epoch
         self.val_gmean = val_gmean
         self.fc1 = nn.Linear(input_size, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, hidden_size)
         self.fcout = nn.Linear(hidden_size, 1)
         self.dropout = nn.Dropout(drop_prob)
 
     def forward(self, x):
         x = torch.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = torch.relu(self.fc2(x))
         x = self.dropout(x)
         x = torch.sigmoid(self.fcout(x))
         return x
