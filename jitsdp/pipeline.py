@@ -30,7 +30,7 @@ class Pipeline:
         X_train = self.__steps_fit_transform(X_train, y_train)
 
         sampled_train_dataloader = self.__dataloader(
-            X_train, y_train, batch_size=512, sampler=self.__sampler(y_train))
+            X_train, y_train, batch_size=128, sampler=self.__sampler(y_train))
         train_dataloader = self.__dataloader(X_train, y_train)
 
         if torch.cuda.is_available():
