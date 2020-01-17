@@ -10,12 +10,13 @@ logger = logging.getLogger(__name__)
 
 class Pipeline:
 
-    def __init__(self, steps, classifier, optimizer, criterion, max_epochs, fading_factor, val_size=0.0):
+    def __init__(self, steps, classifier, optimizer, criterion, max_epochs, batch_size, fading_factor, val_size=0.0):
         self.steps = steps
         self.classifier = classifier
         self.optimizer = optimizer
         self.criterion = criterion
         self.max_epochs = max_epochs
+        self.batch_size = batch_size
         self.fading_factor = fading_factor
         self.val_size = val_size
 
@@ -30,7 +31,7 @@ class Pipeline:
         X_train = self.__steps_fit_transform(X_train, y_train)
 
         sampled_train_dataloader = self.__dataloader(
-            X_train, y_train, batch_size=128, sampler=self.__sampler(y_train))
+            X_train, y_train, batch_size=self.batch_size, sampler=self.__sampler(y_train))
         train_dataloader = self.__dataloader(X_train, y_train)
 
         if torch.cuda.is_available():
