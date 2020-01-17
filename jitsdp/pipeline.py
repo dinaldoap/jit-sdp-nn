@@ -98,22 +98,20 @@ class Pipeline:
         return data.DataLoader(dataset, batch_size=batch_size, sampler=sampler)
 
     def __sampler(self, y):
-        n_samples = len(y)
-        fading_weights = self.__fading_weights(n_samples)
+        normal_indices = np.flatnonzero(y == 0)
+        bug_indices = np.flatnonzero(y == 1)
+        age_weights = np.zeros(len(y))
+        # normal commit ages
+        age_weights[normal_indices] = self.__fading_weights(size=len(normal_indices), fading_factor=self.fading_factor)
+        # bug commit doesn't age
+        age_weights[bug_indices] = self.__fading_weights(size=len(bug_indices), fading_factor=1.0)
+        return data.WeightedRandomSampler(weights=age_weights, num_samples=len(y), replacement=True)
 
-        total = np.sum(fading_weights)
-        bug = np.sum(fading_weights * y)
-        normal = total - bug
-        class_weights = total / [normal, bug]
-        class_weights = class_weights[y]
-
-        weights = fading_weights * class_weights
-        return data.WeightedRandomSampler(weights=weights, num_samples=n_samples, replacement=True)
-
-    def __fading_weights(self, size):
+    def __fading_weights(self, size, fading_factor):
         fading_weights = reversed(range(size))
-        fading_weights = [self.fading_factor**x for x in fading_weights]
-        return np.array(fading_weights)
+        fading_weights = [fading_factor**x for x in fading_weights]
+        fading_weights = np.array(fading_weights)
+        return fading_weights / np.sum(fading_weights)
 
     def __steps_fit_transform(self, X, y):
         for step in self.steps:
