@@ -60,3 +60,10 @@ def classifier_gmean_recalls(classifier, dataloader):
 def classifier_gmean(classifier, dataloader):
     gmean, _ = classifier_gmean_recalls(classifier, dataloader)
     return gmean
+
+
+def proportions(label):
+    total = len(label)
+    p_normal = np.sum(label == 0) / total
+    p_bug = 1.0 - p_normal
+    return total, p_normal, p_bug
