@@ -1,7 +1,9 @@
+import jitsdp.constants as const
+
 import numpy as np
+import pandas as pd
 import torch
 from scipy.stats import mstats
-import jitsdp.constants as const
 
 
 def loss(classifier, dataloader, criterion):
@@ -79,4 +81,5 @@ def prequential_recalls(targets, predictions, fading_factor):
         hits[label] = int(label == predictions[i]) + \
             fading_factor * hits[label]
         recalls.append(hits / (counts + 1e-12))
-    return np.array(recalls)
+    columns = ['r{}'.format(i) for i in range(const.N_CLASSES)]
+    return pd.DataFrame(recalls, columns=columns)
