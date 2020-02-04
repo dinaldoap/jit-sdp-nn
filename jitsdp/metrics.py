@@ -67,3 +67,16 @@ def proportions(label):
     p_normal = np.sum(label == 0) / total
     p_bug = 1.0 - p_normal
     return total, p_normal, p_bug
+
+
+def prequential_recalls(targets, predictions, fading_factor):
+    recalls = []
+    counts = np.zeros(const.N_CLASSES)
+    hits = np.zeros(const.N_CLASSES)
+    for i in range(len(targets)):
+        label = targets[i]
+        counts[label] = 1 + fading_factor * counts[label]
+        hits[label] = int(label == predictions[i]) + \
+            fading_factor * hits[label]
+        recalls.append(hits / (counts + 1e-12))
+    return np.array(recalls)
