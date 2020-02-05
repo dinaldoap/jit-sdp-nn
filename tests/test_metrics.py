@@ -7,7 +7,7 @@ from pytest import approx
 
 
 def test_prequential_recalls():
-    fading_factor = 1
+    fading_factor = .9
     results = {
         'timestep': [0, 1, 2, 3, 4, 5],
         'target': [0, 1, 0, 0, 1, 1],
@@ -15,8 +15,8 @@ def test_prequential_recalls():
     }
     expected = results.copy()
     expected.update({
-        'r0': [0, 0, .5, .6666666, .6666666, .6666666],
-        'r1': [0, 0,  0,        0,       .5, .6666666],    
+        'r0': [0, 0, .526315789, .701107011, .701107011, .701107011],
+        'r1': [0, 0,          0,          0, .526315789, .701107011],    
     })
     results = pd.DataFrame(results)
     expected = pd.DataFrame(expected)
