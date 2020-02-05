@@ -88,3 +88,8 @@ def prequential_recalls(results, fading_factor):
     data = pd.DataFrame(recalls, columns=columns)
     data = pd.concat([results, data], axis='columns')
     return data
+
+def prequential_gmean(recalls):
+    gmean = mstats.gmean(recalls[['r0', 'r1']], axis=1)
+    gmean = pd.DataFrame(gmean, columns=['gmean'])
+    return pd.concat([recalls, gmean], axis='columns')
