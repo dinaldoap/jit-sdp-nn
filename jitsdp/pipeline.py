@@ -1,14 +1,17 @@
+from jitsdp import metrics
+
 import numpy as np
 import torch
 import torch.utils.data as data
 from sklearn.model_selection import train_test_split
-from jitsdp import metrics
+import joblib
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 class Pipeline:
+    FILENAME = 'models/steps.cpt'
 
     def __init__(self, steps, classifier, optimizer, criterion, max_epochs, batch_size, fading_factor, val_size=0.0):
         self.steps = steps
@@ -75,6 +78,10 @@ class Pipeline:
         X = self.__steps_transform(X)
         y = np.zeros(len(X))        
         dataloader = self.__dataloader(X, y)
+
+        if torch.cuda.is_available():
+            self.classifier = self.classifier.cuda()
+            
         y_hat = []
         with torch.no_grad():
             self.classifier.eval()
@@ -131,7 +138,9 @@ class Pipeline:
         return self.classifier.epoch
 
     def load(self):
+        self.steps = joblib.load(Pipeline.FILENAME)
         self.classifier.load()
 
     def save(self):
+        joblib.dump(self.steps, Pipeline.FILENAME)
         self.classifier.save()
