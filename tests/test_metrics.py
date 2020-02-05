@@ -11,7 +11,7 @@ def test_prequential_recalls():
     results = {
         'timestep': [0, 1, 2, 3, 4, 5],
         'target': [0, 1, 0, 0, 1, 1],
-        'prediction': [1, 0, 0, 0, 1, 1],
+        'prediction': [None, 0, 0, 0, 1, 1],
     }
     expected = results.copy()
     expected.update({
