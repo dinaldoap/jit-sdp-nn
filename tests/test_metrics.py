@@ -22,3 +22,18 @@ def test_prequential_recalls():
     expected = pd.DataFrame(expected)
     actual = metrics.prequential_recalls(results, fading_factor)
     assert_frame_equal(expected, actual)
+
+def test_prequential_gmean():
+    recalls = {
+        'r0': [0, 0, .526315789, .701107011, .701107011, .701107011],
+        'r1': [0, 0,          0,          0, .526315789, .701107011],    
+    }
+    expected = recalls.copy()
+    expected.update({
+        'gmean': [0, 0,       0,          0, .607456739, .701107011],        
+    })
+    recalls = pd.DataFrame(recalls)
+    expected = pd.DataFrame(expected)
+    actual = metrics.prequential_gmean(recalls)
+    assert_frame_equal(expected, actual)
+    
