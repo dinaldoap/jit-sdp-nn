@@ -75,11 +75,14 @@ def prequential_recalls(targets, predictions, fading_factor):
     recalls = []
     counts = np.zeros(const.N_CLASSES)
     hits = np.zeros(const.N_CLASSES)
-    for i in range(len(targets)):
+    n_samples = len(targets)
+    for i in range(n_samples):
         label = targets[i]
         counts[label] = 1 + fading_factor * counts[label]
         hits[label] = int(label == predictions[i]) + \
             fading_factor * hits[label]
         recalls.append(hits / (counts + 1e-12))
     columns = ['r{}'.format(i) for i in range(const.N_CLASSES)]
-    return pd.DataFrame(recalls, columns=columns)
+    data = pd.DataFrame(recalls, columns=columns)
+    data.insert(loc=0, column='timestep', value=range(n_samples))
+    return data
