@@ -71,10 +71,12 @@ def proportions(label):
     return total, p_normal, p_bug
 
 
-def prequential_recalls(targets, predictions, fading_factor):
+def prequential_recalls(results, fading_factor):
     recalls = []
     counts = np.zeros(const.N_CLASSES)
     hits = np.zeros(const.N_CLASSES)
+    targets = results['target']
+    predictions = results['prediction']
     n_samples = len(targets)
     for i in range(n_samples):
         label = targets[i]
@@ -84,5 +86,5 @@ def prequential_recalls(targets, predictions, fading_factor):
         recalls.append(hits / (counts + 1e-12))
     columns = ['r{}'.format(i) for i in range(const.N_CLASSES)]
     data = pd.DataFrame(recalls, columns=columns)
-    data.insert(loc=0, column='timestep', value=range(n_samples))
+    data = pd.concat([results, data], axis='columns')
     return data
