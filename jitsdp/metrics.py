@@ -85,9 +85,8 @@ def prequential_recalls(results, fading_factor):
             fading_factor * hits[label]
         recalls.append(hits / (counts + 1e-12))
     columns = ['r{}'.format(i) for i in range(const.N_CLASSES)]
-    data = pd.DataFrame(recalls, columns=columns)
-    data = pd.concat([results, data], axis='columns')
-    return data
+    recalls = pd.DataFrame(recalls, columns=columns)
+    return pd.concat([results, recalls], axis='columns')
 
 def prequential_gmean(recalls):
     gmean = mstats.gmean(recalls[['r0', 'r1']], axis=1)
