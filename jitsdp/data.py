@@ -1,12 +1,15 @@
 import pandas as pd
 import re
+from joblib import Memory
 
 
 FEATURES = ['fix', 'ns', 'nd', 'nf', 'entrophy', 'la',
             'ld', 'lt', 'ndev', 'age', 'nuc', 'exp', 'rexp', 'sexp']
 LABEL = 'contains_bug'
 
+memory = Memory(location='logs', verbose=0)
 
+@memory.cache
 def make_stream(url):
     df_raw = download(url)
     df_preprocess = preprocess(df_raw)
