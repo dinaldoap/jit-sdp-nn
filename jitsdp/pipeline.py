@@ -47,8 +47,8 @@ class Pipeline:
                 if torch.cuda.is_available():
                     inputs, targets = inputs.cuda(), targets.cuda()
 
-                outputs = self.classifier(inputs.float())
-                loss = self.criterion(outputs.squeeze(), targets.float())
+                outputs = self.classifier(inputs.float())                
+                loss = self.criterion(outputs.view(outputs.shape[0]), targets.float())
                 train_loss += loss.item()
 
                 self.optimizer.zero_grad()
