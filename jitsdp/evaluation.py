@@ -27,7 +27,7 @@ def create_pipeline(config):
                             hidden_size=len(FEATURES) // 2, drop_prob=0.2)
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return Pipeline(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
-                    max_epochs=config.epochs, batch_size=512, fading_factor=1)
+                    max_epochs=config['epochs'], batch_size=512, fading_factor=1)
 
 
 def evaluate(label, targets, predictions):
@@ -72,7 +72,7 @@ def prequential(config):
     interval = 500  # commits
     end = len(df_prequential)  # last commit
     n_folds = math.ceil(end / interval) # number of folds rounded up
-    n_folds = max(math.ceil(n_folds * config.folds), 2) # use a fraction of folds (minimum of two)
+    n_folds = max(math.ceil(n_folds * config['folds']), 2) # use a fraction of folds (minimum of two)
     end = n_folds * interval  # last fold end
     start = interval # start test with second fold
 

@@ -14,7 +14,7 @@ def main():
     logging.getLogger('').handlers = []
     logging.basicConfig(filename='logs/jitsdp.log',
                         filemode='w', level=logging.DEBUG)
-    prequential(config)
+    prequential(vars(config))
 
 
 if __name__ == '__main__':
