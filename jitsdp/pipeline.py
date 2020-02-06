@@ -56,7 +56,6 @@ class Pipeline:
                 self.optimizer.step()
 
             train_loss = train_loss / len(sampled_train_dataloader)
-            train_gmean = metrics.classifier_gmean(self.classifier, train_dataloader)
             val_gmean = None
             if self.has_validation():
                 val_gmean = metrics.classifier_gmean(self.classifier, val_dataloader)
@@ -66,8 +65,7 @@ class Pipeline:
                     self.classifier.val_gmean = val_gmean
                     self.classifier.save()
 
-            logger.debug('Epoch: {}, Train loss: {}, Train g-mean: {}, Val g-mean: {}'.format(epoch,
-                                                                                              train_loss, train_gmean, val_gmean))
+            logger.debug('Epoch: {}, Train loss: {}, Val g-mean: {}'.format(epoch, train_loss, val_gmean))
         # Last classifier
         self.classifier.epoch = epoch
         self.classifier.val_gmean = val_gmean
