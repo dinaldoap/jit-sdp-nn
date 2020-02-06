@@ -13,17 +13,21 @@ logger = logging.getLogger(__name__)
 class Pipeline:
     FILENAME = 'models/steps.cpt'
 
-    def __init__(self, steps, classifier, optimizer, criterion, max_epochs, batch_size, fading_factor, val_size=0.0):
+    def __init__(self, steps, classifier, optimizer, criterion, features, target, max_epochs, batch_size, fading_factor, val_size=0.0):
         self.steps = steps
         self.classifier = classifier
         self.optimizer = optimizer
         self.criterion = criterion
+        self.features = features
+        self.target = target
         self.max_epochs = max_epochs
         self.batch_size = batch_size
         self.fading_factor = fading_factor
         self.val_size = val_size
 
-    def train(self, X, y):
+    def train(self, labeled, unlabeled=None):
+        X = labeled[self.features].values
+        y = labeled[self.target].values
         if self.has_validation():
             X_train, X_val, y_train, y_val = train_test_split(
                 X, y, test_size=self.val_size, shuffle=False)
@@ -72,7 +76,8 @@ class Pipeline:
         if not self.has_validation():
             self.classifier.save()
 
-    def predict(self, X):
+    def predict(self, features):
+        X = features[self.features].values
         X = self.__steps_transform(X)
         y = np.zeros(len(X))        
         dataloader = self.__dataloader(X, y)
@@ -80,7 +85,7 @@ class Pipeline:
         if torch.cuda.is_available():
             self.classifier = self.classifier.cuda()
 
-        y_hat = []
+        predictions = []
         with torch.no_grad():
             self.classifier.eval()
             for inputs, targets in dataloader:
@@ -88,11 +93,13 @@ class Pipeline:
                     inputs, targets = inputs.cuda(), targets.cuda()
 
                 outputs = self.classifier(inputs.float())
-                predictions = torch.round(outputs).int()
-                predictions = predictions.view(predictions.shape[0])
-                y_hat.append(predictions.detach().cpu().numpy())
+                batch_predictions = torch.round(outputs).int()
+                batch_predictions = batch_predictions.view(batch_predictions.shape[0])
+                predictions.append(batch_predictions.detach().cpu().numpy())
 
-        return np.concatenate(y_hat)
+        features_prediction = features.copy()
+        features_prediction['prediction'] = np.concatenate(predictions)
+        return features_prediction
 
     def __tensor(self, X, y):
         return torch.from_numpy(X), torch.from_numpy(y)
