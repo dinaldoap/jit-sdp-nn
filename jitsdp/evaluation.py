@@ -65,16 +65,16 @@ def evaluate_train_test(seq, targets_train, predictions_train, targets_test, pre
 def prequential(config):
     df_prequential = make_stream(
         'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/brackets.csv')
-    # split dataset in chunks for testing and iterate over them (chunk from current to current + interval or end)
-    # the previous chunks are used for training (chunks from start to current)
+    # split dataset in folds for testing and iterate over them (fold from current to current + interval or end)
+    # the previous folds are used for training (folds from start to current)
     seconds_by_day = 24 * 60 * 60
     verification_latency = 90 * seconds_by_day  # seconds
     interval = 500  # commits
     end = len(df_prequential)  # last commit
-    n_chunks = math.ceil(end / interval)
-    n_chunks = max(math.ceil(n_chunks * config.folds), 2)
-    end = n_chunks * interval  # last chunk end
-    start = interval # start test with second chunk
+    n_folds = math.ceil(end / interval) # number of folds rounded up
+    n_folds = max(math.ceil(n_folds * config.folds), 2) # use a fraction of folds (minimum of two)
+    end = n_folds * interval  # last fold end
+    start = interval # start test with second fold
 
     pipeline = create_pipeline(config)
     pipeline.save()
@@ -82,7 +82,7 @@ def prequential(config):
     for current in range(start, end, interval):
         df_train = df_prequential[:current].copy()
         df_test = df_prequential[current:min(current + interval, end)].copy()
-        # check if fix has been done (bug) or verification latency has passed (normal), otherwise exclude commit
+        # check if fix has been done (bug) or verification latency has passed (normal), otherwise is unlabeled
         train_timestamp = df_train['timestamp'].max()
         df_train['target'] = df_train.apply(lambda row: 1 if row.timestamp_fix <= train_timestamp else (
             0 if row.timestamp <= train_timestamp - verification_latency else None), axis='columns')
@@ -96,7 +96,7 @@ def prequential(config):
         y_test = df_test['target'].values
         X_unlabeled = df_unlabeled[FEATURES].values
         y_unlabeled = np.zeros(len(X_unlabeled), dtype=np.int64)
-        # train and evaluate
+        # train and predict
         pipeline = create_pipeline(config)
         # pipeline.load()
         pipeline.train(X_train, y_train)
