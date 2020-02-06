@@ -20,14 +20,14 @@ import math
 import logging
 
 
-def create_pipeline():
+def create_pipeline(config):
     scaler = StandardScaler()
     criterion = nn.BCELoss()
     classifier = Classifier(input_size=len(FEATURES),
                             hidden_size=len(FEATURES) // 2, drop_prob=0.2)
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return Pipeline(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
-                    max_epochs=50, batch_size=512, fading_factor=1)
+                    max_epochs=config.epochs, batch_size=512, fading_factor=1)
 
 
 def evaluate(label, targets, predictions):
@@ -62,7 +62,7 @@ def evaluate_train_test(seq, targets_train, predictions_train, targets_test, pre
         unlabeled_total, unlabeled_normal, unlabeled_bug))
 
 
-def prequential():
+def prequential(config):
     df_prequential = make_stream(
         'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/brackets.csv')
     # split dataset in chunks for testing and iterate over them (chunk from current to current + interval or end)
@@ -72,15 +72,14 @@ def prequential():
     interval = 500  # commits
     end = len(df_prequential)  # last commit
     n_chunks = math.ceil(end / interval)
+    n_chunks = max(math.ceil(n_chunks * config.folds), 2)
     end = n_chunks * interval  # last chunk end
-    # start = end - (n_chunks - 1) * interval # start test with second chunk
-    start = end - interval  # use last chunk to test
+    start = interval # start test with second chunk
 
-    pipeline = create_pipeline()
+    pipeline = create_pipeline(config)
     pipeline.save()
     predictions = [[None] * start]
     for current in range(start, end, interval):
-        # for current in range(start, start+1, interval):
         df_train = df_prequential[:current].copy()
         df_test = df_prequential[current:min(current + interval, end)].copy()
         # check if fix has been done (bug) or verification latency has passed (normal), otherwise exclude commit
@@ -98,7 +97,7 @@ def prequential():
         X_unlabeled = df_unlabeled[FEATURES].values
         y_unlabeled = np.zeros(len(X_unlabeled), dtype=np.int64)
         # train and evaluate
-        pipeline = create_pipeline()
+        pipeline = create_pipeline(config)
         # pipeline.load()
         pipeline.train(X_train, y_train)
         pipeline.save()
@@ -107,6 +106,7 @@ def prequential():
 
     predictions = np.concatenate(predictions)
     results = df_prequential[['timestep', 'target']].copy()
+    results = results[:end]
     results['prediction'] = predictions
     prequential_recalls = metrics.prequential_recalls_gmean(results, .99)
     plot_recalls_gmean(prequential_recalls)
