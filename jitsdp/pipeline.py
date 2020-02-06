@@ -81,7 +81,7 @@ class Pipeline:
 
         if torch.cuda.is_available():
             self.classifier = self.classifier.cuda()
-            
+
         y_hat = []
         with torch.no_grad():
             self.classifier.eval()
@@ -111,7 +111,7 @@ class Pipeline:
         # normal commit ages
         age_weights[normal_indices] = self.__fading_weights(size=len(normal_indices), fading_factor=self.fading_factor)
         # bug commit doesn't age
-        age_weights[bug_indices] = self.__fading_weights(size=len(bug_indices), fading_factor=1.0)
+        age_weights[bug_indices] = self.__fading_weights(size=len(bug_indices), fading_factor=self.fading_factor)
         return data.WeightedRandomSampler(weights=age_weights, num_samples=len(y), replacement=True)
 
     def __fading_weights(self, size, fading_factor):
