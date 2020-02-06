@@ -27,6 +27,7 @@ def create_pipeline(config):
                             hidden_size=len(FEATURES) // 2, drop_prob=0.2)
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return Pipeline(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
+                    features=FEATURES, target='target',
                     max_epochs=config['epochs'], batch_size=512, fading_factor=1)
 
 
@@ -78,7 +79,9 @@ def prequential(config):
 
     pipeline = create_pipeline(config)
     pipeline.save()
-    predictions = [[None] * start]
+    first_target_prediction = df_prequential[:start].copy()
+    first_target_prediction['prediction'] = [None] * start
+    target_prediction = [first_target_prediction]
     for current in range(start, end, interval):
         df_train = df_prequential[:current].copy()
         df_test = df_prequential[current:min(current + interval, end)].copy()
@@ -90,23 +93,15 @@ def prequential(config):
         df_train = df_train.dropna(subset=['target'])
         df_train['target'] = df_train['target'].astype('int')
         # convert to numpy array
-        X_train = df_train[FEATURES].values
-        y_train = df_train['target'].values
-        X_test = df_test[FEATURES].values
-        y_test = df_test['target'].values
-        X_unlabeled = df_unlabeled[FEATURES].values
-        y_unlabeled = np.zeros(len(X_unlabeled), dtype=np.int64)
+        df_unlabeled['target'] = np.zeros(len(df_unlabeled), dtype=np.int64)
         # train and predict
         pipeline = create_pipeline(config)
         # pipeline.load()
-        pipeline.train(X_train, y_train)
+        pipeline.train(df_train, df_unlabeled)
         pipeline.save()
-        predictions_test = pipeline.predict(X_test)
-        predictions.append(predictions_test)
+        target_prediction_test = pipeline.predict(df_test)
+        target_prediction.append(target_prediction_test)
 
-    predictions = np.concatenate(predictions)
-    results = df_prequential[['timestep', 'target']].copy()
-    results = results[:end]
-    results['prediction'] = predictions
-    prequential_recalls = metrics.prequential_recalls_gmean(results, .99)
+    target_prediction = pd.concat(target_prediction)
+    prequential_recalls = metrics.prequential_recalls_gmean(target_prediction, .99)
     plot_recalls_gmean(prequential_recalls)
