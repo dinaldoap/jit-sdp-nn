@@ -10,7 +10,8 @@ def main():
     args = parser.parse_args()
     print('Args: {}'.format(args))
     logging.getLogger('').handlers = []
-    logging.basicConfig(filename='logs/jitsdp.log', filemode='w', level=logging.DEBUG)
+    logging.basicConfig(filename='logs/jitsdp.log',
+                        filemode='w', level=logging.DEBUG)
     prequential()
 
 
