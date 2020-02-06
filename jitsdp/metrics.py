@@ -40,7 +40,9 @@ def __gmean(recalls):
     return mstats.gmean(recalls)
 
 
-def gmean_recalls(targets, predictions):
+def gmean_recalls(target_prediction):
+    targets = target_prediction['target']
+    predictions = target_prediction['prediction']
     recalls = __recalls(targets, predictions)
     return __gmean(recalls), recalls
 
