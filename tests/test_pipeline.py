@@ -8,6 +8,7 @@ import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 
+from pytest import approx
 from numpy.testing import assert_array_equal
 
 
@@ -22,8 +23,13 @@ def test_train_predict():
     data['target'] = np.array(targets, dtype=np.int64)
     pipeline.train(data)
     target_prediction = pipeline.predict(data)
+
+    # metrics
     expected_gmean = 1.
     expected_recalls = np.array([1., 1.])
     gmean, recalls = metrics.gmean_recalls(target_prediction)
     assert expected_gmean == gmean
     assert_array_equal(expected_recalls, recalls)
+
+    # probability
+    assert 0.5 == approx(target_prediction['probability'].median(), abs=.05)
