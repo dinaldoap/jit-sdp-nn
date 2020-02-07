@@ -1,10 +1,10 @@
 from jitsdp import plot
 
+from constants import DIR
+
 import numpy as np
 import pandas as pd
-from pathlib import Path
 
-DIR = Path('tests/logs')
 
 def test_plot_recalls_gmean():
     data = pd.DataFrame({

@@ -1,6 +1,6 @@
 from jitsdp.data import save_data, load_data
 
-from test_plot import DIR
+from constants import DIR
 
 import numpy as np
 import pandas as pd
