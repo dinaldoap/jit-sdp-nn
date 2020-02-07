@@ -102,7 +102,7 @@ def run(config):
         target_prediction_test = pipeline.predict(df_test)
         target_prediction.append(target_prediction_test)
 
-    target_prediction = pd.concat(target_prediction)
+    target_prediction = pd.concat(target_prediction, sort=False)
     results = metrics.prequential_recalls_gmean(target_prediction, .99)
     save_results(results)
     report()
