@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class Pipeline:
     FILENAME = 'models/steps.cpt'
 
-    def __init__(self, steps, classifier, optimizer, criterion, features, target, max_epochs, batch_size, fading_factor, val_size=0.0):
+    def __init__(self, steps, classifier, optimizer, criterion, features, target, max_epochs, batch_size, fading_factor, zero_fraction, val_size=0.0):
         self.steps = steps
         self.classifier = classifier
         self.optimizer = optimizer
@@ -24,6 +24,8 @@ class Pipeline:
         self.batch_size = batch_size
         self.fading_factor = fading_factor
         self.val_size = val_size
+        self.zero_fraction = zero_fraction
+        self.threshold = .5
 
     def train(self, labeled, unlabeled=None):
         X = labeled[self.features].values
@@ -76,6 +78,9 @@ class Pipeline:
         if not self.has_validation():
             self.classifier.save()
 
+        self.__tune_threshold(unlabeled)
+
+
     def predict(self, features):
         X = features[self.features].values
         X = self.__steps_transform(X)
@@ -95,7 +100,7 @@ class Pipeline:
 
                 outputs = self.classifier(inputs.float())
                 probabilities.append(outputs.detach().cpu().numpy())
-                batch_predictions = torch.round(outputs).int()
+                batch_predictions = (outputs >= self.threshold).int()
                 batch_predictions = batch_predictions.view(batch_predictions.shape[0])
                 predictions.append(batch_predictions.detach().cpu().numpy())
 
@@ -103,6 +108,15 @@ class Pipeline:
         features_prediction['prediction'] = np.concatenate(predictions)
         features_prediction['probability'] = np.concatenate(probabilities)
         return features_prediction
+    
+    def __tune_threshold(self, unlabeled):
+        if unlabeled is None:
+            return
+        
+        df_val = unlabeled[-100:]
+        probabilities = self.predict(df_val)
+        probabilities = probabilities['probability']
+        self.threshold = probabilities.quantile(q=self.zero_fraction)
 
     def __tensor(self, X, y):
         return torch.from_numpy(X), torch.from_numpy(y)
