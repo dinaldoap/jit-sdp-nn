@@ -53,9 +53,9 @@ def prequential(df_preprocess):
     return df_prequential
 
 
-def save_data(data, dir=DIR):
-    data.to_pickle(dir / 'data.pickle')
+def save_results(results, dir=DIR):
+    results.to_pickle(dir / 'results.pickle')
 
 
-def load_data(dir):
-    return pd.read_pickle(dir / 'data.pickle')
+def load_results(dir=DIR):
+    return pd.read_pickle(dir / 'results.pickle')
