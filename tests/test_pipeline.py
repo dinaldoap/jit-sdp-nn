@@ -11,9 +11,7 @@ import torch.optim as optim
 from pytest import approx
 from numpy.testing import assert_array_equal
 
-
-def test_train_predict():
-    pipeline = create_pipeline({'epochs': 100})
+def create_data():
     n_samples = 100
     half_samples = n_samples // 2
     features = np.random.rand(n_samples, len(FEATURES))
@@ -21,6 +19,11 @@ def test_train_predict():
     data = pd.DataFrame(features, columns=FEATURES)
     targets = [0] * half_samples + [1] * half_samples
     data['target'] = np.array(targets, dtype=np.int64)
+    return data
+
+def test_train_predict():
+    pipeline = create_pipeline({'epochs': 100})
+    data = create_data()
     pipeline.train(data)
     target_prediction = pipeline.predict(data)
 
@@ -32,4 +35,4 @@ def test_train_predict():
     assert_array_equal(expected_recalls, recalls)
 
     # probability
-    assert 0.5 == approx(target_prediction['probability'].median(), abs=.05)
+    assert 0.5 == target_prediction['probability'].round().mean()
