@@ -1,3 +1,5 @@
+from jitsdp.constants import DIR
+
 import pandas as pd
 import re
 from joblib import Memory
@@ -51,9 +53,9 @@ def prequential(df_preprocess):
     return df_prequential
 
 
-def save_data(data, filename):
-    data.to_pickle(filename)
+def save_data(data, dir=DIR):
+    data.to_pickle(dir / 'data.pickle')
 
 
-def load_data(filename):
-    return pd.read_pickle(filename)
+def load_data(dir):
+    return pd.read_pickle(dir / 'data.pickle')
