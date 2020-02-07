@@ -2,7 +2,7 @@ from jitsdp import metrics
 from jitsdp.classifier import Classifier
 from jitsdp.pipeline import Pipeline
 from jitsdp.plot import plot_recalls_gmean
-from jitsdp.data import make_stream, FEATURES
+from jitsdp.data import FEATURES, make_stream, save_results, load_results
 
 import numpy as np
 import pandas as pd
@@ -103,5 +103,10 @@ def prequential(config):
         target_prediction.append(target_prediction_test)
 
     target_prediction = pd.concat(target_prediction)
-    prequential_recalls = metrics.prequential_recalls_gmean(target_prediction, .99)
-    plot_recalls_gmean(prequential_recalls)
+    results = metrics.prequential_recalls_gmean(target_prediction, .99)
+    save_results(results)
+    report()
+
+def report():
+    results = load_results()
+    plot_recalls_gmean(results)
