@@ -18,7 +18,7 @@ def plot_recalls_gmean(data, dir=DIR):
                      value_name='value')
     ax = sns.lineplot(x='timestep', y='value',
                       hue='metric', data=data)
-    ax.axhline(avg_gmean, ls='--', label='avg(gmean)')
+    ax.axhline(avg_gmean, ls='--', label='avg(gmean)={:.2f}'.format(avg_gmean))
     plt.legend()
     create_dir(dir)
     plt.savefig(dir / 'recalls_gmean.png')
