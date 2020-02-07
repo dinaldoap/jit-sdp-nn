@@ -1,4 +1,4 @@
-from jitsdp.evaluation import create_pipeline
+from jitsdp import evaluation
 from jitsdp.data import FEATURES
 from jitsdp import metrics
 
@@ -11,6 +11,11 @@ import torch.optim as optim
 from pytest import approx
 from numpy.testing import assert_array_equal
 
+def create_pipeline():
+    pipeline = evaluation.create_pipeline({'epochs': 100})
+    pipeline.zero_fraction = .5
+    return pipeline
+
 def create_data():
     n_samples = 100
     half_samples = n_samples // 2
@@ -22,9 +27,9 @@ def create_data():
     return data
 
 def test_train_predict():
-    pipeline = create_pipeline({'epochs': 100})
+    pipeline = create_pipeline()
     data = create_data()
-    pipeline.train(data)
+    pipeline.train(data, data)
     target_prediction = pipeline.predict(data)
 
     # metrics
