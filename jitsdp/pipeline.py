@@ -86,6 +86,7 @@ class Pipeline:
             self.classifier = self.classifier.cuda()
 
         predictions = []
+        probabilities = []
         with torch.no_grad():
             self.classifier.eval()
             for inputs, targets in dataloader:
@@ -93,12 +94,14 @@ class Pipeline:
                     inputs, targets = inputs.cuda(), targets.cuda()
 
                 outputs = self.classifier(inputs.float())
+                probabilities.append(outputs.detach().cpu().numpy())
                 batch_predictions = torch.round(outputs).int()
                 batch_predictions = batch_predictions.view(batch_predictions.shape[0])
                 predictions.append(batch_predictions.detach().cpu().numpy())
 
         features_prediction = features.copy()
         features_prediction['prediction'] = np.concatenate(predictions)
+        features_prediction['probability'] = np.concatenate(probabilities)
         return features_prediction
 
     def __tensor(self, X, y):
