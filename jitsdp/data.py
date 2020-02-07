@@ -9,6 +9,7 @@ LABEL = 'contains_bug'
 
 memory = Memory(location='logs', verbose=0)
 
+
 @memory.cache
 def make_stream(url):
     df_raw = download(url)
@@ -48,3 +49,11 @@ def prequential(df_preprocess):
     df_prequential = df_preprocess[prequential_cols].copy()
     df_prequential['timestep'] = range(len(df_prequential))
     return df_prequential
+
+
+def save_data(data, filename):
+    data.to_pickle(filename)
+
+
+def load_data(filename):
+    return pd.read_pickle(filename)
