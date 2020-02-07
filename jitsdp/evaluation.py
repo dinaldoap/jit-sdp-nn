@@ -63,7 +63,7 @@ def evaluate_train_test(seq, targets_train, predictions_train, targets_test, pre
         unlabeled_total, unlabeled_normal, unlabeled_bug))
 
 
-def prequential(config):
+def run(config):
     df_prequential = make_stream(
         'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/brackets.csv')
     # split dataset in folds for testing and iterate over them (fold from current to current + interval or end)
