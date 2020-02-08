@@ -1,4 +1,5 @@
 from jitsdp.constants import DIR
+from jitsdp.utils import create_dir
 
 import pandas as pd
 import re
@@ -54,6 +55,7 @@ def prequential(df_preprocess):
 
 
 def save_results(results, dir=DIR):
+    create_dir(dir)
     results.to_pickle(dir / 'results.pickle')
 
 
