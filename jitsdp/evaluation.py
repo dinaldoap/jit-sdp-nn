@@ -110,4 +110,4 @@ def run(config):
 
 def report(config):
     results = load_results(dir=DIR / config['dataset'])
-    plot_recalls_gmean(results, dir=DIR / config['dataset'])
+    plot_recalls_gmean(results, config=config, dir=DIR)
