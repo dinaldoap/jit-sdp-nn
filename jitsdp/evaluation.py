@@ -1,5 +1,6 @@
 from jitsdp import metrics
 from jitsdp.classifier import Classifier
+from jitsdp.constants import DIR
 from jitsdp.pipeline import Pipeline
 from jitsdp.plot import plot_recalls_gmean
 from jitsdp.data import FEATURES, make_stream, save_results, load_results
@@ -65,7 +66,7 @@ def evaluate_train_test(seq, targets_train, predictions_train, targets_test, pre
 
 def run(config):
     df_prequential = make_stream(
-        'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/brackets.csv')
+        'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/{}.csv'.format(config['dataset']))
     # split dataset in folds for testing and iterate over them (fold from current to current + interval or end)
     # the previous folds are used for training (folds from start to current)
     seconds_by_day = 24 * 60 * 60
@@ -104,9 +105,9 @@ def run(config):
 
     target_prediction = pd.concat(target_prediction, sort=False)
     results = metrics.prequential_recalls_gmean(target_prediction, .99)
-    save_results(results)
-    report()
+    save_results(results=results, dir=DIR / config['dataset'])
+    report(config)
 
-def report():
-    results = load_results()
-    plot_recalls_gmean(results)
+def report(config):
+    results = load_results(dir=DIR / config['dataset'])
+    plot_recalls_gmean(results, dir=DIR / config['dataset'])
