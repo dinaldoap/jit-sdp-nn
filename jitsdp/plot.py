@@ -1,13 +1,10 @@
 from jitsdp.constants import DIR
+from jitsdp.utils import create_dir
 
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 sns.set(rc={'figure.figsize': (12, 9)})
-
-
-def create_dir(dir):
-    dir.mkdir(parents=True, exist_ok=True)
 
 
 def plot_recalls_gmean(data, dir=DIR):
@@ -22,3 +19,4 @@ def plot_recalls_gmean(data, dir=DIR):
     plt.legend()
     create_dir(dir)
     plt.savefig(dir / 'recalls_gmean.png')
+    plt.clf()
