@@ -17,6 +17,7 @@ from sklearn.preprocessing import StandardScaler
 import random
 from scipy.stats import mstats
 import math
+import mlflow
 
 import logging
 
@@ -109,5 +110,11 @@ def run(config):
     report(config)
 
 def report(config):
-    results = load_results(dir=DIR / config['dataset'])
+    subdir = DIR / config['dataset']
+    results = load_results(dir=subdir)
     plot_recalls_gmean(results, config=config, dir=DIR)
+    avg_gmean = results['gmean'].mean()
+    with mlflow.start_run():
+        mlflow.log_params(config)
+        mlflow.log_metric('avg_gmean', avg_gmean)
+        mlflow.log_artifacts(local_dir=subdir)
