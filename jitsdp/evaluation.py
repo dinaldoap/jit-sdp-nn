@@ -71,21 +71,21 @@ def run(config):
     # the previous folds are used for training (folds from start to current)
     seconds_by_day = 24 * 60 * 60
     verification_latency = 90 * seconds_by_day  # seconds
-    interval = config['fold_size']  # commits
+    fold_size = config['fold_size']  # commits
     end = len(df_prequential)  # last commit
-    n_folds = math.ceil(end / interval) # number of folds rounded up
+    n_folds = math.ceil(end / fold_size) # number of folds rounded up
     n_folds = max(math.ceil(n_folds * config['folds']), 2) # use a fraction of folds (minimum of two)
-    end = n_folds * interval  # last fold end
-    start = interval # start test with second fold
+    end = n_folds * fold_size  # last fold end
+    start = fold_size # start test with second fold
 
     pipeline = create_pipeline(config)
     pipeline.save()
     first_target_prediction = df_prequential[:start].copy()
     first_target_prediction['prediction'] = [None] * start
     target_prediction = [first_target_prediction]
-    for current in range(start, end, interval):
+    for current in range(start, end, fold_size):
         df_train = df_prequential[:current].copy()
-        df_test = df_prequential[current:min(current + interval, end)].copy()
+        df_test = df_prequential[current:min(current + fold_size, end)].copy()
         # check if fix has been done (bug) or verification latency has passed (normal), otherwise is unlabeled
         train_timestamp = df_train['timestamp'].max()
         df_train['target'] = df_train.apply(lambda row: 1 if row.timestamp_fix <= train_timestamp else (
