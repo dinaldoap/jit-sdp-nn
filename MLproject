@@ -1,0 +1,7 @@
+name: jitsdp
+
+entry_points:
+  main:
+    parameters:
+        command: {default: 'run'}
+    command: 'jitsdp {command}'
