@@ -67,16 +67,16 @@ def evaluate_train_test(seq, targets_train, predictions_train, targets_test, pre
 def run(config):
     df_prequential = make_stream(
         'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/{}.csv'.format(config['dataset']))
-    # split dataset in folds for testing and iterate over them (fold from current to current + interval or end)
-    # the previous folds are used for training (folds from start to current)
+    # split test partition in folds and iterate over them (fold from current to current + fold_size or end)
+    # the previous commits until current are used for training
     seconds_by_day = 24 * 60 * 60
     verification_latency = 90 * seconds_by_day  # seconds
     fold_size = config['fold_size']  # commits
-    end = len(df_prequential)  # last commit
-    n_folds = math.ceil(end / fold_size) # number of folds rounded up
-    n_folds = max(math.ceil(n_folds * config['folds']), 2) # use a fraction of folds (minimum of two)
-    end = n_folds * fold_size  # last fold end
-    start = fold_size # start test with second fold
+    start = max(config['start'], fold_size) # start with data for training (minimum of one fold)
+    interval = len(df_prequential) - start  # last commit
+    n_folds = math.ceil(interval / fold_size) # number of folds rounded up
+    n_folds = max(math.ceil(n_folds * config['folds']), 1) # use a fraction of folds (minimum of one)
+    end = start + n_folds * fold_size  # last fold end
 
     pipeline = create_pipeline(config)
     pipeline.save()
