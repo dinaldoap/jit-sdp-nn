@@ -18,7 +18,7 @@ setup(name='jitsdp',
           ]
       },
       install_requires=['numpy==1.17.2',
-                        'pandas==0.25.1',
+                        'pandas==1.0.1',
                         'torch==1.3.1',
                         'scikit-learn==0.22',
                         ],
