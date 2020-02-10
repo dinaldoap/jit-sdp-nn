@@ -1,5 +1,5 @@
 from jitsdp import metrics
-from jitsdp.utils import create_dir
+from jitsdp.utils import mkdir
 
 import numpy as np
 import torch
@@ -167,6 +167,6 @@ class Pipeline:
         self.classifier.load()
 
     def save(self):
-        create_dir(Pipeline.DIR)
+        mkdir(Pipeline.DIR)
         joblib.dump(self.steps, Pipeline.FILENAME)
         self.classifier.save()

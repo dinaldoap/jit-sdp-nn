@@ -1,5 +1,5 @@
 from jitsdp.constants import DIR
-from jitsdp.utils import create_dir
+from jitsdp.utils import mkdir
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -19,6 +19,6 @@ def plot_recalls_gmean(data, config, dir=DIR):
     ax.set_title(config['dataset'])
     plt.legend()
     subdir = dir / config['dataset']
-    create_dir(subdir)
+    mkdir(subdir)
     plt.savefig(subdir / 'recalls_gmean.png')
     plt.clf()
