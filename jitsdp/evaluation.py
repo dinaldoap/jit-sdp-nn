@@ -71,7 +71,7 @@ def run(config):
     # the previous folds are used for training (folds from start to current)
     seconds_by_day = 24 * 60 * 60
     verification_latency = 90 * seconds_by_day  # seconds
-    interval = 500  # commits
+    interval = config['fold_size']  # commits
     end = len(df_prequential)  # last commit
     n_folds = math.ceil(end / interval) # number of folds rounded up
     n_folds = max(math.ceil(n_folds * config['folds']), 2) # use a fraction of folds (minimum of two)
