@@ -1,17 +1,20 @@
 from jitsdp import metrics
+from jitsdp.utils import create_dir
 
 import numpy as np
 import torch
 import torch.utils.data as data
 from sklearn.model_selection import train_test_split
 import joblib
+import pathlib
 
 import logging
 logger = logging.getLogger(__name__)
 
 
 class Pipeline:
-    FILENAME = 'models/steps.cpt'
+    DIR = pathlib.Path('models')
+    FILENAME = DIR / 'steps.cpt'
 
     def __init__(self, steps, classifier, optimizer, criterion, features, target, max_epochs, batch_size, fading_factor, zero_fraction, val_size=0.0):
         self.steps = steps
@@ -164,5 +167,6 @@ class Pipeline:
         self.classifier.load()
 
     def save(self):
+        create_dir(Pipeline.DIR)
         joblib.dump(self.steps, Pipeline.FILENAME)
         self.classifier.save()
