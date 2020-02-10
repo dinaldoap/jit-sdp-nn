@@ -38,11 +38,12 @@ USER $USERNAME
 ENV SHELL /bin/bash
 
 # Install python dependencies
+ADD --chown=pytorch:pytorch conda.yml /workspace/
 ADD --chown=pytorch:pytorch requirements.txt /workspace/
 ADD --chown=pytorch:pytorch setup.py /workspace/
-RUN conda create --name pytorch python==3.7 && \
-    cd /workspace && \
-    conda run --name pytorch pip install -r requirements.txt && \
+RUN cd /workspace && \
+    conda env create -f conda.yml && \
+    rm conda.yml && \
     rm requirements.txt && \
     rm setup.py
 
