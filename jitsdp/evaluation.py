@@ -105,7 +105,7 @@ def run(config):
         target_prediction.append(target_prediction_test)
 
     target_prediction = pd.concat(target_prediction, sort=False)
-    results = metrics.prequential_recalls_gmean(target_prediction, .99)
+    results = metrics.prequential_metrics(target_prediction, .99)
     save_results(results=results, dir=DIR / config['dataset'])
     report(config)
 

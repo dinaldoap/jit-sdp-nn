@@ -121,5 +121,5 @@ def prequential_proportions(results, fading_factor):
     return pd.concat([results, proportions], axis='columns')
 
 
-def prequential_recalls_gmean(results, fading_factor):
+def prequential_metrics(results, fading_factor):
     return prequential_gmean(prequential_recalls(results, fading_factor))
