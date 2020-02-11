@@ -103,5 +103,23 @@ def prequential_gmean(recalls):
     return pd.concat([recalls, gmean], axis='columns')
 
 
+def prequential_proportions(results, fading_factor):
+    proportions = []
+    total = 0
+    counts = np.zeros(const.N_CLASSES)
+    predictions = results['prediction']
+    n_samples = len(predictions)
+    for i in range(n_samples):
+        total = 1 + fading_factor * total
+        label = predictions[i]
+        one_hot = np.zeros(const.N_CLASSES)
+        one_hot[label] = 1
+        counts = one_hot + fading_factor * counts
+        proportions.append(counts / total)
+    columns = ['p{}'.format(i) for i in range(const.N_CLASSES)]
+    proportions = pd.DataFrame(proportions, columns=columns)
+    return pd.concat([results, proportions], axis='columns')
+
+
 def prequential_recalls_gmean(results, fading_factor):
     return prequential_gmean(prequential_recalls(results, fading_factor))
