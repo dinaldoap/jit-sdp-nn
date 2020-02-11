@@ -6,4 +6,4 @@ entry_points:
   main:
     parameters:
         command: {default: 'run'}
-    command: 'jitsdp {command}'
+    command: 'conda env update --file conda.yml --prune && jitsdp {command}'
