@@ -81,9 +81,7 @@ def run(config):
 
     pipeline = create_pipeline(config)
     pipeline.save()
-    first_target_prediction = df_prequential[:start].copy()
-    first_target_prediction['prediction'] = [None] * start
-    target_prediction = [first_target_prediction]
+    target_prediction = []
     for current in range(start, end, fold_size):
         df_train = df_prequential[:current].copy()
         df_test = df_prequential[current:min(current + fold_size, end)].copy()
@@ -105,6 +103,7 @@ def run(config):
         target_prediction.append(target_prediction_test)
 
     target_prediction = pd.concat(target_prediction, sort=False)
+    target_prediction = target_prediction.reset_index(drop=True)
     results = metrics.prequential_metrics(target_prediction, .99)
     save_results(results=results, dir=DIR / config['dataset'])
     report(config)
