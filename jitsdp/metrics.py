@@ -122,4 +122,6 @@ def prequential_proportions(results, fading_factor):
 
 
 def prequential_metrics(results, fading_factor):
-    return prequential_gmean(prequential_recalls(results, fading_factor))
+    metrics = prequential_recalls(results, fading_factor)
+    metrics = prequential_gmean(metrics)
+    return prequential_proportions(metrics, fading_factor)
