@@ -2,7 +2,7 @@ from jitsdp import metrics
 from jitsdp.classifier import Classifier
 from jitsdp.constants import DIR
 from jitsdp.pipeline import Pipeline
-from jitsdp.plot import plot_recalls_gmean
+from jitsdp.plot import plot_recalls_gmean, plot_proportions
 from jitsdp.data import FEATURES, make_stream, save_results, load_results
 
 import numpy as np
@@ -112,6 +112,7 @@ def report(config):
     subdir = DIR / config['dataset']
     results = load_results(dir=subdir)
     plot_recalls_gmean(results, config=config, dir=DIR)
+    plot_proportions(results, config=config, dir=DIR)
     avg_gmean = results['gmean'].mean()
     with mlflow.start_run():
         mlflow.log_params(config)
