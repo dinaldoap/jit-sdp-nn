@@ -1,8 +1,10 @@
 from jitsdp.evaluation import run, report
+from jitsdp.utils import split_arg
 
 import logging
 import argparse
 import mlflow
+import sys
 
 
 def args_to_config(args):
@@ -38,11 +40,12 @@ def main():
     }
     command = commands[args.command]
     args_config = args_to_config(args)
-    for dataset in args.datasets:
-        config = dict(args_config)
-        config['dataset'] = dataset
-        with mlflow.start_run():
-            command(config=config)
+    with mlflow.start_run():
+        for dataset in args.datasets:
+            config = dict(args_config)
+            config['dataset'] = dataset
+            with mlflow.start_run(nested=True):
+                command(config=config)
 
 
 if __name__ == '__main__':
