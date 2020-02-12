@@ -5,5 +5,8 @@ conda_env: conda.yml
 entry_points:
   main:
     parameters:
-        command: {default: 'run'}
-    command: 'conda env update --file conda.yml --prune && jitsdp {command}'
+        command: {default: run}
+        epochs: {default: 50}
+        folds: {default: 1}
+        datasets: {default: brackets camel fabric8 jgroups neutron tomcat}
+    command: 'conda env update --file conda.yml --prune && jitsdp {command} --epochs {epochs} --folds {folds} --datasets {datasets}'
