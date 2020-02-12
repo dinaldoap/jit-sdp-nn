@@ -3,6 +3,9 @@ def mkdir(dir):
 
 
 def split_arg(argv, name):
-    value_index = argv.index(name) + 1
+    try:
+        value_index = argv.index(name) + 1
+    except ValueError: # argument not in list
+        return argv
     value = argv[value_index]
     return argv[:value_index] + value.split() + argv[value_index + 1:]
