@@ -115,7 +115,6 @@ def report(config):
     plot_proportions(results, config=config, dir=DIR)
     metrics = ['r0', 'r1', 'gmean', 'p0', 'p1']
     metrics = {'avg_{}'.format(metric): results[metric].mean() for metric in metrics}    
-    with mlflow.start_run():
-        mlflow.log_params(config)
-        mlflow.log_metrics(metrics)
-        mlflow.log_artifacts(local_dir=subdir)
+    mlflow.log_params(config)
+    mlflow.log_metrics(metrics)
+    mlflow.log_artifacts(local_dir=subdir)
