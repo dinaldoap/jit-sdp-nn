@@ -25,7 +25,7 @@ def main():
     parser.add_argument('--fold_size',   type=int,
                         help='Number of commits in each fold (default: 50).',    default=50)
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: brackets).',
-                        default=['brackets'], choices=['brackets', 'fabric8', 'neutron'], nargs='+')
+    sys.argv = split_arg(sys.argv, '--datasets')
     args = parser.parse_args()
     print('Configuration: {}'.format(args))
     logging.getLogger('').handlers = []
