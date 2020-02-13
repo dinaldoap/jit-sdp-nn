@@ -24,7 +24,7 @@ import logging
 
 def create_pipeline(config):
     estimators = [create_estimator(config)]
-    return Ensemble(estimators=estimators, zero_fraction=config['normal_proportion'])
+    return Ensemble(estimators=estimators, normal_proportion=config['normal_proportion'])
 
 
 def create_estimator(config):
@@ -35,7 +35,7 @@ def create_estimator(config):
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return SingleModel(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                        features=FEATURES, target='target',
-                       max_epochs=config['epochs'], batch_size=512, fading_factor=1, zero_fraction=config['normal_proportion'])
+                       max_epochs=config['epochs'], batch_size=512, fading_factor=1, normal_proportion=config['normal_proportion'])
 
 
 def evaluate(label, targets, predictions):

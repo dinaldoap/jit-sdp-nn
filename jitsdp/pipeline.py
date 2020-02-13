@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 
 class Pipeline(metaclass=ABCMeta):
-    def __init__(self, zero_fraction):
+    def __init__(self, normal_proportion):
         self.threshold = .5
-        self.zero_fraction = zero_fraction
+        self.normal_proportion = normal_proportion
 
     def train(self, labeled, unlabeled=None):
         self._train(labeled, unlabeled)
@@ -33,7 +33,7 @@ class Pipeline(metaclass=ABCMeta):
         df_val = unlabeled[-100:]
         probabilities = self.predict(df_val)
         probabilities = probabilities['probability']
-        self.threshold = probabilities.quantile(q=self.zero_fraction)
+        self.threshold = probabilities.quantile(q=self.normal_proportion)
 
     @abstractmethod
     def predict(self, features):
@@ -44,8 +44,8 @@ class SingleModel(Pipeline):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'steps.cpt'
 
-    def __init__(self, steps, classifier, optimizer, criterion, features, target, max_epochs, batch_size, fading_factor, zero_fraction, val_size=0.0):
-        super().__init__(zero_fraction=zero_fraction)
+    def __init__(self, steps, classifier, optimizer, criterion, features, target, max_epochs, batch_size, fading_factor, normal_proportion, val_size=0.0):
+        super().__init__(normal_proportion=normal_proportion)
         self.steps = steps
         self.classifier = classifier
         self.optimizer = optimizer
@@ -194,8 +194,8 @@ class SingleModel(Pipeline):
 
 
 class Ensemble(Pipeline):
-    def __init__(self, estimators, zero_fraction):
-        super().__init__(zero_fraction=zero_fraction)
+    def __init__(self, estimators, normal_proportion):
+        super().__init__(normal_proportion=normal_proportion)
         self.estimators = estimators
 
     def _train(self, labeled, unlabeled=None):
