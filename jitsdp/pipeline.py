@@ -40,7 +40,7 @@ class Pipeline(metaclass=ABCMeta):
         pass
 
 
-class SingleModel(Pipeline):
+class Estimator(Pipeline):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'steps.cpt'
 
@@ -184,12 +184,12 @@ class SingleModel(Pipeline):
         return self.classifier.epoch
 
     def load(self):
-        self.steps = joblib.load(SingleModel.FILENAME)
+        self.steps = joblib.load(Estimator.FILENAME)
         self.classifier.load()
 
     def save(self):
-        mkdir(SingleModel.DIR)
-        joblib.dump(self.steps, SingleModel.FILENAME)
+        mkdir(Estimator.DIR)
+        joblib.dump(self.steps, Estimator.FILENAME)
         self.classifier.save()
 
 

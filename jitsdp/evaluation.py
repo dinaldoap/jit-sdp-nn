@@ -1,7 +1,7 @@
 from jitsdp import metrics
 from jitsdp.classifier import Classifier
 from jitsdp.constants import DIR
-from jitsdp.pipeline import SingleModel, Ensemble
+from jitsdp.pipeline import Estimator, Ensemble
 from jitsdp.plot import plot_recalls_gmean, plot_proportions
 from jitsdp.data import FEATURES, make_stream, save_results, load_results
 
@@ -33,9 +33,9 @@ def create_estimator(config):
     classifier = Classifier(input_size=len(FEATURES),
                             hidden_size=len(FEATURES) // 2, drop_prob=0.2)
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
-    return SingleModel(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
-                       features=FEATURES, target='target',
-                       max_epochs=config['epochs'], batch_size=512, fading_factor=1, normal_proportion=config['normal_proportion'])
+    return Estimator(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
+                     features=FEATURES, target='target',
+                     max_epochs=config['epochs'], batch_size=512, fading_factor=1, normal_proportion=config['normal_proportion'])
 
 
 def evaluate(label, targets, predictions):
