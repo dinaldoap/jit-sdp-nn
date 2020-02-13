@@ -1,6 +1,7 @@
 from jitsdp import metrics
 from jitsdp.utils import mkdir
 
+from abc import ABCMeta, abstractmethod
 import numpy as np
 import torch
 import torch.utils.data as data
@@ -12,7 +13,17 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SingleModel:
+class Pipeline(metaclass=ABCMeta):
+    @abstractmethod
+    def train(self, labeled, unlabeled=None):
+        pass
+
+    @abstractmethod
+    def predict(self, features):
+        pass
+
+
+class SingleModel(Pipeline):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'steps.cpt'
 
