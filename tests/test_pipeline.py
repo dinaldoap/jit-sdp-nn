@@ -11,10 +11,12 @@ import torch.optim as optim
 from pytest import approx
 from numpy.testing import assert_array_equal
 
+
 def create_pipeline():
     pipeline = evaluation.create_pipeline({'epochs': 100})
     pipeline.zero_fraction = .5
     return pipeline
+
 
 def create_data():
     n_samples = 100
@@ -25,6 +27,7 @@ def create_data():
     targets = [0] * half_samples + [1] * half_samples
     data['target'] = np.array(targets, dtype=np.int64)
     return data
+
 
 def test_train_predict():
     pipeline = create_pipeline()

@@ -19,6 +19,7 @@ def test_plot_recalls_gmean():
     plot.plot_recalls_gmean(data=data, config=config, dir=DIR)
     assert (DIR / config['dataset'] / 'recalls_gmean.png').exists()
 
+
 def test_plot_proportions():
     config = {
         'dataset': 'brackets'
