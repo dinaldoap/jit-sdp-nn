@@ -1,9 +1,13 @@
+from jitsdp.utils import mkdir
+
 import torch
 from torch import nn
+import pathlib
 
 
 class Classifier(nn.Module):
-    FILENAME = 'models/classifier.cpt'
+    DIR = pathlib.Path('models')
+    FILENAME = DIR / 'classifier.cpt'
 
     def __init__(self, input_size, hidden_size, drop_prob, epoch=None, val_gmean=None):
         super(Classifier, self).__init__()
@@ -26,6 +30,7 @@ class Classifier(nn.Module):
         return x
 
     def save(self):
+        mkdir(Classifier.DIR)
         checkpoint = {
             'input_size': self.input_size,
             'hidden_size': self.hidden_size,
