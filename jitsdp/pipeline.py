@@ -14,9 +14,26 @@ logger = logging.getLogger(__name__)
 
 
 class Pipeline(metaclass=ABCMeta):
-    @abstractmethod
+    def __init__(self, zero_fraction):
+        self.threshold = .5
+        self.zero_fraction = zero_fraction
+
     def train(self, labeled, unlabeled=None):
+        self._train(labeled, unlabeled)
+        self.__tune_threshold(unlabeled)
+
+    @abstractmethod
+    def _train(self, labeled, unlabeled=None):
         pass
+
+    def __tune_threshold(self, unlabeled):
+        if unlabeled is None:
+            return
+
+        df_val = unlabeled[-100:]
+        probabilities = self.predict(df_val)
+        probabilities = probabilities['probability']
+        self.threshold = probabilities.quantile(q=self.zero_fraction)
 
     @abstractmethod
     def predict(self, features):
@@ -28,6 +45,7 @@ class SingleModel(Pipeline):
     FILENAME = DIR / 'steps.cpt'
 
     def __init__(self, steps, classifier, optimizer, criterion, features, target, max_epochs, batch_size, fading_factor, zero_fraction, val_size=0.0):
+        super().__init__(zero_fraction=zero_fraction)
         self.steps = steps
         self.classifier = classifier
         self.optimizer = optimizer
@@ -38,10 +56,8 @@ class SingleModel(Pipeline):
         self.batch_size = batch_size
         self.fading_factor = fading_factor
         self.val_size = val_size
-        self.zero_fraction = zero_fraction
-        self.threshold = .5
 
-    def train(self, labeled, unlabeled=None):
+    def _train(self, labeled, unlabeled=None):
         X = labeled[self.features].values
         y = labeled[self.target].values
         if self.has_validation():
@@ -95,8 +111,6 @@ class SingleModel(Pipeline):
         if not self.has_validation():
             self.classifier.save()
 
-        self.__tune_threshold(unlabeled)
-
     def predict(self, features):
         X = features[self.features].values
         X = self.__steps_transform(X)
@@ -125,15 +139,6 @@ class SingleModel(Pipeline):
         features_prediction['prediction'] = np.concatenate(predictions)
         features_prediction['probability'] = np.concatenate(probabilities)
         return features_prediction
-
-    def __tune_threshold(self, unlabeled):
-        if unlabeled is None:
-            return
-
-        df_val = unlabeled[-100:]
-        probabilities = self.predict(df_val)
-        probabilities = probabilities['probability']
-        self.threshold = probabilities.quantile(q=self.zero_fraction)
 
     def __tensor(self, X, y):
         return torch.from_numpy(X), torch.from_numpy(y)
@@ -186,3 +191,36 @@ class SingleModel(Pipeline):
         mkdir(SingleModel.DIR)
         joblib.dump(self.steps, SingleModel.FILENAME)
         self.classifier.save()
+
+
+class Ensemble(Pipeline):
+    def __init__(self, estimators, zero_fraction):
+        super().__init__(zero_fraction=zero_fraction)
+        self.estimators = estimators
+
+    def _train(self, labeled, unlabeled=None):
+        for estimator in self.estimators:
+            estimator.train(labeled, unlabeled)
+
+    def predict(self, features):
+        prediction = features
+        for index, estimator in enumerate(self.estimators):
+            prediction = estimator.predict(prediction)
+            prediction = prediction.rename({
+                'probability': 'probability{}'.format(index),
+                'prediction': 'prediction{}'.format(index)
+            },
+                axis='columns')
+        return self.__combine(prediction)
+
+    def __combine(self, prediction):
+        prediction = prediction.copy()
+        probability_cols = [
+            col for col in prediction.columns if 'probability' in col]
+        prediction_cols = [
+            col for col in prediction.columns if 'prediction' in col]
+        prediction['probability'] = prediction[probability_cols].mean(
+            axis='columns')
+        prediction['prediction'] = (
+            prediction['probability'] >= self.threshold).round().astype('int')
+        return prediction

@@ -1,7 +1,7 @@
 from jitsdp import metrics
 from jitsdp.classifier import Classifier
 from jitsdp.constants import DIR
-from jitsdp.pipeline import SingleModel
+from jitsdp.pipeline import SingleModel, Ensemble
 from jitsdp.plot import plot_recalls_gmean, plot_proportions
 from jitsdp.data import FEATURES, make_stream, save_results, load_results
 
@@ -23,6 +23,11 @@ import logging
 
 
 def create_pipeline(config):
+    estimators = [create_estimator(config)]
+    return Ensemble(estimators=estimators, zero_fraction=config['normal_proportion'])
+
+
+def create_estimator(config):
     scaler = StandardScaler()
     criterion = nn.BCELoss()
     classifier = Classifier(input_size=len(FEATURES),
