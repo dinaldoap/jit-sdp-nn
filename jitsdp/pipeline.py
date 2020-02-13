@@ -56,8 +56,9 @@ class SingleModel:
                 if torch.cuda.is_available():
                     inputs, targets = inputs.cuda(), targets.cuda()
 
-                outputs = self.classifier(inputs.float())                
-                loss = self.criterion(outputs.view(outputs.shape[0]), targets.float())
+                outputs = self.classifier(inputs.float())
+                loss = self.criterion(outputs.view(
+                    outputs.shape[0]), targets.float())
                 train_loss += loss.item()
 
                 self.optimizer.zero_grad()
@@ -67,14 +68,16 @@ class SingleModel:
             train_loss = train_loss / len(sampled_train_dataloader)
             val_gmean = None
             if self.has_validation():
-                val_gmean = metrics.classifier_gmean(self.classifier, val_dataloader)
+                val_gmean = metrics.classifier_gmean(
+                    self.classifier, val_dataloader)
                 # Best classifier
                 if self.classifier.val_gmean is None or val_gmean > self.classifier.val_gmean:
                     self.classifier.epoch = epoch
                     self.classifier.val_gmean = val_gmean
                     self.classifier.save()
 
-            logger.debug('Epoch: {}, Train loss: {}, Val g-mean: {}'.format(epoch, train_loss, val_gmean))
+            logger.debug(
+                'Epoch: {}, Train loss: {}, Val g-mean: {}'.format(epoch, train_loss, val_gmean))
         # Last classifier
         self.classifier.epoch = epoch
         self.classifier.val_gmean = val_gmean
@@ -83,11 +86,10 @@ class SingleModel:
 
         self.__tune_threshold(unlabeled)
 
-
     def predict(self, features):
         X = features[self.features].values
         X = self.__steps_transform(X)
-        y = np.zeros(len(X))        
+        y = np.zeros(len(X))
         dataloader = self.__dataloader(X, y)
 
         if torch.cuda.is_available():
@@ -104,18 +106,19 @@ class SingleModel:
                 outputs = self.classifier(inputs.float())
                 probabilities.append(outputs.detach().cpu().numpy())
                 batch_predictions = (outputs >= self.threshold).int()
-                batch_predictions = batch_predictions.view(batch_predictions.shape[0])
+                batch_predictions = batch_predictions.view(
+                    batch_predictions.shape[0])
                 predictions.append(batch_predictions.detach().cpu().numpy())
 
         features_prediction = features.copy()
         features_prediction['prediction'] = np.concatenate(predictions)
         features_prediction['probability'] = np.concatenate(probabilities)
         return features_prediction
-    
+
     def __tune_threshold(self, unlabeled):
         if unlabeled is None:
             return
-        
+
         df_val = unlabeled[-100:]
         probabilities = self.predict(df_val)
         probabilities = probabilities['probability']
@@ -134,9 +137,11 @@ class SingleModel:
         bug_indices = np.flatnonzero(y == 1)
         age_weights = np.zeros(len(y))
         # normal commit ages
-        age_weights[normal_indices] = self.__fading_weights(size=len(normal_indices), fading_factor=self.fading_factor)
+        age_weights[normal_indices] = self.__fading_weights(
+            size=len(normal_indices), fading_factor=self.fading_factor)
         # bug commit doesn't age
-        age_weights[bug_indices] = self.__fading_weights(size=len(bug_indices), fading_factor=self.fading_factor)
+        age_weights[bug_indices] = self.__fading_weights(
+            size=len(bug_indices), fading_factor=self.fading_factor)
         return data.WeightedRandomSampler(weights=age_weights, num_samples=len(y), replacement=True)
 
     def __fading_weights(self, size, fading_factor):
