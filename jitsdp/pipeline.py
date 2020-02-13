@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class Pipeline:
+class SingleModel:
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'steps.cpt'
 
@@ -163,10 +163,10 @@ class Pipeline:
         return self.classifier.epoch
 
     def load(self):
-        self.steps = joblib.load(Pipeline.FILENAME)
+        self.steps = joblib.load(SingleModel.FILENAME)
         self.classifier.load()
 
     def save(self):
-        mkdir(Pipeline.DIR)
-        joblib.dump(self.steps, Pipeline.FILENAME)
+        mkdir(SingleModel.DIR)
+        joblib.dump(self.steps, SingleModel.FILENAME)
         self.classifier.save()
