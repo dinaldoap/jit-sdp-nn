@@ -30,7 +30,7 @@ def create_pipeline(config):
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return SingleModel(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                        features=FEATURES, target='target',
-                       max_epochs=config['epochs'], batch_size=512, fading_factor=1, zero_fraction=.6)
+                       max_epochs=config['epochs'], batch_size=512, fading_factor=1, zero_fraction=config['normal_proportion'])
 
 
 def evaluate(label, targets, predictions):

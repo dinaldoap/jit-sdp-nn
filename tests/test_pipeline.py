@@ -13,8 +13,8 @@ from numpy.testing import assert_array_equal
 
 
 def create_pipeline():
-    pipeline = evaluation.create_pipeline({'epochs': 100})
-    pipeline.zero_fraction = .5
+    pipeline = evaluation.create_pipeline(
+        {'epochs': 100, 'normal_proportion': .5})
     return pipeline
 
 

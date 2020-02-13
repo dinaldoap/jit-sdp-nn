@@ -26,6 +26,8 @@ def main():
                         help='Fraction of folds to be used by the evaluation. A minimum of two folds is always used despite this parameter. (default: 0).',  default=0)
     parser.add_argument('--fold_size',   type=int,
                         help='Number of commits in each fold (default: 50).',    default=50)
+    parser.add_argument('--normal_proportion',   type=float,
+                        help='Expected proportion for normal commits. (default: .6).',  default=.6)
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: brackets).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat'], nargs='+')
     sys.argv = split_arg(sys.argv, '--datasets')
