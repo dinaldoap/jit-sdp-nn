@@ -1,16 +1,37 @@
 from jitsdp import metrics
+from jitsdp.classifier import Classifier
+from jitsdp.data import FEATURES
 from jitsdp.utils import mkdir
 
 from abc import ABCMeta, abstractmethod
 import numpy as np
 import torch
+import torch.nn as nn
+import torch.optim as optim
 import torch.utils.data as data
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 import joblib
 import pathlib
 
 import logging
 logger = logging.getLogger(__name__)
+
+
+def create_pipeline(config):
+    estimators = [create_estimator(config)]
+    return Ensemble(estimators=estimators, normal_proportion=config['normal_proportion'])
+
+
+def create_estimator(config):
+    scaler = StandardScaler()
+    criterion = nn.BCELoss()
+    classifier = Classifier(input_size=len(FEATURES),
+                            hidden_size=len(FEATURES) // 2, drop_prob=0.2)
+    optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
+    return Estimator(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
+                     features=FEATURES, target='target',
+                     max_epochs=config['epochs'], batch_size=512, fading_factor=1, normal_proportion=config['normal_proportion'])
 
 
 class Pipeline(metaclass=ABCMeta):

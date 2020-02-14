@@ -1,41 +1,21 @@
 from jitsdp import metrics
-from jitsdp.classifier import Classifier
 from jitsdp.constants import DIR
-from jitsdp.pipeline import Estimator, Ensemble
+from jitsdp.pipeline import create_pipeline
 from jitsdp.plot import plot_recalls_gmean, plot_proportions
-from jitsdp.data import FEATURES, make_stream, save_results, load_results
+from jitsdp.data import make_stream, save_results, load_results
 
 import numpy as np
 import pandas as pd
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
 import torch.utils.data as data
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 import random
 from scipy.stats import mstats
 import math
 import mlflow
 
 import logging
-
-
-def create_pipeline(config):
-    estimators = [create_estimator(config)]
-    return Ensemble(estimators=estimators, normal_proportion=config['normal_proportion'])
-
-
-def create_estimator(config):
-    scaler = StandardScaler()
-    criterion = nn.BCELoss()
-    classifier = Classifier(input_size=len(FEATURES),
-                            hidden_size=len(FEATURES) // 2, drop_prob=0.2)
-    optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
-    return Estimator(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
-                     features=FEATURES, target='target',
-                     max_epochs=config['epochs'], batch_size=512, fading_factor=1, normal_proportion=config['normal_proportion'])
 
 
 def run(config):
