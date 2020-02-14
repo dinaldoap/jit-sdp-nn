@@ -4,17 +4,17 @@ from jitsdp.data import FEATURES
 from jitsdp.utils import mkdir
 
 from abc import ABCMeta, abstractmethod
+import joblib
+import logging
 import numpy as np
+import pathlib
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-import joblib
-import pathlib
 
-import logging
 logger = logging.getLogger(__name__)
 
 

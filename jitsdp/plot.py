@@ -1,8 +1,8 @@
 from jitsdp.constants import DIR
 from jitsdp.utils import mkdir
 
-import seaborn as sns
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 sns.set(rc={'figure.figsize': (12, 9)})
 

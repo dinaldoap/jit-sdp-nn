@@ -2,8 +2,8 @@ import jitsdp.constants as const
 
 import numpy as np
 import pandas as pd
-import torch
 from scipy.stats import mstats
+import torch
 
 
 def loss(classifier, dataloader, criterion):

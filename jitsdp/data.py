@@ -1,9 +1,9 @@
 from jitsdp.constants import DIR
 from jitsdp.utils import mkdir
 
+from joblib import Memory
 import pandas as pd
 import re
-from joblib import Memory
 
 
 FEATURES = ['fix', 'ns', 'nd', 'nf', 'entrophy', 'la',

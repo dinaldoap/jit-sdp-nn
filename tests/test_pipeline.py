@@ -1,7 +1,7 @@
 from jitsdp import evaluation
+from jitsdp import metrics
 from jitsdp.data import FEATURES
 from jitsdp.pipeline import _combine
-from jitsdp import metrics
 
 
 import numpy as np
@@ -9,9 +9,9 @@ import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 
-from pytest import approx
 from numpy.testing import assert_array_equal
 from pandas.testing import assert_frame_equal
+from pytest import approx
 
 
 def create_pipeline():

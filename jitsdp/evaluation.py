@@ -1,21 +1,13 @@
-from jitsdp import metrics
+from jitsdp import metrics as met
 from jitsdp.constants import DIR
+from jitsdp.data import make_stream, save_results, load_results
 from jitsdp.pipeline import create_pipeline
 from jitsdp.plot import plot_recalls_gmean, plot_proportions
-from jitsdp.data import make_stream, save_results, load_results
 
-import numpy as np
-import pandas as pd
-import torch
-import torch.nn.functional as F
-import torch.utils.data as data
-from sklearn.model_selection import train_test_split
-import random
-from scipy.stats import mstats
 import math
 import mlflow
-
-import logging
+import numpy as np
+import pandas as pd
 
 
 def run(config):
@@ -59,7 +51,7 @@ def run(config):
 
     target_prediction = pd.concat(target_prediction, sort=False)
     target_prediction = target_prediction.reset_index(drop=True)
-    results = metrics.prequential_metrics(target_prediction, .99)
+    results = met.prequential_metrics(target_prediction, .99)
     save_results(results=results, dir=DIR / config['dataset'])
     report(config)
 
