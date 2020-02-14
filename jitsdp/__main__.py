@@ -19,6 +19,8 @@ def main():
         description='JIT-SDP: experiment execution')
     parser.add_argument('command',   type=str, help='Which command should execute (default: run).',
                         default='run', choices=['run', 'report'])
+    parser.add_argument('--seed',   type=int,
+                        help='Seed of random state (default: 42).',    default=42)
     parser.add_argument('--epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--start',   type=int,
