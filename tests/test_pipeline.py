@@ -1,5 +1,6 @@
 from jitsdp import evaluation
 from jitsdp.data import FEATURES
+from jitsdp.pipeline import _combine
 from jitsdp import metrics
 
 
@@ -10,6 +11,7 @@ import torch.optim as optim
 
 from pytest import approx
 from numpy.testing import assert_array_equal
+from pandas.testing import assert_frame_equal
 
 
 def create_pipeline():
@@ -44,3 +46,20 @@ def test_train_predict():
 
     # probability
     assert 0.5 == target_prediction['probability'].round().mean()
+
+
+def test_combine():
+    prediction = {
+        'probability0': [0, .5],
+        'probability1': [.5, 1],
+    }
+    expected = dict(prediction)
+    expected.update({
+        'probability': [.25, .75],
+        'prediction': [0, 1],
+    })
+    prediction = pd.DataFrame(prediction)
+    expected = pd.DataFrame(expected)
+    combined_prediction = _combine(prediction=prediction, threshold=.5)
+
+    assert_frame_equal(expected, combined_prediction)

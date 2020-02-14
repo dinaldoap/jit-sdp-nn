@@ -211,14 +211,15 @@ class Ensemble(Pipeline):
                 'prediction': 'prediction{}'.format(index)
             },
                 axis='columns')
-        return self.__combine(prediction)
+        return _combine(prediction, self.threshold)
 
-    def __combine(self, prediction):
-        prediction = prediction.copy()
-        probability_cols = [
-            col for col in prediction.columns if 'probability' in col]
-        prediction['probability'] = prediction[probability_cols].mean(
-            axis='columns')
-        prediction['prediction'] = (
-            prediction['probability'] >= self.threshold).round().astype('int')
-        return prediction
+
+def _combine(prediction, threshold):
+    prediction = prediction.copy()
+    probability_cols = [
+        col for col in prediction.columns if 'probability' in col]
+    prediction['probability'] = prediction[probability_cols].mean(
+        axis='columns')
+    prediction['prediction'] = (
+        prediction['probability'] >= threshold).round().astype('int')
+    return prediction
