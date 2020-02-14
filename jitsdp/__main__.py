@@ -1,9 +1,10 @@
 from jitsdp.evaluation import run, report
-from jitsdp.utils import split_arg
+from jitsdp.utils import split_arg, mkdir
 
-import logging
 import argparse
+import logging
 import mlflow
+import pathlib
 import sys
 
 
@@ -34,7 +35,9 @@ def main():
     args = parser.parse_args()
     print('Configuration: {}'.format(args))
     logging.getLogger('').handlers = []
-    logging.basicConfig(filename='logs/jitsdp.log',
+    dir = pathlib.Path('logs')
+    mkdir(dir)
+    logging.basicConfig(filename=dir / 'jitsdp.log',
                         filemode='w', level=logging.DEBUG)
     commands = {
         'run': run,
