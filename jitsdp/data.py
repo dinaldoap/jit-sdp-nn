@@ -10,7 +10,7 @@ FEATURES = ['fix', 'ns', 'nd', 'nf', 'entrophy', 'la',
             'ld', 'lt', 'ndev', 'age', 'nuc', 'exp', 'rexp', 'sexp']
 LABEL = 'contains_bug'
 
-memory = Memory(location='logs', verbose=0)
+memory = Memory(location='data', verbose=0)
 
 
 @memory.cache
