@@ -38,38 +38,6 @@ def create_estimator(config):
                      max_epochs=config['epochs'], batch_size=512, fading_factor=1, normal_proportion=config['normal_proportion'])
 
 
-def evaluate(label, targets, predictions):
-    gmean, recalls = metrics.gmean_recalls(targets, predictions)
-    print('{} g-mean: {}, recalls: {}'.format(label, gmean, recalls))
-
-
-def evaluate_train_test(seq, targets_train, predictions_train, targets_test, predictions_test, targets_unlabeled, predictions_unlabeled):
-    print('Sequential: {}'.format(seq))
-    evaluate('Train', targets_train, predictions_train)
-    evaluate('Test', targets_test, predictions_test)
-    evaluate('Unlabeled', targets_unlabeled, predictions_unlabeled)
-    train_label_total, train_label_normal, train_label_bug = metrics.proportions(
-        targets_train)
-    train_pred_total, train_pred_normal, train_pred_bug = metrics.proportions(
-        predictions_train)
-    test_label_total, test_label_normal, test_label_bug = metrics.proportions(
-        targets_test)
-    test_pred_total, test_pred_normal, test_pred_bug = metrics.proportions(
-        predictions_test)
-    unlabeled_total, unlabeled_normal, unlabeled_bug = metrics.proportions(
-        predictions_unlabeled)
-    print('Train label total: {}, normal: {:.2f}%, bug: {:.2f}%'.format(
-        train_label_total, train_label_normal, train_label_bug))
-    print('Train pred total: {}, normal: {:.2f}%, bug: {:.2f}%'.format(
-        train_pred_total, train_pred_normal, train_pred_bug))
-    print('Test label total: {}, normal: {:.2f}%, bug: {:.2f}%'.format(
-        test_label_total, test_label_normal, test_label_bug))
-    print('Test pred total: {}, normal: {:.2f}%, bug: {:.2f}%'.format(
-        test_pred_total, test_pred_normal, test_pred_bug))
-    print('Unlabeled pred total: {}, normal: {:.2f}%, bug: {:.2f}%'.format(
-        unlabeled_total, unlabeled_normal, unlabeled_bug))
-
-
 def run(config):
     df_prequential = make_stream(
         'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/{}.csv'.format(config['dataset']))
