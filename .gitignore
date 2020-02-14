@@ -136,3 +136,6 @@ logs/
 
 # MLflow
 mlruns/
+
+# data
+data/
