@@ -31,6 +31,8 @@ def main():
                         help='Number of commits in each fold (default: 50).',    default=50)
     parser.add_argument('--normal_proportion',   type=float,
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
+    parser.add_argument('--estimators',   type=int,
+                        help='Number of estimators in the ensemble (default: 1).',    default=1)
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: brackets).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat'], nargs='+')
     sys.argv = split_arg(sys.argv, '--datasets')
