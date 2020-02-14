@@ -1,7 +1,7 @@
 from jitsdp import metrics as met
 from jitsdp.constants import DIR
 from jitsdp.data import make_stream, save_results, load_results
-from jitsdp.pipeline import create_pipeline
+from jitsdp.pipeline import create_pipeline, set_seed
 from jitsdp.plot import plot_recalls_gmean, plot_proportions
 
 import math
@@ -11,6 +11,7 @@ import pandas as pd
 
 
 def run(config):
+    set_seed(config)
     df_prequential = make_stream(
         'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/{}.csv'.format(config['dataset']))
     # split test partition in folds and iterate over them (fold from current to current + fold_size or end)

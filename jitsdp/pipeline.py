@@ -18,6 +18,12 @@ from sklearn.preprocessing import StandardScaler
 logger = logging.getLogger(__name__)
 
 
+def set_seed(config):
+    seed = config['seed']
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+
+
 def create_pipeline(config):
     estimators = [create_estimator(config)]
     return Ensemble(estimators=estimators, normal_proportion=config['normal_proportion'])
