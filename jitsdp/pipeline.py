@@ -217,8 +217,6 @@ class Ensemble(Pipeline):
         prediction = prediction.copy()
         probability_cols = [
             col for col in prediction.columns if 'probability' in col]
-        prediction_cols = [
-            col for col in prediction.columns if 'prediction' in col]
         prediction['probability'] = prediction[probability_cols].mean(
             axis='columns')
         prediction['prediction'] = (
