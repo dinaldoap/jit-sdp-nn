@@ -25,7 +25,8 @@ def set_seed(config):
 
 
 def create_pipeline(config):
-    estimators = [create_estimator(config)]
+    estimators = [create_estimator(config)
+                  for i in range(config['estimators'])]
     return Ensemble(estimators=estimators, normal_proportion=config['normal_proportion'])
 
 
