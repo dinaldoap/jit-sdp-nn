@@ -46,12 +46,11 @@ class Pipeline(metaclass=ABCMeta):
         self.threshold = .5
         self.normal_proportion = normal_proportion
 
-    def train(self, labeled, unlabeled=None):
-        self._train(labeled, unlabeled)
-        self.__tune_threshold(unlabeled)
+    def train(self, labeled):
+        self._train(labeled)
 
     @abstractmethod
-    def _train(self, labeled, unlabeled=None):
+    def _train(self, labeled):
         pass
 
     def __tune_threshold(self, unlabeled):
@@ -63,7 +62,8 @@ class Pipeline(metaclass=ABCMeta):
         probabilities = probabilities['probability']
         self.threshold = probabilities.quantile(q=self.normal_proportion)
 
-    def predict(self, features):
+    def predict(self, features, unlabeled=None):
+        self.__tune_threshold(unlabeled)
         prediction = self.predict_proba(features=features)
         prediction['prediction'] = (
             prediction['probability'] >= self.threshold).round().astype('int')
@@ -91,7 +91,7 @@ class Estimator(Pipeline):
         self.fading_factor = fading_factor
         self.val_size = val_size
 
-    def _train(self, labeled, unlabeled=None):
+    def _train(self, labeled):
         X = labeled[self.features].values
         y = labeled[self.target].values
         if self.has_validation():
@@ -226,9 +226,9 @@ class Ensemble(Pipeline):
         super().__init__(normal_proportion=normal_proportion)
         self.estimators = estimators
 
-    def _train(self, labeled, unlabeled=None):
+    def _train(self, labeled):
         for estimator in self.estimators:
-            estimator.train(labeled, unlabeled)
+            estimator.train(labeled)
 
     def predict_proba(self, features):
         probability = features
