@@ -1,7 +1,7 @@
 from jitsdp import evaluation
 from jitsdp import metrics
 from jitsdp.data import FEATURES
-from jitsdp.pipeline import _combine
+from jitsdp.pipeline import _combine, _tune_threshold
 
 
 import numpy as np
@@ -10,7 +10,7 @@ import torch.nn as nn
 import torch.optim as optim
 
 from numpy.testing import assert_array_equal
-from pandas.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 from pytest import approx
 
 
@@ -62,3 +62,14 @@ def test_combine():
     combined_prediction = _combine(prediction=prediction)
 
     assert_frame_equal(expected, combined_prediction)
+
+
+def test_tune_threshold():
+    val_probabilities = pd.Series([0, .1], name='probability')
+    test_probabilities = pd.Series([.2, .3], name='probability')
+    expected = pd.Series([.05, .15], name='threshold',
+                         index=test_probabilities.index)
+    thresholds = _tune_threshold(val_probabilities=val_probabilities,
+                                 test_probabilities=test_probabilities, normal_proportion=.5)
+
+    assert_series_equal(expected, thresholds)
