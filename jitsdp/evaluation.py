@@ -45,12 +45,12 @@ def run(config):
         # train and predict
         pipeline = create_pipeline(config)
         # pipeline.load()
-        if config['balance']:
-            pipeline.train(df_train, df_unlabeled)
-        else:
-            pipeline.train(df_train)
+        pipeline.train(df_train)
         # pipeline.save()
-        target_prediction_test = pipeline.predict(df_test)
+        if config['balance']:
+            target_prediction_test = pipeline.predict(df_test, df_unlabeled)
+        else:
+            target_prediction_test = pipeline.predict(df_test)
         target_prediction.append(target_prediction_test)
 
     target_prediction = pd.concat(target_prediction, sort=False)
