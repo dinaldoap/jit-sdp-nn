@@ -9,4 +9,5 @@ entry_points:
         epochs: {default: 50}
         folds: {default: 1}
         datasets: {default: brackets camel fabric8 jgroups neutron tomcat}
-    command: 'conda env update --file conda.yml --prune && jitsdp {command} --epochs {epochs} --folds {folds} --datasets {datasets}'
+        flags: {default: ''}
+    command: 'conda env update --file conda.yml --prune && jitsdp {command} --epochs {epochs} --folds {folds} --datasets {datasets} {flags}'
