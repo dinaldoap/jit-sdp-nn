@@ -164,9 +164,9 @@ class Estimator(Pipeline):
                 outputs = self.classifier(inputs.float())
                 probabilities.append(outputs.detach().cpu().numpy())
 
-        features_prediction = features.copy()
-        features_prediction['probability'] = np.concatenate(probabilities)
-        return features_prediction
+        probability = features.copy()
+        probability['probability'] = np.concatenate(probabilities)
+        return probability
 
     def __tensor(self, X, y):
         return torch.from_numpy(X), torch.from_numpy(y)
@@ -231,14 +231,14 @@ class Ensemble(Pipeline):
             estimator.train(labeled, unlabeled)
 
     def predict_proba(self, features):
-        prediction = features
+        probability = features
         for index, estimator in enumerate(self.estimators):
-            prediction = estimator.predict_proba(prediction)
-            prediction = prediction.rename({
+            probability = estimator.predict_proba(probability)
+            probability = probability.rename({
                 'probability': 'probability{}'.format(index),
             },
                 axis='columns')
-        return _combine(prediction, self.threshold)
+        return _combine(probability, self.threshold)
 
 
 def _combine(prediction, threshold):
