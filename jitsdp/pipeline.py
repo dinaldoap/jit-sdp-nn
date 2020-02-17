@@ -46,11 +46,8 @@ class Pipeline(metaclass=ABCMeta):
         self.threshold = .5
         self.normal_proportion = normal_proportion
 
-    def train(self, labeled):
-        self._train(labeled)
-
     @abstractmethod
-    def _train(self, labeled):
+    def train(self, labeled):
         pass
 
     def __tune_threshold(self, unlabeled):
@@ -91,7 +88,7 @@ class Estimator(Pipeline):
         self.fading_factor = fading_factor
         self.val_size = val_size
 
-    def _train(self, labeled):
+    def train(self, labeled):
         X = labeled[self.features].values
         y = labeled[self.target].values
         if self.has_validation():
@@ -226,7 +223,7 @@ class Ensemble(Pipeline):
         super().__init__(normal_proportion=normal_proportion)
         self.estimators = estimators
 
-    def _train(self, labeled):
+    def train(self, labeled):
         for estimator in self.estimators:
             estimator.train(labeled)
 
