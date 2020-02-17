@@ -48,7 +48,7 @@ def run(config):
         pipeline.train(df_train)
         # pipeline.save()
         if config['balance']:
-            target_prediction_test = pipeline.predict(df_test, df_unlabeled)
+            target_prediction_test = pipeline.predict(df_test, df_unlabeled[-100:])
         else:
             target_prediction_test = pipeline.predict(df_test)
         target_prediction.append(target_prediction_test)
