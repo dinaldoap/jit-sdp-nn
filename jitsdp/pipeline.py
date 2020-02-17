@@ -7,6 +7,7 @@ from abc import ABCMeta, abstractmethod
 import joblib
 import logging
 import numpy as np
+import pandas as pd
 import pathlib
 import torch
 import torch.nn as nn
@@ -43,27 +44,33 @@ def create_estimator(config):
 
 class Pipeline(metaclass=ABCMeta):
     def __init__(self, normal_proportion):
-        self.threshold = .5
         self.normal_proportion = normal_proportion
 
     @abstractmethod
     def train(self, labeled):
         pass
 
-    def __tune_threshold(self, unlabeled):
-        if unlabeled is None:
-            return
+    def __tune_threshold(self, probabilities, val_features):
+        if val_features is None:
+            # fixed threshold
+            return pd.Series(np.array([.5] * len(probabilities)))
 
-        df_val = unlabeled[-100:]
-        probabilities = self.predict_proba(df_val)
-        probabilities = probabilities['probability']
-        self.threshold = probabilities.quantile(q=self.normal_proportion)
+        # rolling threshold
+        val_probabilities = val_features[-100:]
+        val_probabilities = self.predict_proba(val_probabilities)
+        val_probabilities = val_probabilities['probability']
+        probabilities = pd.concat([val_probabilities, probabilities[:-1]])
+        threshold = probabilities.rolling(len(val_probabilities)).quantile(
+            quantile=self.normal_proportion)
+        return threshold.dropna()
 
     def predict(self, features, unlabeled=None):
-        self.__tune_threshold(unlabeled)
         prediction = self.predict_proba(features=features)
+        threshold = self.__tune_threshold(
+            probabilities=prediction['probability'], val_features=unlabeled)
+        threshold = threshold.values
         prediction['prediction'] = (
-            prediction['probability'] >= self.threshold).round().astype('int')
+            prediction['probability'] >= threshold).round().astype('int')
         return prediction
 
     @abstractmethod
