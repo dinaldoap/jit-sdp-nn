@@ -59,6 +59,6 @@ def test_combine():
     })
     prediction = pd.DataFrame(prediction)
     expected = pd.DataFrame(expected)
-    combined_prediction = _combine(prediction=prediction, threshold=.5)
+    combined_prediction = _combine(prediction=prediction)
 
     assert_frame_equal(expected, combined_prediction)
