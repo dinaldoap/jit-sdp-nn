@@ -50,24 +50,12 @@ class Pipeline(metaclass=ABCMeta):
     def train(self, labeled):
         pass
 
-    def __tune_threshold(self, probabilities, val_features):
-        if val_features is None:
-            # fixed threshold
-            return pd.Series(np.array([.5] * len(probabilities)))
-
-        # rolling threshold
-        val_probabilities = val_features[-100:]
-        val_probabilities = self.predict_proba(val_probabilities)
-        val_probabilities = val_probabilities['probability']
-        probabilities = pd.concat([val_probabilities, probabilities[:-1]])
-        threshold = probabilities.rolling(len(val_probabilities)).quantile(
-            quantile=self.normal_proportion)
-        return threshold.dropna()
-
     def predict(self, features, unlabeled=None):
+        val_probabilities = self.predict_proba(
+            unlabeled)['probability'] if unlabeled is not None else None
         prediction = self.predict_proba(features=features)
-        threshold = self.__tune_threshold(
-            probabilities=prediction['probability'], val_features=unlabeled)
+        threshold = _tune_threshold(val_probabilities=val_probabilities,
+                                    test_probabilities=prediction['probability'], normal_proportion=self.normal_proportion)
         threshold = threshold.values
         prediction['prediction'] = (
             prediction['probability'] >= threshold).round().astype('int')
@@ -76,6 +64,21 @@ class Pipeline(metaclass=ABCMeta):
     @abstractmethod
     def predict_proba(self, features):
         pass
+
+
+def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
+    if val_probabilities is None:
+        # fixed threshold
+        return pd.Series([.5] * len(test_probabilities), name='threshold', index=test_probabilities.index)
+
+    # rolling threshold
+    probabilities = pd.concat([val_probabilities, test_probabilities[:-1]])
+    threshold = probabilities.rolling(len(val_probabilities)).quantile(
+        quantile=normal_proportion)
+    threshold = threshold.rename('threshold')
+    threshold = threshold.dropna()
+    threshold.index = test_probabilities.index
+    return threshold
 
 
 class Estimator(Pipeline):
