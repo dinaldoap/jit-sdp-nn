@@ -59,12 +59,18 @@ class Pipeline(metaclass=ABCMeta):
             return
 
         df_val = unlabeled[-100:]
-        probabilities = self.predict(df_val)
+        probabilities = self.predict_proba(df_val)
         probabilities = probabilities['probability']
         self.threshold = probabilities.quantile(q=self.normal_proportion)
 
-    @abstractmethod
     def predict(self, features):
+        prediction = self.predict_proba(features=features)
+        prediction['prediction'] = (
+            prediction['probability'] >= self.threshold).round().astype('int')
+        return prediction
+
+    @abstractmethod
+    def predict_proba(self, features):
         pass
 
 
@@ -139,7 +145,7 @@ class Estimator(Pipeline):
         if not self.has_validation():
             self.classifier.save()
 
-    def predict(self, features):
+    def predict_proba(self, features):
         X = features[self.features].values
         X = self.__steps_transform(X)
         y = np.zeros(len(X))
@@ -148,7 +154,6 @@ class Estimator(Pipeline):
         if torch.cuda.is_available():
             self.classifier = self.classifier.cuda()
 
-        predictions = []
         probabilities = []
         with torch.no_grad():
             self.classifier.eval()
@@ -158,13 +163,8 @@ class Estimator(Pipeline):
 
                 outputs = self.classifier(inputs.float())
                 probabilities.append(outputs.detach().cpu().numpy())
-                batch_predictions = (outputs >= self.threshold).int()
-                batch_predictions = batch_predictions.view(
-                    batch_predictions.shape[0])
-                predictions.append(batch_predictions.detach().cpu().numpy())
 
         features_prediction = features.copy()
-        features_prediction['prediction'] = np.concatenate(predictions)
         features_prediction['probability'] = np.concatenate(probabilities)
         return features_prediction
 
@@ -230,13 +230,12 @@ class Ensemble(Pipeline):
         for estimator in self.estimators:
             estimator.train(labeled, unlabeled)
 
-    def predict(self, features):
+    def predict_proba(self, features):
         prediction = features
         for index, estimator in enumerate(self.estimators):
-            prediction = estimator.predict(prediction)
+            prediction = estimator.predict_proba(prediction)
             prediction = prediction.rename({
                 'probability': 'probability{}'.format(index),
-                'prediction': 'prediction{}'.format(index)
             },
                 axis='columns')
         return _combine(prediction, self.threshold)
@@ -248,6 +247,4 @@ def _combine(prediction, threshold):
         col for col in prediction.columns if 'probability' in col]
     prediction['probability'] = prediction[probability_cols].mean(
         axis='columns')
-    prediction['prediction'] = (
-        prediction['probability'] >= threshold).round().astype('int')
     return prediction

@@ -56,7 +56,6 @@ def test_combine():
     expected = dict(prediction)
     expected.update({
         'probability': [.25, .75],
-        'prediction': [0, 1],
     })
     prediction = pd.DataFrame(prediction)
     expected = pd.DataFrame(expected)
