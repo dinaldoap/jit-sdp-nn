@@ -9,13 +9,13 @@ class Classifier(nn.Module):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'classifier.cpt'
 
-    def __init__(self, input_size, hidden_size, drop_prob, epoch=None, val_gmean=None):
+    def __init__(self, input_size, hidden_size, drop_prob, epoch=None, val_loss=None):
         super(Classifier, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.drop_prob = drop_prob
         self.epoch = epoch
-        self.val_gmean = val_gmean
+        self.val_loss = val_loss
         self.fc1 = nn.Linear(input_size, hidden_size)
         self.fc2 = nn.Linear(hidden_size, hidden_size)
         self.fcout = nn.Linear(hidden_size, 1)
@@ -35,7 +35,7 @@ class Classifier(nn.Module):
             'input_size': self.input_size,
             'hidden_size': self.hidden_size,
             'drop_prob': self.drop_prob,
-            'val_gmean': self.val_gmean,
+            'val_loss': self.val_loss,
             'epoch': self.epoch,
             'state_dict': self.state_dict()
         }
@@ -49,7 +49,7 @@ class Classifier(nn.Module):
             self.hidden_size = checkpoint['hidden_size']
             self.drop_prob = checkpoint['drop_prob']
             self.epoch = checkpoint['epoch']
-            self.val_gmean = checkpoint['val_gmean']
+            self.val_loss = checkpoint['val_loss']
             self.load_state_dict(checkpoint['state_dict'])
 
 

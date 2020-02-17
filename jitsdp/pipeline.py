@@ -121,21 +121,21 @@ class Estimator(Pipeline):
                 self.optimizer.step()
 
             train_loss = train_loss / len(sampled_train_dataloader)
-            val_gmean = None
+            val_loss = None
             if self.has_validation():
-                val_gmean = metrics.classifier_gmean(
-                    self.classifier, val_dataloader)
+                val_loss = metrics.loss(
+                    self.classifier, val_dataloader, criterion=self.criterion)
                 # Best classifier
-                if self.classifier.val_gmean is None or val_gmean > self.classifier.val_gmean:
+                if self.classifier.val_loss is None or val_loss > self.classifier.val_loss:
                     self.classifier.epoch = epoch
-                    self.classifier.val_gmean = val_gmean
+                    self.classifier.val_loss = val_loss
                     self.classifier.save()
 
             logger.debug(
-                'Epoch: {}, Train loss: {}, Val g-mean: {}'.format(epoch, train_loss, val_gmean))
+                'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
         # Last classifier
         self.classifier.epoch = epoch
-        self.classifier.val_gmean = val_gmean
+        self.classifier.val_loss = val_loss
         if not self.has_validation():
             self.classifier.save()
 
