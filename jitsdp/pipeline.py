@@ -235,10 +235,10 @@ class Ensemble(Pipeline):
                 'probability': 'probability{}'.format(index),
             },
                 axis='columns')
-        return _combine(probability, self.threshold)
+        return _combine(probability)
 
 
-def _combine(prediction, threshold):
+def _combine(prediction):
     prediction = prediction.copy()
     probability_cols = [
         col for col in prediction.columns if 'probability' in col]
