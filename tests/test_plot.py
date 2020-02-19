@@ -14,6 +14,7 @@ def test_plot_recalls_gmean():
         'timestep': [0, 1, 2],
         'r0':    [0., 1., 2.],
         'r1':    [1., 0., 8.],
+        'r0-r1': [1., 1., 6.],
         'gmean': [0., 0., 4.],
     })
     plot.plot_recalls_gmean(data=data, config=config, dir=DIR)
