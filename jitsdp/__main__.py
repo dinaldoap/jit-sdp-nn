@@ -24,7 +24,7 @@ def main():
     parser.add_argument('--epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--start',   type=int,
-                        help='First commit to be used for testing (default: 1000). A minimum of one fold is not used despite this parameter.',    default=1000)
+                        help='First commit to be used for testing (default: 0). The first fold is not used despite this parameter.',    default=0)
     parser.add_argument('--folds',   type=float,
                         help='Fraction of folds to be used by the evaluation. A minimum of two folds is always used despite this parameter. (default: 0).',  default=0)
     parser.add_argument('--fold_size',   type=int,
