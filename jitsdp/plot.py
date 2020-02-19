@@ -9,7 +9,7 @@ sns.set(rc={'figure.figsize': (12, 9)})
 
 def plot_recalls_gmean(data, config, dir=DIR):
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
-                   'r0', 'r1', 'gmean'], filename='recalls_gmean.png')
+                   'r0', 'r1', 'r0-r1', 'gmean'], filename='recalls_gmean.png')
 
 
 def plot_proportions(data, config, dir=DIR):
@@ -18,7 +18,7 @@ def plot_proportions(data, config, dir=DIR):
 
 
 def __plot_metrics(data, config, dir, metrics, filename):
-    assert len(metrics) <= 3, 'Only support three or less metrics.'
+    assert len(metrics) <= 4, 'Only support three or less metrics.'
     avgs = [data[metric].mean() for metric in metrics]
     data = data.melt(id_vars='timestep',
                      value_vars=metrics,
@@ -26,7 +26,7 @@ def __plot_metrics(data, config, dir, metrics, filename):
                      value_name='value')
     ax = sns.lineplot(x='timestep', y='value',
                       hue='metric', data=data)
-    styles = ['--', '-.', '-']
+    styles = ['--', '-.', ':', '-']
     for i, metric in enumerate(metrics):
         ax.axhline(avgs[i], ls=styles[i], c='black',
                    label='avg({})={:.2f}'.format(metric, avgs[i]))
