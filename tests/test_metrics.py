@@ -24,6 +24,21 @@ def test_prequential_recalls():
     assert_frame_equal(expected, actual)
 
 
+def test_prequential_recalls_difference():
+    recalls = {
+        'r0': [0, 0, .526315789, .701107011, .701107011, .701107011],
+        'r1': [0, 0,          0,          0, .526315789, .701107011],
+    }
+    expected = recalls.copy()
+    expected.update({
+        'r0-r1': [0, 0, .526315789, .701107011, .174791222, .0],
+    })
+    recalls = pd.DataFrame(recalls)
+    expected = pd.DataFrame(expected)
+    recalls_difference = metrics.prequential_recalls_difference(recalls)
+    assert_frame_equal(expected, recalls_difference)
+
+
 def test_prequential_gmean():
     recalls = {
         'r0': [0, 0, .526315789, .701107011, .701107011, .701107011],
