@@ -66,7 +66,7 @@ def report(config):
     results = load_results(dir=subdir)
     plot_recalls_gmean(results, config=config, dir=DIR)
     plot_proportions(results, config=config, dir=DIR)
-    metrics = ['r0', 'r1', 'gmean', 'p0', 'p1']
+    metrics = ['r0', 'r1', 'r0-r1', 'gmean', 'p0', 'p1']
     metrics = {'avg_{}'.format(
         metric): results[metric].mean() for metric in metrics}
     mlflow.log_params(config)
