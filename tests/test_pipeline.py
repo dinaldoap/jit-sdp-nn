@@ -28,6 +28,7 @@ def create_data():
     data = pd.DataFrame(features, columns=FEATURES)
     targets = [0] * half_samples + [1] * half_samples
     data['target'] = np.array(targets, dtype=np.int64)
+    data['soft_target'] = data['target']
     return data
 
 
