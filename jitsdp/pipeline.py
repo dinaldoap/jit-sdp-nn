@@ -38,7 +38,7 @@ def create_estimator(config):
                             hidden_size=len(FEATURES) // 2, drop_prob=0.2)
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return Estimator(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
-                     features=FEATURES, target='target',
+                     features=FEATURES, target='target', soft_target='soft_target',
                      max_epochs=config['epochs'], batch_size=512, fading_factor=1, normal_proportion=config['normal_proportion'])
 
 
@@ -85,7 +85,7 @@ class Estimator(Pipeline):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'steps.cpt'
 
-    def __init__(self, steps, classifier, optimizer, criterion, features, target, max_epochs, batch_size, fading_factor, normal_proportion, val_size=0.0):
+    def __init__(self, steps, classifier, optimizer, criterion, features, target, soft_target, max_epochs, batch_size, fading_factor, normal_proportion, val_size=0.0):
         super().__init__(normal_proportion=normal_proportion)
         self.steps = steps
         self.classifier = classifier
@@ -93,6 +93,7 @@ class Estimator(Pipeline):
         self.criterion = criterion
         self.features = features
         self.target = target
+        self.soft_target = soft_target
         self.max_epochs = max_epochs
         self.batch_size = batch_size
         self.fading_factor = fading_factor
@@ -101,17 +102,18 @@ class Estimator(Pipeline):
     def train(self, labeled):
         X = labeled[self.features].values
         y = labeled[self.target].values
+        soft_y = labeled[self.soft_target].values
         if self.has_validation():
-            X_train, X_val, y_train, y_val = train_test_split(
-                X, y, test_size=self.val_size, shuffle=False)
+            X_train, X_val, y_train, y_val, soft_y_train, soft_y_val = train_test_split(
+                X, y, soft_y, test_size=self.val_size, shuffle=False)
             val_dataloader = self.__dataloader(X_val, y_val)
         else:
-            X_train, y_train = X, y
+            X_train, y_train, soft_y_train = X, y, soft_y
 
         X_train = self.__steps_fit_transform(X_train, y_train)
 
         sampled_train_dataloader = self.__dataloader(
-            X_train, y_train, batch_size=self.batch_size, sampler=self.__sampler(y_train))
+            X_train, soft_y_train, batch_size=self.batch_size, sampler=self.__sampler(y_train))
         train_dataloader = self.__dataloader(X_train, y_train)
 
         if torch.cuda.is_available():
