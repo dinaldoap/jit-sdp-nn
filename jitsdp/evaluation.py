@@ -6,7 +6,6 @@ from jitsdp.plot import plot_recalls_gmean, plot_proportions
 
 import math
 import mlflow
-import numpy as np
 import pandas as pd
 
 
@@ -39,9 +38,6 @@ def run(config):
             0 if row.timestamp <= train_timestamp - verification_latency else None), axis='columns')
         df_unlabeled = df_train[pd.isnull(df_train['target'])]
         df_train = df_train.dropna(subset=['target'])
-        df_train['target'] = df_train['target'].astype('int')
-        # convert to numpy array
-        df_unlabeled['target'] = np.zeros(len(df_unlabeled), dtype=np.int64)
         # train and predict
         pipeline = create_pipeline(config)
         # pipeline.load()
