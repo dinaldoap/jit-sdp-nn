@@ -148,11 +148,6 @@ class Estimator(Pipeline):
 
             logger.debug(
                 'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
-        # Last classifier
-        self.classifier.epoch = epoch
-        self.classifier.val_loss = val_loss
-        if not self.has_validation():
-            self.classifier.save()
 
     def predict_proba(self, features):
         X = features[self.features].values
