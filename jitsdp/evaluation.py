@@ -27,7 +27,7 @@ def run(config):
     end = start + n_folds * fold_size  # last fold end
 
     pipeline = create_pipeline(config)
-    # pipeline.save()
+    pipeline.save()
     target_prediction = []
     for current in range(start, end, fold_size):
         df_train = df_prequential[:current].copy()
@@ -48,9 +48,9 @@ def run(config):
         df_train['target'] = df_train['soft_target'] > .5
         # train and predict
         pipeline = create_pipeline(config)
-        # pipeline.load()
+        pipeline.load()
         pipeline.train(df_train)
-        # pipeline.save()
+        pipeline.save()
         target_prediction_test = pipeline.predict(
             df_test, df_val)
         target_prediction.append(target_prediction_test)

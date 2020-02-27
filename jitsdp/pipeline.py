@@ -249,6 +249,14 @@ class Ensemble(Pipeline):
                 axis='columns')
         return _combine(probability)
 
+    def save(self):
+        for estimator in self.estimators:
+            estimator.save()
+
+    def load(self):
+        for estimator in self.estimators:
+            estimator.load()
+
 
 def _combine(prediction):
     prediction = prediction.copy()
