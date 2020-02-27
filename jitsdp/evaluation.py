@@ -37,7 +37,7 @@ def run(config):
         df_train['soft_target'] = df_train.apply(lambda row: 1 if row.timestamp_fix <= train_timestamp
                                                  else 0 if row.timestamp <= train_timestamp - verification_latency
                                                  else __verification_latency_label(train_timestamp, row.timestamp, verification_latency, config), axis='columns')
-        if config['balance']:
+        if config['threshold']:
             val_size = min(int(len(df_train) * .1), 100)
             df_val = df_train[-val_size:]
             df_train = df_train[:-val_size]

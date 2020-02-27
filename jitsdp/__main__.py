@@ -33,8 +33,8 @@ def main():
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
     parser.add_argument('--estimators',   type=int,
                         help='Number of estimators in the ensemble (default: 1).',    default=1)
-    parser.add_argument('--balance',   type=int,
-                        help='Whether must balance output proportions (default: 0).', default=0, choices=[0, 1])
+    parser.add_argument('--threshold',   type=int,
+                        help='Whether must tune threshold to balance output proportions (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--uncertainty',   type=int,
                         help='Whether must use decreasing uncertainty about normal commit labels inside verification latency (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: brackets).',
