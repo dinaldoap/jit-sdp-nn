@@ -33,6 +33,7 @@ def preprocess(df_raw):
                                                   LABEL: 'target'})
     # filter rows with missing data
     df_preprocess = df_preprocess.dropna(subset=['fix'])
+    df_preprocess['fix'] = df_preprocess['fix'].astype('int')
     # timeline order
     df_preprocess = df_preprocess[::-1]
     df_preprocess = df_preprocess.reset_index(drop=True)
