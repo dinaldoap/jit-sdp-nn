@@ -36,21 +36,23 @@ def run(config):
         train_timestamp = df_train['timestamp'].max()
         df_train['soft_target'] = df_train.apply(lambda row: 1 if row.timestamp_fix <= train_timestamp
                                                  else 0 if row.timestamp <= train_timestamp - verification_latency
-                                                 else .5 - .5 * (train_timestamp - row.timestamp) / verification_latency, axis='columns')
+                                                 else __verification_latency_label(train_timestamp, row.timestamp, verification_latency, config), axis='columns')
+        if config['balance']:
+            val_size = min(int(len(df_train) * .1), 100)
+            df_val = df_train[-val_size:]
+            df_train = df_train[:-val_size]
+        else:
+            df_val = None
+
+        df_train = df_train.dropna(subset=['soft_target'])
         df_train['target'] = df_train['soft_target'] > .5
         # train and predict
         pipeline = create_pipeline(config)
         # pipeline.load()
         pipeline.train(df_train)
         # pipeline.save()
-        if config['balance']:
-            val_size = min(int(len(df_train) * .1), 100)
-            df_val = df_train[-val_size:]
-            df_train = df_train[:-val_size]
-            target_prediction_test = pipeline.predict(
-                df_test, df_val)
-        else:
-            target_prediction_test = pipeline.predict(df_test)
+        target_prediction_test = pipeline.predict(
+            df_test, df_val)
         target_prediction.append(target_prediction_test)
 
     target_prediction = pd.concat(target_prediction, sort=False)
@@ -71,3 +73,10 @@ def report(config):
     mlflow.log_params(config)
     mlflow.log_metrics(metrics)
     mlflow.log_artifacts(local_dir=subdir)
+
+
+def __verification_latency_label(train_timestamp, commit_timestamp, verification_latency, config):
+    if config['uncertainty']:
+        return .5 - .5 * (train_timestamp - commit_timestamp) / verification_latency
+
+    return None

@@ -35,6 +35,8 @@ def main():
                         help='Number of estimators in the ensemble (default: 1).',    default=1)
     parser.add_argument('--balance',   type=int,
                         help='Whether must balance output proportions (default: 0).', default=0, choices=[0, 1])
+    parser.add_argument('--uncertainty',   type=int,
+                        help='Whether must use decreasing uncertainty about normal commit labels inside verification latency (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: brackets).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat'], nargs='+')
     sys.argv = split_arg(sys.argv, '--datasets')
