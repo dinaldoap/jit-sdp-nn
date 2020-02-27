@@ -15,6 +15,7 @@ import torch.optim as optim
 import torch.utils.data as data
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.exceptions import NotFittedError
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +101,10 @@ class Estimator(Pipeline):
         self.val_size = val_size
 
     def train(self, labeled):
+        if len(labeled) == 0:
+            logger.warning('No labeled sample to train.')
+            return
+
         X = labeled[self.features].values
         y = labeled[self.target].values
         soft_y = labeled[self.soft_target].values
@@ -205,7 +210,10 @@ class Estimator(Pipeline):
 
     def __steps_transform(self, X):
         for step in self.steps:
-            X = step.transform(X)
+            try:
+                X = step.transform(X)
+            except NotFittedError:
+                logger.warning('Step {} not fitted.'.format(step))
         return X
 
     def has_validation(self):
