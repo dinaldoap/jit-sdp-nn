@@ -35,6 +35,9 @@ def create_pipeline(config):
             model=model, normal_proportion=config['normal_proportion'])
     else:
         classifier = ScoreFixed(model=model)
+    if config['orb']:
+        classifier = ORB(classifier=classifier,
+                         normal_proportion=config['normal_proportion'])
     return classifier
 
 
@@ -51,7 +54,7 @@ def create_estimator(config):
 
 class Model(metaclass=ABCMeta):
     @abstractmethod
-    def train(self, df_train):
+    def train(self, df_train, df_output):
         pass
 
     @abstractmethod
@@ -69,8 +72,8 @@ class Threshold(Classifier):
     def __init__(self, model):
         self.model = model
 
-    def train(self, df_train):
-        self.model.train(df_train)
+    def train(self, df_train, df_output):
+        self.model.train(df_train, df_output)
 
     def predict_proba(self, df_features):
         return self.model.predict_proba(df_features)
@@ -120,6 +123,21 @@ def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
     return threshold
 
 
+class ORB(Classifier):
+    def __init__(self, classifier, normal_proportion):
+        self.classifier = classifier
+        self.normal_proportion = normal_proportion
+
+    def train(self, df_train, df_output):
+        self.classifier.train(df_train, df_output)
+
+    def predict(self, df_features, df_threshold):
+        return self.classifier.predict(df_features, df_threshold)
+
+    def predict_proba(self, df_features):
+        return self.classifier.predict_proba(df_features)
+
+
 class Estimator(Model):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'steps.cpt'
@@ -138,7 +156,7 @@ class Estimator(Model):
         self.fading_factor = fading_factor
         self.val_size = val_size
 
-    def train(self, df_train):
+    def train(self, df_train, df_output):
         if len(df_train) == 0:
             logger.warning('No labeled sample to train.')
             return
@@ -276,9 +294,9 @@ class Ensemble(Model):
         super().__init__()
         self.estimators = estimators
 
-    def train(self, df_train):
+    def train(self, df_train, df_output):
         for estimator in self.estimators:
-            estimator.train(df_train)
+            estimator.train(df_train, df_output)
 
     def predict_proba(self, df_features):
         probability = df_features

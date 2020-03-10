@@ -16,7 +16,7 @@ from pytest import approx
 
 def create_pipeline():
     pipeline = evaluation.create_pipeline(
-        {'epochs': 100, 'normal_proportion': .5, 'estimators': 1, 'threshold': 0})
+        {'epochs': 100, 'normal_proportion': .5, 'estimators': 1, 'threshold': 0, 'orb': 0})
     return pipeline
 
 
@@ -35,7 +35,7 @@ def create_data():
 def test_train_predict():
     pipeline = create_pipeline()
     data = create_data()
-    pipeline.train(data)
+    pipeline.train(data, None)
     target_prediction = pipeline.predict(data, data)
 
     # metrics

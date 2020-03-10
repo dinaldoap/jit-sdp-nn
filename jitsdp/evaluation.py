@@ -29,7 +29,7 @@ def run(config):
     pipeline = create_pipeline(config)
     if config['incremental']:
         pipeline.save()
-    target_prediction = []
+    target_prediction = None
     for current in range(start, end, fold_size):
         df_train = df_prequential[:current].copy()
         df_test = df_prequential[current:min(current + fold_size, end)].copy()
@@ -45,20 +45,26 @@ def run(config):
         else:
             df_threshold = None
 
+        if config['orb'] and target_prediction is not None:
+            output_size = min(len(target_prediction), 100)
+            df_output = target_prediction[-output_size:]
+        else:
+            df_output = None
+
         df_train = df_train.dropna(subset=['soft_target'])
         df_train['target'] = df_train['soft_target'] > .5
         # train and predict
         pipeline = create_pipeline(config)
         if config['incremental']:
             pipeline.load()
-        pipeline.train(df_train)
+        pipeline.train(df_train, df_output)
         if config['incremental']:
             pipeline.save()
         target_prediction_test = pipeline.predict(
             df_test, df_threshold)
-        target_prediction.append(target_prediction_test)
+        target_prediction = pd.concat(
+            [target_prediction, target_prediction_test])
 
-    target_prediction = pd.concat(target_prediction, sort=False)
     target_prediction = target_prediction.reset_index(drop=True)
     results = met.prequential_metrics(target_prediction, .99)
     save_results(results=results, dir=DIR / config['dataset'])
