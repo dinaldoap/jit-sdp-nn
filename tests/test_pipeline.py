@@ -16,7 +16,7 @@ from pytest import approx
 
 def create_pipeline():
     pipeline = evaluation.create_pipeline(
-        {'epochs': 100, 'normal_proportion': .5, 'estimators': 1})
+        {'epochs': 100, 'normal_proportion': .5, 'estimators': 1, 'threshold': 0})
     return pipeline
 
 

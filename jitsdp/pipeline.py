@@ -29,7 +29,13 @@ def set_seed(config):
 def create_pipeline(config):
     estimators = [create_estimator(config)
                   for i in range(config['estimators'])]
-    return ScoreFixed(model=Ensemble(estimators=estimators))
+    model = Ensemble(estimators=estimators)
+    if config['threshold']:
+        classifier = RateFixed(
+            model=model, normal_proportion=config['normal_proportion'])
+    else:
+        classifier = ScoreFixed(model=model)
+    return classifier
 
 
 def create_estimator(config):
