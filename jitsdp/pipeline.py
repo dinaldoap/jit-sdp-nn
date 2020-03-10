@@ -61,7 +61,7 @@ class Model(metaclass=ABCMeta):
 
 class Classifier(Model):
     @abstractmethod
-    def predict(self, features, unlabeled=None):
+    def predict(self, features, unlabeled):
         pass
 
 
@@ -81,7 +81,7 @@ class ScoreFixed(Threshold):
         super().__init__(model=model)
         self.score = score
 
-    def predict(self, features, unlabeled=None):
+    def predict(self, features, unlabeled):
         prediction = self.predict_proba(features=features)
         prediction['prediction'] = (
             prediction['probability'] >= self.score).round().astype('int')
@@ -93,7 +93,7 @@ class RateFixed(Threshold):
         super().__init__(model=model)
         self.normal_proportion = normal_proportion
 
-    def predict(self, features, unlabeled=None):
+    def predict(self, features, unlabeled):
         val_probabilities = self.predict_proba(
             unlabeled)['probability'] if unlabeled is not None else None
         prediction = self.predict_proba(features=features)
