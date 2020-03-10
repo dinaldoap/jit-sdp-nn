@@ -51,12 +51,3 @@ class Classifier(nn.Module):
             self.epoch = checkpoint['epoch']
             self.val_loss = checkpoint['val_loss']
             self.load_state_dict(checkpoint['state_dict'])
-
-
-if __name__ == '__main__':
-    classifier = Classifier(
-        input_size=1, hidden_size=1, drop_prob=0.5)
-    print(classifier)
-    classifier.save()
-    classifier.load()
-    print(classifier)
