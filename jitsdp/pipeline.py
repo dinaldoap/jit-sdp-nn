@@ -126,9 +126,23 @@ def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
 class ORB(Classifier):
     def __init__(self, classifier, normal_proportion):
         self.classifier = classifier
-        self.normal_proportion = normal_proportion
+        self.th = 1 - normal_proportion
+        self.m = 1.5
+        self.l0 = 10
+        self.l1 = 12
+        self.ma = .4
 
     def train(self, df_train, df_output):
+        if df_output is not None:
+            self.ma = df_output['prediction'].mean()
+        obf0 = 1
+        obf1 = 1
+        if self.ma > self.th:
+            obf0 = ((self.m ** self.ma - self.m ** self.th) *
+                    self.l0) / (self.m - self.m ** self.th) + 1
+        elif self.ma < self.th:
+            obf1 = (((self.m ** (self.th - self.ma) - 1) * self.l1) /
+                    (self.m ** self.th - 1)) + 1
         self.classifier.train(df_train, df_output)
 
     def predict(self, df_features, df_threshold):
