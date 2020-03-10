@@ -29,7 +29,7 @@ def set_seed(config):
 def create_pipeline(config):
     estimators = [create_estimator(config)
                   for i in range(config['estimators'])]
-    return RateFixed(model=Ensemble(estimators=estimators), normal_proportion=config['normal_proportion'])
+    return ScoreFixed(model=Ensemble(estimators=estimators))
 
 
 def create_estimator(config):
@@ -68,6 +68,18 @@ class Threshold(Classifier):
 
     def predict_proba(self, features):
         return self.model.predict_proba(features)
+
+
+class ScoreFixed(Threshold):
+    def __init__(self, model, score=.5):
+        super().__init__(model=model)
+        self.score = score
+
+    def predict(self, features, unlabeled=None):
+        prediction = self.predict_proba(features=features)
+        prediction['prediction'] = (
+            prediction['probability'] >= self.score).round().astype('int')
+        return prediction
 
 
 class RateFixed(Threshold):
