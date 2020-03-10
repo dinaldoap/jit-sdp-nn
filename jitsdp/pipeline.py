@@ -1,5 +1,5 @@
 from jitsdp import metrics
-from jitsdp.classifier import Classifier
+from jitsdp.mlp import MLP
 from jitsdp.data import FEATURES
 from jitsdp.utils import mkdir
 
@@ -35,8 +35,8 @@ def create_pipeline(config):
 def create_estimator(config):
     scaler = StandardScaler()
     criterion = nn.BCELoss()
-    classifier = Classifier(input_size=len(FEATURES),
-                            hidden_size=len(FEATURES) // 2, drop_prob=0.2)
+    classifier = MLP(input_size=len(FEATURES),
+                     hidden_size=len(FEATURES) // 2, drop_prob=0.2)
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return Estimator(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                      features=FEATURES, target='target', soft_target='soft_target',

@@ -5,12 +5,12 @@ from torch import nn
 import pathlib
 
 
-class Classifier(nn.Module):
+class MLP(nn.Module):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'classifier.cpt'
 
     def __init__(self, input_size, hidden_size, drop_prob, epoch=None, val_loss=None):
-        super(Classifier, self).__init__()
+        super(MLP, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.drop_prob = drop_prob
@@ -30,7 +30,7 @@ class Classifier(nn.Module):
         return x
 
     def save(self):
-        mkdir(Classifier.DIR)
+        mkdir(MLP.DIR)
         checkpoint = {
             'input_size': self.input_size,
             'hidden_size': self.hidden_size,
@@ -39,11 +39,11 @@ class Classifier(nn.Module):
             'epoch': self.epoch,
             'state_dict': self.state_dict()
         }
-        with open(Classifier.FILENAME, 'wb') as f:
+        with open(MLP.FILENAME, 'wb') as f:
             torch.save(checkpoint, f)
 
     def load(self):
-        with open(Classifier.FILENAME, 'rb') as f:
+        with open(MLP.FILENAME, 'rb') as f:
             checkpoint = torch.load(f)
             self.input_size = checkpoint['input_size']
             self.hidden_size = checkpoint['hidden_size']
