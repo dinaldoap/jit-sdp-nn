@@ -145,7 +145,9 @@ class ORB(Classifier):
         elif self.ma < self.th:
             obf1 = (((self.m ** (self.th - self.ma) - 1) * self.l1) /
                     (self.m ** self.th - 1)) + 1
-        self.classifier.train(df_train, **kwargs)
+        new_kwargs = dict(kwargs)
+        new_kwargs['weights'] = [obf0, obf1]
+        self.classifier.train(df_train, **new_kwargs)
 
     def predict(self, df_features, **kwargs):
         return self.classifier.predict(df_features, **kwargs)
@@ -189,8 +191,9 @@ class Estimator(Model):
 
         X_train = self.__steps_fit_transform(X_train, y_train)
 
+        weights = kwargs.pop('weights', [1, 1])
         sampled_train_dataloader = self.__dataloader(
-            X_train, soft_y_train, batch_size=self.batch_size, sampler=self.__sampler(y_train))
+            X_train, soft_y_train, batch_size=self.batch_size, sampler=self.__sampler(y_train, weights))
         train_dataloader = self.__dataloader(X_train, y_train)
 
         if torch.cuda.is_available():
@@ -257,23 +260,23 @@ class Estimator(Model):
         dataset = data.TensorDataset(X, y)
         return data.DataLoader(dataset, batch_size=batch_size, sampler=sampler)
 
-    def __sampler(self, y):
+    def __sampler(self, y, weights):
         normal_indices = np.flatnonzero(y == 0)
         bug_indices = np.flatnonzero(y == 1)
         age_weights = np.zeros(len(y))
         # normal commit ages
         age_weights[normal_indices] = self.__fading_weights(
-            size=len(normal_indices), fading_factor=self.fading_factor)
+            size=len(normal_indices), fading_factor=self.fading_factor, total=weights[0])
         # bug commit doesn't age
         age_weights[bug_indices] = self.__fading_weights(
-            size=len(bug_indices), fading_factor=self.fading_factor)
+            size=len(bug_indices), fading_factor=self.fading_factor, total=weights[1])
         return data.WeightedRandomSampler(weights=age_weights, num_samples=len(y), replacement=True)
 
-    def __fading_weights(self, size, fading_factor):
+    def __fading_weights(self, size, fading_factor, total):
         fading_weights = reversed(range(size))
         fading_weights = [fading_factor**x for x in fading_weights]
         fading_weights = np.array(fading_weights)
-        return fading_weights / np.sum(fading_weights)
+        return (total * fading_weights) / np.sum(fading_weights)
 
     def __steps_fit_transform(self, X, y):
         for step in self.steps:
