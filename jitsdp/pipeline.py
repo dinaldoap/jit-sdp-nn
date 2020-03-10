@@ -29,7 +29,7 @@ def set_seed(config):
 def create_pipeline(config):
     estimators = [create_estimator(config)
                   for i in range(config['estimators'])]
-    return RateFixedThreshold(model=Ensemble(estimators=estimators), normal_proportion=config['normal_proportion'])
+    return RateFixed(model=Ensemble(estimators=estimators), normal_proportion=config['normal_proportion'])
 
 
 def create_estimator(config):
@@ -54,21 +54,23 @@ class Model(metaclass=ABCMeta):
 
 
 class Classifier(Model):
+    @abstractmethod
+    def predict(self, features, unlabeled=None):
+        pass
+
+
+class Threshold(Classifier):
     def __init__(self, model):
         self.model = model
 
     def train(self, labeled):
         self.model.train(labeled)
 
-    @abstractmethod
-    def predict(self, features, unlabeled=None):
-        pass
-
     def predict_proba(self, features):
         return self.model.predict_proba(features)
 
 
-class RateFixedThreshold(Classifier):
+class RateFixed(Threshold):
     def __init__(self, model, normal_proportion):
         super().__init__(model=model)
         self.normal_proportion = normal_proportion
