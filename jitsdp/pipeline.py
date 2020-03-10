@@ -29,7 +29,7 @@ def set_seed(config):
 def create_pipeline(config):
     estimators = [create_estimator(config)
                   for i in range(config['estimators'])]
-    return Ensemble(estimators=estimators, normal_proportion=config['normal_proportion'])
+    return RateFixedThreshold(model=Ensemble(estimators=estimators), normal_proportion=config['normal_proportion'])
 
 
 def create_estimator(config):
@@ -40,16 +40,38 @@ def create_estimator(config):
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return Estimator(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                      features=FEATURES, target='target', soft_target='soft_target',
-                     max_epochs=config['epochs'], batch_size=512, fading_factor=1, normal_proportion=config['normal_proportion'])
+                     max_epochs=config['epochs'], batch_size=512, fading_factor=1)
 
 
-class Pipeline(metaclass=ABCMeta):
-    def __init__(self, normal_proportion):
-        self.normal_proportion = normal_proportion
-
+class Model(metaclass=ABCMeta):
     @abstractmethod
     def train(self, labeled):
         pass
+
+    @abstractmethod
+    def predict_proba(self, features):
+        pass
+
+
+class Classifier2(Model):
+    def __init__(self, model):
+        self.model = model
+
+    def train(self, labeled):
+        self.model.train(labeled)
+
+    @abstractmethod
+    def predict(self, features, unlabeled=None):
+        pass
+
+    def predict_proba(self, features):
+        return self.model.predict_proba(features)
+
+
+class RateFixedThreshold(Classifier2):
+    def __init__(self, model, normal_proportion):
+        super().__init__(model=model)
+        self.normal_proportion = normal_proportion
 
     def predict(self, features, unlabeled=None):
         val_probabilities = self.predict_proba(
@@ -61,10 +83,6 @@ class Pipeline(metaclass=ABCMeta):
         prediction['prediction'] = (
             prediction['probability'] >= threshold).round().astype('int')
         return prediction
-
-    @abstractmethod
-    def predict_proba(self, features):
-        pass
 
 
 def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
@@ -82,12 +100,12 @@ def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
     return threshold
 
 
-class Estimator(Pipeline):
+class Estimator(Model):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'steps.cpt'
 
-    def __init__(self, steps, classifier, optimizer, criterion, features, target, soft_target, max_epochs, batch_size, fading_factor, normal_proportion, val_size=0.0):
-        super().__init__(normal_proportion=normal_proportion)
+    def __init__(self, steps, classifier, optimizer, criterion, features, target, soft_target, max_epochs, batch_size, fading_factor, val_size=0.0):
+        super().__init__()
         self.steps = steps
         self.classifier = classifier
         self.optimizer = optimizer
@@ -233,9 +251,9 @@ class Estimator(Pipeline):
         self.classifier.save()
 
 
-class Ensemble(Pipeline):
-    def __init__(self, estimators, normal_proportion):
-        super().__init__(normal_proportion=normal_proportion)
+class Ensemble(Model):
+    def __init__(self, estimators):
+        super().__init__()
         self.estimators = estimators
 
     def train(self, labeled):
