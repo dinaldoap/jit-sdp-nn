@@ -51,17 +51,17 @@ def create_estimator(config):
 
 class Model(metaclass=ABCMeta):
     @abstractmethod
-    def train(self, labeled):
+    def train(self, df_train):
         pass
 
     @abstractmethod
-    def predict_proba(self, features):
+    def predict_proba(self, df_features):
         pass
 
 
 class Classifier(Model):
     @abstractmethod
-    def predict(self, features, unlabeled):
+    def predict(self, df_features, df_threshold):
         pass
 
 
@@ -69,11 +69,11 @@ class Threshold(Classifier):
     def __init__(self, model):
         self.model = model
 
-    def train(self, labeled):
-        self.model.train(labeled)
+    def train(self, df_train):
+        self.model.train(df_train)
 
-    def predict_proba(self, features):
-        return self.model.predict_proba(features)
+    def predict_proba(self, df_features):
+        return self.model.predict_proba(df_features)
 
 
 class ScoreFixed(Threshold):
@@ -81,8 +81,8 @@ class ScoreFixed(Threshold):
         super().__init__(model=model)
         self.score = score
 
-    def predict(self, features, unlabeled):
-        prediction = self.predict_proba(features=features)
+    def predict(self, df_features, df_threshold):
+        prediction = self.predict_proba(df_features=df_features)
         prediction['prediction'] = (
             prediction['probability'] >= self.score).round().astype('int')
         return prediction
@@ -93,10 +93,10 @@ class RateFixed(Threshold):
         super().__init__(model=model)
         self.normal_proportion = normal_proportion
 
-    def predict(self, features, unlabeled):
+    def predict(self, df_features, df_threshold):
         val_probabilities = self.predict_proba(
-            unlabeled)['probability'] if unlabeled is not None else None
-        prediction = self.predict_proba(features=features)
+            df_threshold)['probability'] if df_threshold is not None else None
+        prediction = self.predict_proba(df_features=df_features)
         threshold = _tune_threshold(val_probabilities=val_probabilities,
                                     test_probabilities=prediction['probability'], normal_proportion=self.normal_proportion)
         threshold = threshold.values
@@ -138,14 +138,14 @@ class Estimator(Model):
         self.fading_factor = fading_factor
         self.val_size = val_size
 
-    def train(self, labeled):
-        if len(labeled) == 0:
+    def train(self, df_train):
+        if len(df_train) == 0:
             logger.warning('No labeled sample to train.')
             return
 
-        X = labeled[self.features].values
-        y = labeled[self.target].values
-        soft_y = labeled[self.soft_target].values
+        X = df_train[self.features].values
+        y = df_train[self.target].values
+        soft_y = df_train[self.soft_target].values
         if self.has_validation():
             X_train, X_val, y_train, y_val, soft_y_train, soft_y_val = train_test_split(
                 X, y, soft_y, test_size=self.val_size, shuffle=False)
@@ -192,8 +192,8 @@ class Estimator(Model):
             logger.debug(
                 'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
 
-    def predict_proba(self, features):
-        X = features[self.features].values
+    def predict_proba(self, df_features):
+        X = df_features[self.features].values
         X = self.__steps_transform(X)
         y = np.zeros(len(X))
         dataloader = self.__dataloader(X, y)
@@ -211,7 +211,7 @@ class Estimator(Model):
                 outputs = self.classifier(inputs.float())
                 probabilities.append(outputs.detach().cpu().numpy())
 
-        probability = features.copy()
+        probability = df_features.copy()
         probability['probability'] = np.concatenate(probabilities)
         return probability
 
@@ -276,12 +276,12 @@ class Ensemble(Model):
         super().__init__()
         self.estimators = estimators
 
-    def train(self, labeled):
+    def train(self, df_train):
         for estimator in self.estimators:
-            estimator.train(labeled)
+            estimator.train(df_train)
 
-    def predict_proba(self, features):
-        probability = features
+    def predict_proba(self, df_features):
+        probability = df_features
         for index, estimator in enumerate(self.estimators):
             probability = estimator.predict_proba(probability)
             probability = probability.rename({
