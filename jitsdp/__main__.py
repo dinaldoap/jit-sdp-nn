@@ -34,7 +34,7 @@ def main():
     parser.add_argument('--estimators',   type=int,
                         help='Number of estimators in the ensemble (default: 1).',    default=1)
     parser.add_argument('--orb',   type=int,
-                        help='Whether must use oversampling rate boosting to balance output proportions (default: 1).', default=1, choices=[0, 1])
+                        help='Whether must use oversampling rate boosting to balance output proportions (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--threshold',   type=int,
                         help='Whether must tune threshold to balance output proportions (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--uncertainty',   type=int,
