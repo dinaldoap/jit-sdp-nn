@@ -54,7 +54,7 @@ def create_estimator(config):
 
 class Model(metaclass=ABCMeta):
     @abstractmethod
-    def train(self, df_train, df_output):
+    def train(self, df_train, **kwargs):
         pass
 
     @abstractmethod
@@ -64,7 +64,7 @@ class Model(metaclass=ABCMeta):
 
 class Classifier(Model):
     @abstractmethod
-    def predict(self, df_features, df_threshold):
+    def predict(self, df_features, **kwargs):
         pass
 
 
@@ -72,8 +72,8 @@ class Threshold(Classifier):
     def __init__(self, model):
         self.model = model
 
-    def train(self, df_train, df_output):
-        self.model.train(df_train, df_output)
+    def train(self, df_train, **kwargs):
+        self.model.train(df_train, **kwargs)
 
     def predict_proba(self, df_features):
         return self.model.predict_proba(df_features)
@@ -84,7 +84,7 @@ class ScoreFixed(Threshold):
         super().__init__(model=model)
         self.score = score
 
-    def predict(self, df_features, df_threshold):
+    def predict(self, df_features, **kwargs):
         prediction = self.predict_proba(df_features=df_features)
         prediction['prediction'] = (
             prediction['probability'] >= self.score).round().astype('int')
@@ -96,7 +96,8 @@ class RateFixed(Threshold):
         super().__init__(model=model)
         self.normal_proportion = normal_proportion
 
-    def predict(self, df_features, df_threshold):
+    def predict(self, df_features, **kwargs):
+        df_threshold = kwargs.pop('df_threshold', None)
         val_probabilities = self.predict_proba(
             df_threshold)['probability'] if df_threshold is not None else None
         prediction = self.predict_proba(df_features=df_features)
@@ -132,7 +133,8 @@ class ORB(Classifier):
         self.l1 = 12
         self.ma = .4
 
-    def train(self, df_train, df_output):
+    def train(self, df_train, **kwargs):
+        df_output = kwargs.pop('df_output', None)
         if df_output is not None:
             self.ma = df_output['prediction'].mean()
         obf0 = 1
@@ -143,10 +145,10 @@ class ORB(Classifier):
         elif self.ma < self.th:
             obf1 = (((self.m ** (self.th - self.ma) - 1) * self.l1) /
                     (self.m ** self.th - 1)) + 1
-        self.classifier.train(df_train, df_output)
+        self.classifier.train(df_train, **kwargs)
 
-    def predict(self, df_features, df_threshold):
-        return self.classifier.predict(df_features, df_threshold)
+    def predict(self, df_features, **kwargs):
+        return self.classifier.predict(df_features, **kwargs)
 
     def predict_proba(self, df_features):
         return self.classifier.predict_proba(df_features)
@@ -170,7 +172,7 @@ class Estimator(Model):
         self.fading_factor = fading_factor
         self.val_size = val_size
 
-    def train(self, df_train, df_output):
+    def train(self, df_train, **kwargs):
         if len(df_train) == 0:
             logger.warning('No labeled sample to train.')
             return
@@ -308,9 +310,9 @@ class Ensemble(Model):
         super().__init__()
         self.estimators = estimators
 
-    def train(self, df_train, df_output):
+    def train(self, df_train, **kwargs):
         for estimator in self.estimators:
-            estimator.train(df_train, df_output)
+            estimator.train(df_train, **kwargs)
 
     def predict_proba(self, df_features):
         probability = df_features

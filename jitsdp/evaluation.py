@@ -57,11 +57,11 @@ def run(config):
         pipeline = create_pipeline(config)
         if config['incremental']:
             pipeline.load()
-        pipeline.train(df_train, df_output)
+        pipeline.train(df_train, df_output=df_output)
         if config['incremental']:
             pipeline.save()
         target_prediction_test = pipeline.predict(
-            df_test, df_threshold)
+            df_test, df_threshold=df_threshold)
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
 

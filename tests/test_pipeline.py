@@ -35,8 +35,8 @@ def create_data():
 def test_train_predict():
     pipeline = create_pipeline()
     data = create_data()
-    pipeline.train(data, None)
-    target_prediction = pipeline.predict(data, data)
+    pipeline.train(data)
+    target_prediction = pipeline.predict(data)
 
     # metrics
     expected_gmean = 1.
