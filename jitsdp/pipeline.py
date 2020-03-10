@@ -53,7 +53,7 @@ class Model(metaclass=ABCMeta):
         pass
 
 
-class Classifier2(Model):
+class Classifier(Model):
     def __init__(self, model):
         self.model = model
 
@@ -68,7 +68,7 @@ class Classifier2(Model):
         return self.model.predict_proba(features)
 
 
-class RateFixedThreshold(Classifier2):
+class RateFixedThreshold(Classifier):
     def __init__(self, model, normal_proportion):
         super().__init__(model=model)
         self.normal_proportion = normal_proportion
