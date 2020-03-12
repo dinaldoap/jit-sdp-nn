@@ -38,10 +38,12 @@ def run(config):
         df_train['soft_target'] = df_train.apply(lambda row: 1 if row.timestamp_fix <= train_timestamp
                                                  else 0 if row.timestamp <= train_timestamp - verification_latency
                                                  else __verification_latency_label(train_timestamp, row.timestamp, verification_latency, config), axis='columns')
-        if config['threshold']:
+        if config['threshold'] == 1:
             threshold_sample_size = min(int(len(df_train) * .1), 100)
             df_threshold = df_train[-threshold_sample_size:]
             df_train = df_train[:-threshold_sample_size]
+        elif config['threshold'] == 2:
+            df_threshold = df_train
         else:
             df_threshold = None
 

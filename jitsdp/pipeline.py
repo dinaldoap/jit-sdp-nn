@@ -30,9 +30,12 @@ def create_pipeline(config):
     estimators = [create_estimator(config)
                   for i in range(config['estimators'])]
     model = Ensemble(estimators=estimators)
-    if config['threshold']:
+    if config['threshold'] == 1:
         classifier = RateFixed(
             model=model, normal_proportion=config['normal_proportion'])
+    elif config['threshold'] == 2:
+        classifier = RateFixedTrain(
+            model=model)
     else:
         classifier = ScoreFixed(model=model)
     if config['orb']:
@@ -69,6 +72,7 @@ class Model(metaclass=ABCMeta):
     def load(self):
         pass
 
+
 class Classifier(Model):
     @abstractmethod
     def predict(self, df_features, **kwargs):
@@ -87,9 +91,10 @@ class Threshold(Classifier):
 
     def save(self):
         self.model.save()
-    
+
     def load(self):
         self.model.load()
+
 
 class ScoreFixed(Threshold):
     def __init__(self, model, score=.5):
@@ -136,6 +141,22 @@ def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
     return threshold
 
 
+class RateFixedTrain(Threshold):
+    def __init__(self, model):
+        super().__init__(model=model)
+
+    def predict(self, df_features, **kwargs):
+        df_threshold = kwargs.pop('df_threshold', None)
+        normal_proportion = 1 - df_threshold['soft_target'].mean()
+        normal_proportion = (normal_proportion + .5) / 2
+        probabilities = self.predict_proba(df_threshold)['probability']
+        threshold = probabilities.quantile(q=normal_proportion)
+        prediction = self.predict_proba(df_features=df_features)
+        prediction['prediction'] = (
+            prediction['probability'] >= threshold).round().astype('int')
+        return prediction
+
+
 class ORB(Classifier):
     def __init__(self, classifier, normal_proportion):
         self.classifier = classifier
@@ -169,7 +190,7 @@ class ORB(Classifier):
 
     def save(self):
         self.classifier.save()
-    
+
     def load(self):
         self.classifier.load()
 
