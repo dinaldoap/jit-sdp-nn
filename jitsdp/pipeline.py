@@ -61,6 +61,13 @@ class Model(metaclass=ABCMeta):
     def predict_proba(self, df_features):
         pass
 
+    @abstractmethod
+    def save(self):
+        pass
+
+    @abstractmethod
+    def load(self):
+        pass
 
 class Classifier(Model):
     @abstractmethod
@@ -78,6 +85,11 @@ class Threshold(Classifier):
     def predict_proba(self, df_features):
         return self.model.predict_proba(df_features)
 
+    def save(self):
+        self.model.save()
+    
+    def load(self):
+        self.model.load()
 
 class ScoreFixed(Threshold):
     def __init__(self, model, score=.5):
@@ -154,6 +166,12 @@ class ORB(Classifier):
 
     def predict_proba(self, df_features):
         return self.classifier.predict_proba(df_features)
+
+    def save(self):
+        self.classifier.save()
+    
+    def load(self):
+        self.classifier.load()
 
 
 class Estimator(Model):
