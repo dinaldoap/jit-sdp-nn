@@ -146,12 +146,16 @@ class RateFixedTrain(Threshold):
         super().__init__(model=model)
 
     def predict(self, df_features, **kwargs):
-        df_threshold = kwargs.pop('df_threshold', None)
-        normal_proportion = 1 - df_threshold['soft_target'].mean()
+        df_proportion = kwargs.pop('df_proportion', None)
+        normal_proportion = 1 - df_proportion['soft_target'].mean()
         normal_proportion = (normal_proportion + .5) / 2
-        probabilities = self.predict_proba(df_threshold)['probability']
-        threshold = probabilities.quantile(q=normal_proportion)
+        df_threshold = kwargs.pop('df_threshold', None)
+        threshold_probabilities = self.predict_proba(df_threshold)[
+            'probability']
         prediction = self.predict_proba(df_features=df_features)
+        threshold = _tune_threshold(val_probabilities=threshold_probabilities,
+                                    test_probabilities=prediction['probability'], normal_proportion=normal_proportion)
+        threshold = threshold.values
         prediction['prediction'] = (
             prediction['probability'] >= threshold).round().astype('int')
         return prediction
