@@ -27,7 +27,8 @@ def test_plot_proportions():
     }
     data = pd.DataFrame({
         'timestep': [0, 1, 2],
-        'p0':    [1., .5, 1.],
+        't1':    [1., .5, 1.],
+        's1':    [.5, 1., .5],
         'p1':    [0., .5, 0.],
     })
     plot.plot_proportions(data=data, config=config, dir=DIR)
