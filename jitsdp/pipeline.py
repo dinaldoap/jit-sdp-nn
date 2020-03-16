@@ -168,23 +168,26 @@ class ORB(Classifier):
         self.m = 1.5
         self.l0 = 10
         self.l1 = 12
-        self.ma = .4
 
     def train(self, df_train, **kwargs):
-        df_output = kwargs.pop('df_output', None)
-        if df_output is not None:
-            self.ma = df_output['prediction'].mean()
-        obf0 = 1
-        obf1 = 1
-        if self.ma > self.th:
-            obf0 = ((self.m ** self.ma - self.m ** self.th) *
-                    self.l0) / (self.m - self.m ** self.th) + 1
-        elif self.ma < self.th:
-            obf1 = (((self.m ** (self.th - self.ma) - 1) * self.l1) /
-                    (self.m ** self.th - 1)) + 1
-        new_kwargs = dict(kwargs)
-        new_kwargs['weights'] = [obf0, obf1]
-        self.classifier.train(df_train, **new_kwargs)
+        df_ma = kwargs.pop('df_ma', None)
+        ma = .4
+        max_epochs = 50
+        for epoch in range(max_epochs):
+            obf0 = 1
+            obf1 = 1
+            if ma > self.th:
+                obf0 = ((self.m ** ma - self.m ** self.th) *
+                        self.l0) / (self.m - self.m ** self.th) + 1
+            elif ma < self.th:
+                obf1 = (((self.m ** (self.th - ma) - 1) * self.l1) /
+                        (self.m ** self.th - 1)) + 1
+            new_kwargs = dict(kwargs)
+            new_kwargs['weights'] = [obf0, obf1]
+            new_kwargs['max_epochs'] = 1
+            self.classifier.train(df_train, **new_kwargs)
+            df_output = self.classifier.predict(df_ma)
+            ma = df_output['prediction'].mean()
 
     def predict(self, df_features, **kwargs):
         return self.classifier.predict(df_features, **kwargs)
@@ -242,6 +245,7 @@ class Estimator(Model):
         if torch.cuda.is_available():
             self.classifier = self.classifier.cuda()
 
+        self.max_epochs = kwargs.pop('max_epochs', self.max_epochs)
         train_loss = 0
         for epoch in range(self.max_epochs):
             self.classifier.train()
