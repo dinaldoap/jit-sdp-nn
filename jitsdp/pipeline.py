@@ -28,7 +28,7 @@ def set_seed(config):
 
 def create_pipeline(config):
     models = [create_model(config)
-              for i in range(config['estimators'])]
+              for i in range(config['ensemble_size'])]
     model = Ensemble(models=models)
     if config['threshold'] == 1:
         classifier = RateFixed(
