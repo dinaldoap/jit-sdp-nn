@@ -27,9 +27,9 @@ def set_seed(config):
 
 
 def create_pipeline(config):
-    estimators = [create_estimator(config)
-                  for i in range(config['estimators'])]
-    model = Ensemble(estimators=estimators)
+    models = [create_model(config)
+              for i in range(config['estimators'])]
+    model = Ensemble(models=models)
     if config['threshold'] == 1:
         classifier = RateFixed(
             model=model, normal_proportion=config['normal_proportion'])
@@ -44,7 +44,7 @@ def create_pipeline(config):
     return classifier
 
 
-def create_estimator(config):
+def create_model(config):
     scaler = StandardScaler()
     criterion = nn.BCELoss()
     classifier = MLP(input_size=len(FEATURES),
@@ -356,18 +356,18 @@ class PyTorch(Model):
 
 
 class Ensemble(Model):
-    def __init__(self, estimators):
+    def __init__(self, models):
         super().__init__()
-        self.estimators = estimators
+        self.models = models
 
     def train(self, df_train, **kwargs):
-        for estimator in self.estimators:
-            estimator.train(df_train, **kwargs)
+        for model in self.models:
+            model.train(df_train, **kwargs)
 
     def predict_proba(self, df_features):
         probability = df_features
-        for index, estimator in enumerate(self.estimators):
-            probability = estimator.predict_proba(probability)
+        for index, model in enumerate(self.models):
+            probability = model.predict_proba(probability)
             probability = probability.rename({
                 'probability': 'probability{}'.format(index),
             },
@@ -375,12 +375,12 @@ class Ensemble(Model):
         return _combine(probability)
 
     def save(self):
-        for estimator in self.estimators:
-            estimator.save()
+        for model in self.models:
+            model.save()
 
     def load(self):
-        for estimator in self.estimators:
-            estimator.load()
+        for model in self.models:
+            model.load()
 
 
 def _combine(prediction):
