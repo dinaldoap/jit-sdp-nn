@@ -50,9 +50,9 @@ def create_estimator(config):
     classifier = MLP(input_size=len(FEATURES),
                      hidden_size=len(FEATURES) // 2, drop_prob=0.2)
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
-    return Estimator(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
-                     features=FEATURES, target='target', soft_target='soft_target',
-                     max_epochs=config['epochs'], batch_size=512, fading_factor=1)
+    return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
+                   features=FEATURES, target='target', soft_target='soft_target',
+                   max_epochs=config['epochs'], batch_size=512, fading_factor=1)
 
 
 class Model(metaclass=ABCMeta):
@@ -202,7 +202,7 @@ class ORB(Classifier):
         self.classifier.load()
 
 
-class Estimator(Model):
+class PyTorch(Model):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'steps.cpt'
 
@@ -346,12 +346,12 @@ class Estimator(Model):
         return self.classifier.epoch
 
     def load(self):
-        self.steps = joblib.load(Estimator.FILENAME)
+        self.steps = joblib.load(PyTorch.FILENAME)
         self.classifier.load()
 
     def save(self):
-        mkdir(Estimator.DIR)
-        joblib.dump(self.steps, Estimator.FILENAME)
+        mkdir(PyTorch.DIR)
+        joblib.dump(self.steps, PyTorch.FILENAME)
         self.classifier.save()
 
 
