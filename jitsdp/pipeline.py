@@ -13,6 +13,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
+from sklearn.linear_model import SGDClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.exceptions import NotFittedError
@@ -27,7 +28,7 @@ def set_seed(config):
 
 
 def create_pipeline(config):
-    models = [create_model(config)
+    models = [create_scikit_model(config)
               for i in range(config['ensemble_size'])]
     model = Ensemble(models=models)
     if config['threshold'] == 1:
@@ -53,6 +54,14 @@ def create_model(config):
     return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                    features=FEATURES, target='target', soft_target='soft_target',
                    max_epochs=config['epochs'], batch_size=512, fading_factor=1)
+
+
+def create_scikit_model(config):
+    scaler = StandardScaler()
+    classifier = SGDClassifier(loss='log')
+    return Scikit(steps=[scaler], classifier=classifier,
+                  features=FEATURES, target='target', soft_target='soft_target',
+                  max_epochs=config['epochs'], batch_size=512, fading_factor=1)
 
 
 class Model(metaclass=ABCMeta):
@@ -353,6 +362,135 @@ class PyTorch(Model):
         mkdir(PyTorch.DIR)
         joblib.dump(self.steps, PyTorch.FILENAME)
         self.classifier.save()
+
+
+class Scikit(Model):
+
+    def __init__(self, steps, classifier, features, target, soft_target, max_epochs, batch_size, fading_factor, val_size=0.0):
+        super().__init__()
+        self.steps = steps
+        self.classifier = classifier
+        self.features = features
+        self.target = target
+        self.soft_target = soft_target
+        self.max_epochs = max_epochs
+        self.batch_size = batch_size
+        self.fading_factor = fading_factor
+        self.val_size = val_size
+
+    def train(self, df_train, **kwargs):
+        if len(df_train) == 0:
+            logger.warning('No labeled sample to train.')
+            return
+
+        X = df_train[self.features].values
+        y = df_train[self.target].values
+        soft_y = df_train[self.soft_target].values
+        if self.has_validation():
+            X_train, X_val, y_train, y_val, soft_y_train, soft_y_val = train_test_split(
+                X, y, soft_y, test_size=self.val_size, shuffle=False)
+            val_dataloader = self.__dataloader(X_val, y_val)
+        else:
+            X_train, y_train, soft_y_train = X, y, soft_y
+
+        X_train = self.__steps_fit_transform(X_train, y_train)
+
+        weights = kwargs.pop('weights', [1, 1])
+        sampled_train_dataloader = self.__dataloader(
+            X_train, soft_y_train, batch_size=self.batch_size, sampler=self.__sampler(y_train, weights))
+        train_dataloader = self.__dataloader(X_train, y_train)
+
+        self.max_epochs = kwargs.pop('max_epochs', self.max_epochs)
+        train_loss = 0
+        for epoch in range(self.max_epochs):
+            for inputs, targets in sampled_train_dataloader:
+                inputs, targets = inputs.numpy(), targets.numpy()
+                self.classifier.partial_fit(inputs, targets, classes=[0, 1])
+
+            train_loss = self.classifier.score(X_train, y_train)
+            val_loss = None
+            if self.has_validation():
+                val_loss = self.classifier.score(X_val, y_val)
+                # Best classifier
+                if self.val_loss is None or val_loss > self.val_loss:
+                    self.epoch = epoch
+                    self.val_loss = val_loss
+                    self.save()
+
+            logger.debug(
+                'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
+
+    def predict_proba(self, df_features):
+        X = df_features[self.features].values
+        X = self.__steps_transform(X)
+
+        probabilities = self.classifier.predict_proba(X)
+        probabilities = probabilities[:, 1]
+
+        probability = df_features.copy()
+        probability['probability'] = probabilities
+        return probability
+
+    def __tensor(self, X, y):
+        return torch.from_numpy(X), torch.from_numpy(y)
+
+    def __dataloader(self, X, y, batch_size=32, sampler=None):
+        X, y = self.__tensor(X, y)
+        dataset = data.TensorDataset(X, y)
+        return data.DataLoader(dataset, batch_size=batch_size, sampler=sampler)
+
+    def __sampler(self, y, weights):
+        normal_indices = np.flatnonzero(y == 0)
+        bug_indices = np.flatnonzero(y == 1)
+        age_weights = np.zeros(len(y))
+        # normal commit ages
+        age_weights[normal_indices] = self.__fading_weights(
+            size=len(normal_indices), fading_factor=self.fading_factor, total=weights[0])
+        # bug commit doesn't age
+        age_weights[bug_indices] = self.__fading_weights(
+            size=len(bug_indices), fading_factor=self.fading_factor, total=weights[1])
+        return data.WeightedRandomSampler(weights=age_weights, num_samples=len(y), replacement=True)
+
+    def __fading_weights(self, size, fading_factor, total):
+        fading_weights = reversed(range(size))
+        fading_weights = [fading_factor**x for x in fading_weights]
+        fading_weights = np.array(fading_weights)
+        return (total * fading_weights) / np.sum(fading_weights)
+
+    def __steps_fit_transform(self, X, y):
+        for step in self.steps:
+            X = step.fit_transform(X, y)
+        return X
+
+    def __steps_transform(self, X):
+        for step in self.steps:
+            try:
+                X = step.transform(X)
+            except NotFittedError:
+                logger.warning('Step {} not fitted.'.format(step))
+        return X
+
+    def has_validation(self):
+        return self.val_size > 0
+
+    @property
+    def epoch(self):
+        return self.epoch
+
+    def load(self):
+        state = joblib.load(PyTorch.FILENAME)
+        self.steps = state['steps']
+        self.classifier = state['classifier']
+        self.epoch = state['epoch']
+        self.val_loss = state['val_loss']
+
+    def save(self):
+        mkdir(PyTorch.DIR)
+        state = {'steps': self.steps,
+                 'classifier': self.classifier,
+                 'epoch': self.epoch,
+                 'val_loss': self.val_loss, }
+        joblib.dump(state, PyTorch.FILENAME)
 
 
 class Ensemble(Model):
