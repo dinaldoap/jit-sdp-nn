@@ -58,7 +58,7 @@ def create_model(config):
 
 def create_scikit_model(config):
     scaler = StandardScaler()
-    classifier = SGDClassifier(loss='log')
+    classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
     return Scikit(steps=[scaler], classifier=classifier,
                   features=FEATURES, target='target', soft_target='soft_target',
                   max_epochs=config['epochs'], batch_size=512, fading_factor=1)
