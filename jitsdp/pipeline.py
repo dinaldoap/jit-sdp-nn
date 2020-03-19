@@ -14,6 +14,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
 from sklearn.linear_model import SGDClassifier
+from sklearn.naive_bayes import GaussianNB
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.exceptions import NotFittedError
@@ -28,7 +29,7 @@ def set_seed(config):
 
 
 def create_pipeline(config):
-    models = [create_scikit_model(config)
+    models = [create_nb_model(config)
               for i in range(config['ensemble_size'])]
     model = Ensemble(models=models)
     if config['threshold'] == 1:
@@ -60,6 +61,13 @@ def create_scikit_model(config):
     scaler = StandardScaler()
     classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
     return Scikit(steps=[scaler], classifier=classifier,
+                  features=FEATURES, target='target', soft_target='soft_target',
+                  max_epochs=config['epochs'], batch_size=512, fading_factor=1)
+
+
+def create_nb_model(config):
+    classifier = GaussianNB()
+    return Scikit(steps=[], classifier=classifier,
                   features=FEATURES, target='target', soft_target='soft_target',
                   max_epochs=config['epochs'], batch_size=512, fading_factor=1)
 
@@ -429,7 +437,7 @@ class Scikit(Model):
                 probabilities = self.classifier.predict_proba(X)
                 probabilities = probabilities[:, 1]
             except AttributeError:
-                probabilities = self.classifier.predict(X)                
+                probabilities = self.classifier.predict(X)
         except NotFittedError:
             probabilities = np.zeros(len(df_features))
 
