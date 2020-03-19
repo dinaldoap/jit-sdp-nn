@@ -42,7 +42,7 @@ ADD --chown=pytorch:pytorch conda.yml /workspace/
 ADD --chown=pytorch:pytorch requirements.txt /workspace/
 ADD --chown=pytorch:pytorch setup.py /workspace/
 RUN cd /workspace && \
-    conda env create -f conda.yml && \
+    conda env create --name pytorch --file conda.yml && \
     rm conda.yml && \
     rm requirements.txt && \
     rm setup.py
