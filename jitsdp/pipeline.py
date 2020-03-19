@@ -46,7 +46,7 @@ def create_pipeline(config):
     return classifier
 
 
-def create_model(config):
+def create_mlp_model(config):
     scaler = StandardScaler()
     criterion = nn.BCELoss()
     classifier = MLP(input_size=len(FEATURES),
@@ -57,7 +57,7 @@ def create_model(config):
                    max_epochs=config['epochs'], batch_size=512, fading_factor=1)
 
 
-def create_scikit_model(config):
+def create_sgd_model(config):
     scaler = StandardScaler()
     classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
     return Scikit(steps=[scaler], classifier=classifier,
