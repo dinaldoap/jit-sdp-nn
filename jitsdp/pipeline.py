@@ -29,7 +29,13 @@ def set_seed(config):
 
 
 def create_pipeline(config):
-    models = [create_nb_model(config)
+    map_fn = {
+        'mlp': create_mlp_model,
+        'nb': create_nb_model,
+        'sgd': create_sgd_model,
+    }
+    fn_create_model = map_fn[config['model']]
+    models = [fn_create_model(config)
               for i in range(config['ensemble_size'])]
     model = Ensemble(models=models)
     if config['threshold'] == 1:
