@@ -1,3 +1,4 @@
-.git
-notebook
-models
+*
+!conda.yml
+!requirements.txt
+!setup.py
