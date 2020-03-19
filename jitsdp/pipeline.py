@@ -425,8 +425,11 @@ class Scikit(Model):
         X = self.__steps_transform(X)
 
         try:
-            probabilities = self.classifier.predict_proba(X)
-            probabilities = probabilities[:, 1]
+            try:
+                probabilities = self.classifier.predict_proba(X)
+                probabilities = probabilities[:, 1]
+            except AttributeError:
+                probabilities = self.classifier.predict(X)                
         except NotFittedError:
             probabilities = np.zeros(len(df_features))
 
