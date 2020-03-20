@@ -244,8 +244,12 @@ class PyTorch(Model):
         self.val_size = val_size
 
     def train(self, df_train, **kwargs):
-        sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
-            df_train, self.features, self.target, self.soft_target, self.val_size, self.batch_size, self.fading_factor, self.steps, **kwargs)
+        try:
+            sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
+                df_train, self.features, self.target, self.soft_target, self.val_size, self.batch_size, self.fading_factor, self.steps, **kwargs)
+        except ValueError:
+            logger.warning('Model not trained.')
+            return
 
         if torch.cuda.is_available():
             self.classifier = self.classifier.cuda()
@@ -322,13 +326,13 @@ class PyTorch(Model):
 
 
 def _prepare_dataloaders(df_train, features, target, soft_target, val_size, batch_size, fading_factor, steps, **kwargs):
-    if len(df_train) == 0:
-        logger.warning('No labeled sample to train.')
-        return
-
     X = df_train[features].values
     y = df_train[target].values
     soft_y = df_train[soft_target].values
+    classes = np.unique(y)
+    if len(classes) != 2:
+        raise ValueError('It is expected two classes to train.')
+
     val_dataloader = None
     if val_size > 0:
         X_train, X_val, y_train, y_val, soft_y_train, soft_y_val = train_test_split(
