@@ -423,26 +423,12 @@ class Scikit(Model):
         self.val_size = val_size
 
     def train(self, df_train, **kwargs):
-        if len(df_train) == 0:
-            logger.warning('No labeled sample to train.')
+        try:
+            sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
+                df_train, self.features, self.target, self.soft_target, self.val_size, self.batch_size, self.fading_factor, self.steps, **kwargs)
+        except ValueError as e:
+            logger.warning(e)
             return
-
-        X = df_train[self.features].values
-        y = df_train[self.target].values
-        soft_y = df_train[self.soft_target].values
-        if self.has_validation():
-            X_train, X_val, y_train, y_val, soft_y_train, soft_y_val = train_test_split(
-                X, y, soft_y, test_size=self.val_size, shuffle=False)
-            val_dataloader = self.__dataloader(X_val, y_val)
-        else:
-            X_train, y_train, soft_y_train = X, y, soft_y
-
-        X_train = self.__steps_fit_transform(X_train, y_train)
-
-        weights = kwargs.pop('weights', [1, 1])
-        sampled_train_dataloader = self.__dataloader(
-            X_train, soft_y_train, batch_size=self.batch_size, sampler=self.__sampler(y_train, weights))
-        train_dataloader = self.__dataloader(X_train, y_train)
 
         self.max_epochs = kwargs.pop('max_epochs', self.max_epochs)
         train_loss = 0
@@ -466,7 +452,7 @@ class Scikit(Model):
 
     def predict_proba(self, df_features):
         X = df_features[self.features].values
-        X = self.__steps_transform(X)
+        X = _steps_transform(self.steps, X)
 
         try:
             try:
@@ -480,45 +466,6 @@ class Scikit(Model):
         probability = df_features.copy()
         probability['probability'] = probabilities
         return probability
-
-    def __tensor(self, X, y):
-        return torch.from_numpy(X), torch.from_numpy(y)
-
-    def __dataloader(self, X, y, batch_size=32, sampler=None):
-        X, y = self.__tensor(X, y)
-        dataset = data.TensorDataset(X, y)
-        return data.DataLoader(dataset, batch_size=batch_size, sampler=sampler)
-
-    def __sampler(self, y, weights):
-        normal_indices = np.flatnonzero(y == 0)
-        bug_indices = np.flatnonzero(y == 1)
-        age_weights = np.zeros(len(y))
-        # normal commit ages
-        age_weights[normal_indices] = self.__fading_weights(
-            size=len(normal_indices), fading_factor=self.fading_factor, total=weights[0])
-        # bug commit doesn't age
-        age_weights[bug_indices] = self.__fading_weights(
-            size=len(bug_indices), fading_factor=self.fading_factor, total=weights[1])
-        return data.WeightedRandomSampler(weights=age_weights, num_samples=len(y), replacement=True)
-
-    def __fading_weights(self, size, fading_factor, total):
-        fading_weights = reversed(range(size))
-        fading_weights = [fading_factor**x for x in fading_weights]
-        fading_weights = np.array(fading_weights)
-        return (total * fading_weights) / np.sum(fading_weights)
-
-    def __steps_fit_transform(self, X, y):
-        for step in self.steps:
-            X = step.fit_transform(X, y)
-        return X
-
-    def __steps_transform(self, X):
-        for step in self.steps:
-            try:
-                X = step.transform(X)
-            except NotFittedError:
-                logger.warning('Step {} not fitted.'.format(step))
-        return X
 
     def has_validation(self):
         return self.val_size > 0
