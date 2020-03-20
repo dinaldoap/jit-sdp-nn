@@ -242,13 +242,14 @@ class PyTorch(Model):
         self.batch_size = batch_size
         self.fading_factor = fading_factor
         self.val_size = val_size
+        self.trained = False
 
     def train(self, df_train, **kwargs):
         try:
             sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
                 df_train, self.features, self.target, self.soft_target, self.val_size, self.batch_size, self.fading_factor, self.steps, **kwargs)
-        except ValueError:
-            logger.warning('Model not trained.')
+        except ValueError as e:
+            logger.warning(e)
             return
 
         if torch.cuda.is_available():
@@ -284,28 +285,33 @@ class PyTorch(Model):
 
             logger.debug(
                 'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
+        self.trained = True
 
     def predict_proba(self, df_features):
-        X = df_features[self.features].values
-        X = _steps_transform(self.steps, X)
-        y = np.zeros(len(X))
-        dataloader = _dataloader(X, y)
+        if self.trained:
+            X = df_features[self.features].values
+            X = _steps_transform(self.steps, X)
+            y = np.zeros(len(X))
+            dataloader = _dataloader(X, y)
 
-        if torch.cuda.is_available():
-            self.classifier = self.classifier.cuda()
+            if torch.cuda.is_available():
+                self.classifier = self.classifier.cuda()
 
-        probabilities = []
-        with torch.no_grad():
-            self.classifier.eval()
-            for inputs, targets in dataloader:
-                if torch.cuda.is_available():
-                    inputs, targets = inputs.cuda(), targets.cuda()
+            probabilities = []
+            with torch.no_grad():
+                self.classifier.eval()
+                for inputs, targets in dataloader:
+                    if torch.cuda.is_available():
+                        inputs, targets = inputs.cuda(), targets.cuda()
 
-                outputs = self.classifier(inputs.float())
-                probabilities.append(outputs.detach().cpu().numpy())
+                    outputs = self.classifier(inputs.float())
+                    probabilities.append(outputs.detach().cpu().numpy())
+            probabilities = np.concatenate(probabilities)
+        else:
+            probabilities = np.zeros(len(df_features))
 
         probability = df_features.copy()
-        probability['probability'] = np.concatenate(probabilities)
+        probability['probability'] = probabilities
         return probability
 
     def has_validation(self):
@@ -316,12 +322,18 @@ class PyTorch(Model):
         return self.classifier.epoch
 
     def load(self):
-        self.steps = joblib.load(PyTorch.FILENAME)
+        state = joblib.load(PyTorch.FILENAME)
+        self.steps = state['steps']
+        self.trained = state['trained']
         self.classifier.load()
 
     def save(self):
         mkdir(PyTorch.DIR)
-        joblib.dump(self.steps, PyTorch.FILENAME)
+        state = {
+            'steps': self.steps,
+            'trained': self.trained,
+        }
+        joblib.dump(state, PyTorch.FILENAME)
         self.classifier.save()
 
 
