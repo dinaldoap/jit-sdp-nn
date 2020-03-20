@@ -433,16 +433,22 @@ class Scikit(Model):
 
         self.max_epochs = kwargs.pop('max_epochs', self.max_epochs)
         train_loss = 0
+        sampled_classes = set()
         for epoch in range(self.max_epochs):
             for inputs, targets in sampled_train_dataloader:
                 inputs, targets = inputs.numpy(), targets.numpy()
+                sampled_classes.update(targets)
                 if len(inputs) == len(df_train):
                     self.classifier.fit(inputs, targets)
                     train_loss = self.classifier.score(inputs, targets)
                 else:
                     self.classifier.partial_fit(inputs, targets, classes=[0, 1])
                     train_loss += self.classifier.score(inputs, targets)
-            
+            if len(sampled_classes) != 2:
+                # reset classifier to become not fitted
+                self.classifier = self.classifier.clone()
+                logger.warning('It is expected two classes in the sampled data.')
+                return
             train_loss = train_loss / len(sampled_train_dataloader)
             val_loss = None
             if self.has_validation():
