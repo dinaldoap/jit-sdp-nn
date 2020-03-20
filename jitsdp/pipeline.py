@@ -56,6 +56,14 @@ def create_pipeline(config):
     return classifier
 
 
+def create_knn_model(config):
+    scaler = StandardScaler()
+    classifier = KNeighborsClassifier()
+    return Scikit(steps=[scaler], classifier=classifier,
+                  features=FEATURES, target='target', soft_target='soft_target',
+                  max_epochs=config['epochs'], batch_size=None, fading_factor=1)
+
+
 def create_mlp_model(config):
     scaler = StandardScaler()
     criterion = nn.BCELoss()
@@ -67,27 +75,12 @@ def create_mlp_model(config):
                    max_epochs=config['epochs'], batch_size=512, fading_factor=1)
 
 
-def create_sgd_model(config):
-    scaler = StandardScaler()
-    classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
-    return Scikit(steps=[scaler], classifier=classifier,
-                  features=FEATURES, target='target', soft_target='soft_target',
-                  max_epochs=config['epochs'], batch_size=512, fading_factor=1)
-
-
-def create_knn_model(config):
-    scaler = StandardScaler()
-    classifier = KNeighborsClassifier()
-    return Scikit(steps=[scaler], classifier=classifier,
-                  features=FEATURES, target='target', soft_target='soft_target',
-                  max_epochs=config['epochs'], batch_size=None, fading_factor=1)
-
-
 def create_nb_model(config):
     classifier = GaussianNB()
     return Scikit(steps=[], classifier=classifier,
                   features=FEATURES, target='target', soft_target='soft_target',
                   max_epochs=config['epochs'], batch_size=None, fading_factor=1)
+
 
 def create_rf_model(config):
     classifier = RandomForestClassifier()
@@ -95,6 +88,13 @@ def create_rf_model(config):
                   features=FEATURES, target='target', soft_target='soft_target',
                   max_epochs=config['epochs'], batch_size=None, fading_factor=1)
 
+
+def create_sgd_model(config):
+    scaler = StandardScaler()
+    classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
+    return Scikit(steps=[scaler], classifier=classifier,
+                  features=FEATURES, target='target', soft_target='soft_target',
+                  max_epochs=config['epochs'], batch_size=512, fading_factor=1)
 
 
 class Model(metaclass=ABCMeta):
