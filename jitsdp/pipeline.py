@@ -75,7 +75,7 @@ def create_nb_model(config):
     classifier = GaussianNB()
     return Scikit(steps=[], classifier=classifier,
                   features=FEATURES, target='target', soft_target='soft_target',
-                  max_epochs=config['epochs'], batch_size=512, fading_factor=1)
+                  max_epochs=config['epochs'], batch_size=None, fading_factor=1)
 
 
 class Model(metaclass=ABCMeta):
@@ -423,9 +423,10 @@ class Scikit(Model):
         self.val_size = val_size
 
     def train(self, df_train, **kwargs):
+        batch_size = self.batch_size if self.batch_size is not None else len(df_train)        
         try:
             sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
-                df_train, self.features, self.target, self.soft_target, self.val_size, self.batch_size, self.fading_factor, self.steps, **kwargs)
+                df_train, self.features, self.target, self.soft_target, self.val_size, batch_size, self.fading_factor, self.steps, **kwargs)
         except ValueError as e:
             logger.warning(e)
             return
@@ -435,12 +436,22 @@ class Scikit(Model):
         for epoch in range(self.max_epochs):
             for inputs, targets in sampled_train_dataloader:
                 inputs, targets = inputs.numpy(), targets.numpy()
-                self.classifier.partial_fit(inputs, targets, classes=[0, 1])
-
-            train_loss = self.classifier.score(X_train, y_train)
+                if len(inputs) == len(df_train):
+                    self.classifier.fit(inputs, targets)
+                    train_loss = self.classifier.score(inputs, targets)
+                else:
+                    self.classifier.partial_fit(inputs, targets, classes=[0, 1])
+                    train_loss += self.classifier.score(inputs, targets)
+            
+            train_loss = train_loss / len(sampled_train_dataloader)
             val_loss = None
             if self.has_validation():
-                val_loss = self.classifier.score(X_val, y_val)
+                val_loss = 0
+                for inputs, targets in val_dataloader:
+                    inputs, targets = inputs.numpy(), targets.numpy()
+                    val_loss += self.classifier.score(inputs, targets)
+                val_loss = val_loss / len(val_dataloader)
+            
                 # Best classifier
                 if self.val_loss is None or val_loss > self.val_loss:
                     self.epoch = epoch
