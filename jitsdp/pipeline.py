@@ -16,6 +16,7 @@ import torch.utils.data as data
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.exceptions import NotFittedError
@@ -34,6 +35,7 @@ def create_pipeline(config):
         'knn': create_knn_model,
         'mlp': create_mlp_model,
         'nb': create_nb_model,
+        'rf': create_rf_model,
         'sgd': create_sgd_model,
     }
     fn_create_model = map_fn[config['model']]
@@ -86,6 +88,13 @@ def create_nb_model(config):
     return Scikit(steps=[], classifier=classifier,
                   features=FEATURES, target='target', soft_target='soft_target',
                   max_epochs=config['epochs'], batch_size=None, fading_factor=1)
+
+def create_rf_model(config):
+    classifier = RandomForestClassifier()
+    return Scikit(steps=[], classifier=classifier,
+                  features=FEATURES, target='target', soft_target='soft_target',
+                  max_epochs=config['epochs'], batch_size=None, fading_factor=1)
+
 
 
 class Model(metaclass=ABCMeta):
