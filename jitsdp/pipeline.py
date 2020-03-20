@@ -15,6 +15,7 @@ import torch.optim as optim
 import torch.utils.data as data
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.exceptions import NotFittedError
@@ -30,6 +31,7 @@ def set_seed(config):
 
 def create_pipeline(config):
     map_fn = {
+        'knn': create_knn_model,
         'mlp': create_mlp_model,
         'nb': create_nb_model,
         'sgd': create_sgd_model,
@@ -69,6 +71,14 @@ def create_sgd_model(config):
     return Scikit(steps=[scaler], classifier=classifier,
                   features=FEATURES, target='target', soft_target='soft_target',
                   max_epochs=config['epochs'], batch_size=512, fading_factor=1)
+
+
+def create_knn_model(config):
+    scaler = StandardScaler()
+    classifier = KNeighborsClassifier()
+    return Scikit(steps=[scaler], classifier=classifier,
+                  features=FEATURES, target='target', soft_target='soft_target',
+                  max_epochs=config['epochs'], batch_size=None, fading_factor=1)
 
 
 def create_nb_model(config):
@@ -423,7 +433,8 @@ class Scikit(Model):
         self.val_size = val_size
 
     def train(self, df_train, **kwargs):
-        batch_size = self.batch_size if self.batch_size is not None else len(df_train)        
+        batch_size = self.batch_size if self.batch_size is not None else len(
+            df_train)
         try:
             sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
                 df_train, self.features, self.target, self.soft_target, self.val_size, batch_size, self.fading_factor, self.steps, **kwargs)
@@ -442,12 +453,14 @@ class Scikit(Model):
                     self.classifier.fit(inputs, targets)
                     train_loss = self.classifier.score(inputs, targets)
                 else:
-                    self.classifier.partial_fit(inputs, targets, classes=[0, 1])
+                    self.classifier.partial_fit(
+                        inputs, targets, classes=[0, 1])
                     train_loss += self.classifier.score(inputs, targets)
             if len(sampled_classes) != 2:
                 # reset classifier to become not fitted
                 self.classifier = self.classifier.clone()
-                logger.warning('It is expected two classes in the sampled data.')
+                logger.warning(
+                    'It is expected two classes in the sampled data.')
                 return
             train_loss = train_loss / len(sampled_train_dataloader)
             val_loss = None
@@ -457,7 +470,7 @@ class Scikit(Model):
                     inputs, targets = inputs.numpy(), targets.numpy()
                     val_loss += self.classifier.score(inputs, targets)
                 val_loss = val_loss / len(val_dataloader)
-            
+
                 # Best classifier
                 if self.val_loss is None or val_loss > self.val_loss:
                     self.epoch = epoch

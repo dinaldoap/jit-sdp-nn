@@ -34,7 +34,7 @@ def main():
     parser.add_argument('--ensemble_size',   type=int,
                         help='Number of models in the ensemble (default: 1).',    default=1)
     parser.add_argument('--model',   type=str,
-                        help='Which model must use in the ensemble (default: mlp).', default='mlp', choices=['mlp', 'nb', 'sgd'])
+                        help='Which model must use in the ensemble (default: mlp).', default='mlp', choices=['knn', 'mlp', 'nb', 'sgd'])
     parser.add_argument('--orb',   type=int,
                         help='Whether must use oversampling rate boosting to balance output proportions (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--threshold',   type=int,
