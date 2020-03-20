@@ -244,26 +244,8 @@ class PyTorch(Model):
         self.val_size = val_size
 
     def train(self, df_train, **kwargs):
-        if len(df_train) == 0:
-            logger.warning('No labeled sample to train.')
-            return
-
-        X = df_train[self.features].values
-        y = df_train[self.target].values
-        soft_y = df_train[self.soft_target].values
-        if self.has_validation():
-            X_train, X_val, y_train, y_val, soft_y_train, soft_y_val = train_test_split(
-                X, y, soft_y, test_size=self.val_size, shuffle=False)
-            val_dataloader = self.__dataloader(X_val, y_val)
-        else:
-            X_train, y_train, soft_y_train = X, y, soft_y
-
-        X_train = self.__steps_fit_transform(X_train, y_train)
-
-        weights = kwargs.pop('weights', [1, 1])
-        sampled_train_dataloader = self.__dataloader(
-            X_train, soft_y_train, batch_size=self.batch_size, sampler=self.__sampler(y_train, weights))
-        train_dataloader = self.__dataloader(X_train, y_train)
+        sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
+            df_train, self.features, self.target, self.soft_target, self.val_size, self.batch_size, self.fading_factor, self.steps, **kwargs)
 
         if torch.cuda.is_available():
             self.classifier = self.classifier.cuda()
@@ -301,9 +283,9 @@ class PyTorch(Model):
 
     def predict_proba(self, df_features):
         X = df_features[self.features].values
-        X = self.__steps_transform(X)
+        X = _steps_transform(self.steps, X)
         y = np.zeros(len(X))
-        dataloader = self.__dataloader(X, y)
+        dataloader = _dataloader(X, y)
 
         if torch.cuda.is_available():
             self.classifier = self.classifier.cuda()
@@ -322,45 +304,6 @@ class PyTorch(Model):
         probability['probability'] = np.concatenate(probabilities)
         return probability
 
-    def __tensor(self, X, y):
-        return torch.from_numpy(X), torch.from_numpy(y)
-
-    def __dataloader(self, X, y, batch_size=32, sampler=None):
-        X, y = self.__tensor(X, y)
-        dataset = data.TensorDataset(X, y)
-        return data.DataLoader(dataset, batch_size=batch_size, sampler=sampler)
-
-    def __sampler(self, y, weights):
-        normal_indices = np.flatnonzero(y == 0)
-        bug_indices = np.flatnonzero(y == 1)
-        age_weights = np.zeros(len(y))
-        # normal commit ages
-        age_weights[normal_indices] = self.__fading_weights(
-            size=len(normal_indices), fading_factor=self.fading_factor, total=weights[0])
-        # bug commit doesn't age
-        age_weights[bug_indices] = self.__fading_weights(
-            size=len(bug_indices), fading_factor=self.fading_factor, total=weights[1])
-        return data.WeightedRandomSampler(weights=age_weights, num_samples=len(y), replacement=True)
-
-    def __fading_weights(self, size, fading_factor, total):
-        fading_weights = reversed(range(size))
-        fading_weights = [fading_factor**x for x in fading_weights]
-        fading_weights = np.array(fading_weights)
-        return (total * fading_weights) / np.sum(fading_weights)
-
-    def __steps_fit_transform(self, X, y):
-        for step in self.steps:
-            X = step.fit_transform(X, y)
-        return X
-
-    def __steps_transform(self, X):
-        for step in self.steps:
-            try:
-                X = step.transform(X)
-            except NotFittedError:
-                logger.warning('Step {} not fitted.'.format(step))
-        return X
-
     def has_validation(self):
         return self.val_size > 0
 
@@ -376,6 +319,77 @@ class PyTorch(Model):
         mkdir(PyTorch.DIR)
         joblib.dump(self.steps, PyTorch.FILENAME)
         self.classifier.save()
+
+
+def _prepare_dataloaders(df_train, features, target, soft_target, val_size, batch_size, fading_factor, steps, **kwargs):
+    if len(df_train) == 0:
+        logger.warning('No labeled sample to train.')
+        return
+
+    X = df_train[features].values
+    y = df_train[target].values
+    soft_y = df_train[soft_target].values
+    val_dataloader = None
+    if val_size > 0:
+        X_train, X_val, y_train, y_val, soft_y_train, soft_y_val = train_test_split(
+            X, y, soft_y, test_size=val_size, shuffle=False)
+        val_dataloader = _dataloader(X_val, y_val)
+    else:
+        X_train, y_train, soft_y_train = X, y, soft_y
+
+    X_train = _steps_fit_transform(steps, X_train, y_train)
+
+    weights = kwargs.pop('weights', [1, 1])
+    sampled_train_dataloader = _dataloader(
+        X_train, soft_y_train, batch_size=batch_size, sampler=_sampler(y_train, weights, fading_factor))
+    train_dataloader = _dataloader(X_train, y_train)
+
+    return sampled_train_dataloader, train_dataloader, val_dataloader
+
+
+def _tensor(X, y):
+    return torch.from_numpy(X), torch.from_numpy(y)
+
+
+def _dataloader(X, y, batch_size=32, sampler=None):
+    X, y = _tensor(X, y)
+    dataset = data.TensorDataset(X, y)
+    return data.DataLoader(dataset, batch_size=batch_size, sampler=sampler)
+
+
+def _sampler(y, weights, fading_factor):
+    normal_indices = np.flatnonzero(y == 0)
+    bug_indices = np.flatnonzero(y == 1)
+    age_weights = np.zeros(len(y))
+    # normal commit ages
+    age_weights[normal_indices] = _fading_weights(
+        size=len(normal_indices), fading_factor=fading_factor, total=weights[0])
+    # bug commit doesn't age
+    age_weights[bug_indices] = _fading_weights(
+        size=len(bug_indices), fading_factor=fading_factor, total=weights[1])
+    return data.WeightedRandomSampler(weights=age_weights, num_samples=len(y), replacement=True)
+
+
+def _fading_weights(size, fading_factor, total):
+    fading_weights = reversed(range(size))
+    fading_weights = [fading_factor**x for x in fading_weights]
+    fading_weights = np.array(fading_weights)
+    return (total * fading_weights) / np.sum(fading_weights)
+
+
+def _steps_fit_transform(steps, X, y):
+    for step in steps:
+        X = step.fit_transform(X, y)
+    return X
+
+
+def _steps_transform(steps, X):
+    for step in steps:
+        try:
+            X = step.transform(X)
+        except NotFittedError:
+            logger.warning('Step {} not fitted.'.format(step))
+    return X
 
 
 class Scikit(Model):
