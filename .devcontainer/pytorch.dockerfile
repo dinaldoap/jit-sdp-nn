@@ -1,4 +1,4 @@
-FROM pytorch/pytorch:1.3-cuda10.1-cudnn7-runtime
+FROM pytorch/pytorch:1.4-cuda10.1-cudnn7-runtime
 
 # Install Linux tools
 RUN apt-get update -q && \
