@@ -34,7 +34,11 @@
     // Ignore for watching
     "files.watcherExclude": {
       "**/.git/**": true,
-      "**/models/**": true
+      "**/models/**": true,
+      "**/data/**": true,
+      "**/jitsdp.egg-info/**": true,
+      "**/mlruns/**": true,
+      "**/mlruns-server/**": true,
     },
     // GitLens
     "gitlens.statusBar.command": "gitlens.toggleFileBlame",
