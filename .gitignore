@@ -135,7 +135,7 @@ models/
 logs/
 
 # MLflow
-mlruns/
+mlruns*/
 
 # data
 data/
