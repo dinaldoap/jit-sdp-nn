@@ -15,7 +15,7 @@ def main():
     parser.add_argument('command',   type=str, help='Which command should execute (default: run).',
                         default='run', choices=['run', 'report'])
     parser.add_argument('--seeds',   type=int,
-                        help='Seeds of random state (default: 0).',    default=0, nargs='+')
+                        help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
     parser.add_argument('--epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--start',   type=int,
@@ -38,7 +38,7 @@ def main():
                         help='Whether must use decreasing uncertainty about normal commit labels inside verification latency (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--incremental',   type=int,
                         help='Whether must do incremental training along the stream (default: 0).', default=0, choices=[0, 1])
-    parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: brackets).',
+    parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat'], nargs='+')
     lists = ['seed', 'dataset']
     sys.argv = split_args(sys.argv, lists)
