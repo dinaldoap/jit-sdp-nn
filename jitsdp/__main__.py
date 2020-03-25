@@ -1,5 +1,5 @@
 from jitsdp.evaluation import run, report
-from jitsdp.utils import split_arg, mkdir
+from jitsdp.utils import split_args, mkdir
 
 import argparse
 from itertools import product
@@ -47,7 +47,7 @@ def main():
                         help='Whether must do incremental training along the stream (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: brackets).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat'], nargs='+')
-    sys.argv = split_arg(sys.argv, '--datasets')
+    sys.argv = split_args(sys.argv, ['--seeds', '--datasets'])
     args = parser.parse_args()
     print('Configuration: {}'.format(args))
     logging.getLogger('').handlers = []

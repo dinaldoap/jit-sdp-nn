@@ -9,3 +9,9 @@ def split_arg(argv, name):
         return argv
     value = argv[value_index]
     return argv[:value_index] + value.split() + argv[value_index + 1:]
+
+def split_args(argv, names):
+    new_argv = argv
+    for name in names:
+        new_argv = split_arg(new_argv, name)
+    return new_argv
