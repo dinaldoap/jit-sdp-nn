@@ -4,13 +4,12 @@
 project=jit-sdp-nn
 # store dir
 store=mlruns-server
-# clean up
-rm -rf ${store}
 # compress
-ssh gpu tar -C ${project} -zcvf ${project}/mlruns.tar.gz mlruns/
+ssh gpu "cd ${project}/mlruns && tar -zcvf ../mlruns.tar.gz *"
 # download
 scp -rC gpu:${project}/mlruns.tar.gz .
-# create dir
+# recreate store
+rm -rf ${store}
 mkdir ${store}
 # decompress
 tar -C ${store} -zxvf mlruns.tar.gz
