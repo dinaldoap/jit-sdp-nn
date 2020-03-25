@@ -2,6 +2,7 @@ from jitsdp.evaluation import run, report
 from jitsdp.utils import split_arg, mkdir
 
 import argparse
+from itertools import product
 import logging
 import mlflow
 import pathlib
@@ -11,6 +12,7 @@ import sys
 def args_to_config(args):
     config = dict(vars(args))
     del config['datasets']
+    del config['seeds']
     return config
 
 
@@ -19,8 +21,8 @@ def main():
         description='JIT-SDP: experiment execution')
     parser.add_argument('command',   type=str, help='Which command should execute (default: run).',
                         default='run', choices=['run', 'report'])
-    parser.add_argument('--seed',   type=int,
-                        help='Seed of random state (default: 42).',    default=42)
+    parser.add_argument('--seeds',   type=int,
+                        help='Seeds of random state (default: 0).',    default=0, nargs='+')
     parser.add_argument('--epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--start',   type=int,
@@ -60,9 +62,10 @@ def main():
     command = commands[args.command]
     args_config = args_to_config(args)
     with mlflow.start_run():
-        for dataset in args.datasets:
+        for seed, dataset in product(args.seeds, args.datasets):
             config = dict(args_config)
-            config['dataset'] = dataset
+            config['seed'] = seed
+            config['dataset'] = dataset            
             with mlflow.start_run(nested=True):
                 command(config=config)
 
