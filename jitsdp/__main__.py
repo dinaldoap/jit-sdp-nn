@@ -1,5 +1,5 @@
 from jitsdp.evaluation import run, report
-from jitsdp.utils import split_args, mkdir
+from jitsdp.utils import mkdir, split_args, create_config_template, to_plural
 
 import argparse
 from itertools import product
@@ -7,13 +7,6 @@ import logging
 import mlflow
 import pathlib
 import sys
-
-
-def args_to_config(args):
-    config = dict(vars(args))
-    del config['datasets']
-    del config['seeds']
-    return config
 
 
 def main():
@@ -47,8 +40,10 @@ def main():
                         help='Whether must do incremental training along the stream (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: brackets).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat'], nargs='+')
-    sys.argv = split_args(sys.argv, ['--seeds', '--datasets'])
+    lists = ['seed', 'dataset']
+    sys.argv = split_args(sys.argv, lists)
     args = parser.parse_args()
+    args = dict(vars(args))
     print('Configuration: {}'.format(args))
     logging.getLogger('').handlers = []
     dir = pathlib.Path('logs')
@@ -59,13 +54,15 @@ def main():
         'run': run,
         'report': report,
     }
-    command = commands[args.command]
-    args_config = args_to_config(args)
+    command = commands[args['command']]
+    config_template = create_config_template(args, lists)
+    plurals = to_plural(lists)
+    args_lists = [args[plural] for plural in plurals]
     with mlflow.start_run():
-        for seed, dataset in product(args.seeds, args.datasets):
-            config = dict(args_config)
-            config['seed'] = seed
-            config['dataset'] = dataset            
+        for values_from_list in product(*args_lists):
+            config = dict(config_template)
+            for i, name in enumerate(lists):
+                config[name] = values_from_list[i]
             with mlflow.start_run(nested=True):
                 command(config=config)
 
