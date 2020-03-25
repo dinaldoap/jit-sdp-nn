@@ -54,18 +54,23 @@ def main():
         'run': run,
         'report': report,
     }
-    command = commands[args['command']]
-    config_template = create_config_template(args, lists)
-    plurals = to_plural(lists)
-    args_lists = [args[plural] for plural in plurals]
+    command = commands[args['command']]    
     with mlflow.start_run():
-        for values_from_list in product(*args_lists):
-            config = dict(config_template)
-            for i, name in enumerate(lists):
-                config[name] = values_from_list[i]
+        for config in create_configs(args, lists):            
             with mlflow.start_run(nested=True):
                 command(config=config)
 
+def create_configs(args, lists):
+    config_template = create_config_template(args, lists)
+    plurals = to_plural(lists)
+    values_lists = [args[plural] for plural in plurals]
+    for values_tuple in product(*values_lists):
+        config = dict(config_template)
+        for i, name in enumerate(lists):
+            config[name] = values_tuple[i]
+        yield config
+
+    
 
 if __name__ == '__main__':
     main()
