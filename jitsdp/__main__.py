@@ -28,8 +28,8 @@ def main():
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
     parser.add_argument('--ensemble_size',   type=int,
                         help='Number of models in the ensemble (default: 1).',    default=1)
-    parser.add_argument('--model',   type=str,
-                        help='Which model must use in the ensemble (default: mlp).', default='mlp', choices=['mlp', 'nb', 'sgd'])
+    parser.add_argument('--models',   type=str,
+                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['mlp', 'nb', 'sgd'], nargs='+')
     parser.add_argument('--orb',   type=int,
                         help='Whether must use oversampling rate boosting to balance output proportions (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--threshold',   type=int,
@@ -40,7 +40,7 @@ def main():
                         help='Whether must do incremental training along the stream (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat'], nargs='+')
-    lists = ['seed', 'dataset']
+    lists = ['seed', 'dataset', 'model']
     sys.argv = split_args(sys.argv, lists)
     args = parser.parse_args()
     args = dict(vars(args))
