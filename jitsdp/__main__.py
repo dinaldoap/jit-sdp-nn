@@ -5,6 +5,7 @@ import argparse
 from itertools import product
 import logging
 import mlflow
+from multiprocessing import Pool
 import pathlib
 import sys
 
@@ -50,15 +51,22 @@ def main():
     mkdir(dir)
     logging.basicConfig(filename=dir / 'jitsdp.log',
                         filemode='w', level=logging.DEBUG)
+    with mlflow.start_run():
+        configs = create_configs(args, lists)
+        configs = list(configs)
+        with Pool(2) as pool:
+            pool.apply(run_nested, configs)
+
+
+def run_nested(config):
     commands = {
         'run': run,
         'report': report,
     }
-    command = commands[args['command']]    
-    with mlflow.start_run():
-        for config in create_configs(args, lists):            
-            with mlflow.start_run(nested=True):
-                command(config=config)
+    command = commands[config['command']]
+    with mlflow.start_run(nested=True):
+        command(config=config)
+
 
 def create_configs(args, lists):
     config_template = create_config_template(args, lists)
@@ -70,7 +78,6 @@ def create_configs(args, lists):
             config[name] = values_tuple[i]
         yield config
 
-    
 
 if __name__ == '__main__':
     main()
