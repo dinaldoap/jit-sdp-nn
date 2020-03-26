@@ -2,6 +2,7 @@ from jitsdp.evaluation import run, report
 from jitsdp.utils import mkdir, split_args, create_config_template, to_plural
 
 import argparse
+from datetime import datetime
 from itertools import product
 import logging
 import mlflow
@@ -50,13 +51,17 @@ def main():
     logging.getLogger('').handlers = []
     dir = pathlib.Path('logs')
     mkdir(dir)
-    logging.basicConfig(filename=dir / 'jitsdp.log',
+    log = 'jitsdp-{}.log'.format(datetime.now())
+    log = log.replace(' ', '-')
+    log = dir / log
+    logging.basicConfig(filename=log,
                         filemode='w', level=logging.DEBUG)
     logging.info('Main config: {}'.format(args))
     with mlflow.start_run():
         configs = create_configs(args, lists)
         with Pool(args['pool_size']) as pool:
             pool.map(run_nested, configs)
+        mlflow.log_artifact(log)
 
 
 def run_nested(config):
