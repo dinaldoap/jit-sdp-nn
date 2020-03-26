@@ -32,7 +32,6 @@ def __plot_metrics(data, config, dir, metrics, filename):
                    label='avg({})={:.2f}'.format(metric, avgs[i]))
     ax.set_title(config['dataset'])
     plt.legend()
-    subdir = dir / config['dataset']
-    mkdir(subdir)
-    plt.savefig(subdir / filename)
+    mkdir(dir)
+    plt.savefig(dir / filename)
     plt.clf()

@@ -53,9 +53,8 @@ def main():
                         filemode='w', level=logging.DEBUG)
     with mlflow.start_run():
         configs = create_configs(args, lists)
-        configs = list(configs)
         with Pool(2) as pool:
-            pool.apply(run_nested, configs)
+            pool.map(run_nested, configs)
 
 
 def run_nested(config):

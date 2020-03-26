@@ -18,7 +18,7 @@ def test_plot_recalls_gmean():
         'gmean': [0., 0., 4.],
     })
     plot.plot_recalls_gmean(data=data, config=config, dir=DIR)
-    assert (DIR / config['dataset'] / 'recalls_gmean.png').exists()
+    assert (DIR / 'recalls_gmean.png').exists()
 
 
 def test_plot_proportions():
@@ -32,4 +32,4 @@ def test_plot_proportions():
         'p1':    [0., .5, 0.],
     })
     plot.plot_proportions(data=data, config=config, dir=DIR)
-    assert (DIR / config['dataset'] / 'proportions.png').exists()
+    assert (DIR / 'proportions.png').exists()

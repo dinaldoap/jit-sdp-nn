@@ -61,21 +61,25 @@ def run(config):
 
     target_prediction = target_prediction.reset_index(drop=True)
     results = met.prequential_metrics(target_prediction, .99)
-    save_results(results=results, dir=DIR / config['dataset'])
+    save_results(results=results, dir=__unique_dir(config))
     report(config)
 
 
 def report(config):
-    subdir = DIR / config['dataset']
-    results = load_results(dir=subdir)
-    plot_recalls_gmean(results, config=config, dir=DIR)
-    plot_proportions(results, config=config, dir=DIR)
+    dir = __unique_dir(config)
+    results = load_results(dir=dir)
+    plot_recalls_gmean(results, config=config, dir=dir)
+    plot_proportions(results, config=config, dir=dir)
     metrics = ['r0', 'r1', 'r0-r1', 'gmean', 't1', 's1', 'p1']
     metrics = {'avg_{}'.format(
         metric): results[metric].mean() for metric in metrics}
     mlflow.log_params(config)
     mlflow.log_metrics(metrics)
-    mlflow.log_artifacts(local_dir=subdir)
+    mlflow.log_artifacts(local_dir=dir)
+
+
+def __unique_dir(config):
+    return DIR / '{}_{}_{}'.format(config['seed'], config['dataset'], config['model'])
 
 
 def __verification_latency_label(train_timestamp, commit_timestamp, verification_latency, config):
