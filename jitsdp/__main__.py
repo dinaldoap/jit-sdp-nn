@@ -15,6 +15,8 @@ def main():
         description='JIT-SDP: experiment execution')
     parser.add_argument('command',   type=str, help='Which command should execute (default: run).',
                         default='run', choices=['run', 'report'])
+    parser.add_argument('--pool_size',   type=int,
+                        help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--seeds',   type=int,
                         help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
     parser.add_argument('--epochs',   type=int,
@@ -45,15 +47,15 @@ def main():
     sys.argv = split_args(sys.argv, lists)
     args = parser.parse_args()
     args = dict(vars(args))
-    print('Configuration: {}'.format(args))
     logging.getLogger('').handlers = []
     dir = pathlib.Path('logs')
     mkdir(dir)
     logging.basicConfig(filename=dir / 'jitsdp.log',
                         filemode='w', level=logging.DEBUG)
+    logging.info('Main config: {}'.format(args))
     with mlflow.start_run():
         configs = create_configs(args, lists)
-        with Pool(2) as pool:
+        with Pool(args['pool_size']) as pool:
             pool.map(run_nested, configs)
 
 
@@ -64,6 +66,7 @@ def run_nested(config):
     }
     command = commands[config['command']]
     with mlflow.start_run(nested=True):
+        logging.info('Nested config: {}'.format(config))
         command(config=config)
 
 
