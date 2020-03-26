@@ -441,13 +441,9 @@ class Scikit(Model):
             for inputs, targets in sampled_train_dataloader:
                 inputs, targets = inputs.numpy(), targets.numpy()
                 sampled_classes.update(targets)
-                if len(inputs) == len(df_train):
-                    self.classifier.fit(inputs, targets)
-                    train_loss = self.classifier.score(inputs, targets)
-                else:
-                    self.classifier.partial_fit(
-                        inputs, targets, classes=[0, 1])
-                    train_loss += self.classifier.score(inputs, targets)
+                self.classifier.partial_fit(
+                    inputs, targets, classes=[0, 1])
+                train_loss += self.classifier.score(inputs, targets)
             if len(sampled_classes) != 2:
                 # reset classifier to become not fitted
                 self.classifier = self.classifier.clone()
