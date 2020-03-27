@@ -19,4 +19,4 @@ find mlruns-server -name meta.yaml | xargs sed --in-place --expression "s/file:\
 rm mlruns.tar.gz
 ssh gpu rm ${project}/mlruns.tar.gz
 # start mlflow
-mlflow ui --backend-store-uri ${store}
+mlflow ui --backend-store-uri ${store} --port 5001
