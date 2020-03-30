@@ -15,13 +15,20 @@ memory = Memory(location='data', verbose=0)
 
 @memory.cache
 def make_stream(url):
+    dataset = re.search('(?P<dataset>\\w+)\\.csv', url)
+    dataset = dataset.group('dataset')
     df_raw = download(url)
-    df_preprocess = preprocess(df_raw)
+    if dataset in ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat']:
+        df_preprocess = preprocess(df_raw)
+    elif dataset in ['broadleaf', 'nova', 'npm', 'spring-integration']:
+        df_preprocess = preprocess_daystofix(df_raw)
+    else:
+        raise NotImplementedError('Dataset not supported.')
     return prequential(df_preprocess)
 
 
 def download(url):
-    return pd.read_csv(url)
+    return pd.read_csv(url, skipinitialspace=True)
 
 
 def preprocess(df_raw):
@@ -46,6 +53,21 @@ def preprocess(df_raw):
                            ].set_index('commit_hash')
     return df_preprocess.join(df_fix, on='commit_hash_fix', how='left', rsuffix='_fix')
 
+
+def preprocess_daystofix(df_raw):
+    label = 'containsbug'
+    preprocess_cols = ['timestamp',
+                       'daystofix'] + FEATURES + [label]
+    df_preprocess = df_raw[preprocess_cols].copy()
+    # timestamp
+    df_preprocess = df_preprocess.rename(columns={label: 'target'})
+    # contains_bug
+    df_preprocess['target'] = df_preprocess['target'].astype('int')
+    # zero to nan
+    df_preprocess['daystofix'] = df_preprocess['daystofix'].apply(lambda x: None if x == 0. else x)
+    # fixes
+    df_preprocess['timestamp_fix'] = df_preprocess['timestamp'] + df_preprocess['daystofix'] * 24 * 60 * 60
+    return df_preprocess
 
 def prequential(df_preprocess):
     prequential_cols = ['timestamp', 'timestamp_fix'] + \
