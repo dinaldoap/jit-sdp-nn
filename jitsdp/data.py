@@ -64,10 +64,13 @@ def preprocess_daystofix(df_raw):
     # contains_bug
     df_preprocess['target'] = df_preprocess['target'].astype('int')
     # zero to nan
-    df_preprocess['daystofix'] = df_preprocess['daystofix'].apply(lambda x: None if x == 0. else x)
+    df_preprocess['daystofix'] = df_preprocess['daystofix'].apply(
+        lambda x: None if x == 0. else x)
     # fixes
-    df_preprocess['timestamp_fix'] = df_preprocess['timestamp'] + df_preprocess['daystofix'] * 24 * 60 * 60
+    df_preprocess['timestamp_fix'] = df_preprocess['timestamp'] + \
+        df_preprocess['daystofix'] * 24 * 60 * 60
     return df_preprocess
+
 
 def prequential(df_preprocess):
     prequential_cols = ['timestamp', 'timestamp_fix'] + \
