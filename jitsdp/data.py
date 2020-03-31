@@ -40,11 +40,12 @@ def preprocess(df_raw):
                                                   LABEL: 'target'})
     # filter rows with missing data
     df_preprocess = df_preprocess.dropna(subset=['fix'])
+    # convert fix
     df_preprocess['fix'] = df_preprocess['fix'].astype('int')
     # timeline order
     df_preprocess = df_preprocess[::-1]
     df_preprocess = df_preprocess.reset_index(drop=True)
-    # contains_bug
+    # convert contains_bug
     df_preprocess['target'] = df_preprocess['target'].astype('int')
     # fixes
     df_preprocess['commit_hash_fix'] = df_preprocess['fixes'].dropna().apply(
