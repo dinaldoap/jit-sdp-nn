@@ -61,7 +61,9 @@ def preprocess_daystofix(df_raw):
     df_preprocess = df_raw[preprocess_cols].copy()
     # timestamp
     df_preprocess = df_preprocess.rename(columns={label: 'target'})
-    # contains_bug
+    # convert fix
+    df_preprocess['fix'] = df_preprocess['fix'].astype('int')
+    # convert contains_bug
     df_preprocess['target'] = df_preprocess['target'].astype('int')
     # zero to nan
     df_preprocess['daystofix'] = df_preprocess['daystofix'].apply(
