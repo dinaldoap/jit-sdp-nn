@@ -5,6 +5,9 @@ RUN apt-get update -q && \
     apt-get install -yq openssh-client && \
     rm -rf /var/lib/apt/lists/*
 
+# Config locale
+ENV LC_ALL C.UTF-8
+
 # Config standard user
 ARG USERNAME=pytorch
 
