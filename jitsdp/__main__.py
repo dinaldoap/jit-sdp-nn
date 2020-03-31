@@ -55,7 +55,7 @@ def main():
     log = log.replace(' ', '-')
     log = dir / log
     logging.basicConfig(filename=log,
-                        filemode='w', level=logging.DEBUG)
+                        filemode='w', level=logging.INFO)
     logging.info('Main config: {}'.format(args))
     with mlflow.start_run():
         configs = create_configs(args, lists)
