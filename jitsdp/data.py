@@ -15,7 +15,7 @@ memory = Memory(location='data', verbose=0)
 
 @memory.cache
 def make_stream(url):
-    dataset = re.search('(?P<dataset>\\w+)\\.csv', url)
+    dataset = re.search('(?P<dataset>[-\\w]+)\\.csv', url)
     dataset = dataset.group('dataset')
     df_raw = download(url)
     if dataset in ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat']:
@@ -23,7 +23,7 @@ def make_stream(url):
     elif dataset in ['broadleaf', 'nova', 'npm', 'spring-integration']:
         df_preprocess = preprocess_daystofix(df_raw)
     else:
-        raise NotImplementedError('Dataset not supported.')
+        raise NotImplementedError('Dataset not supported: {}.'.format(dataset))
     return prequential(df_preprocess)
 
 
