@@ -13,6 +13,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
+from sklearn.base import clone
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -446,7 +447,7 @@ class Scikit(Model):
                 train_loss += self.classifier.score(inputs, targets)
             if len(sampled_classes) != 2:
                 # reset classifier to become not fitted
-                self.classifier = self.classifier.clone()
+                self.classifier = clone(self.classifier)
                 logger.warning(
                     'It is expected two classes in the sampled data.')
                 return
