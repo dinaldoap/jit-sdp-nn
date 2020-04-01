@@ -58,12 +58,17 @@ def main():
                         filemode='w', level=logging.INFO)
     logging.info('Main config: {}'.format(args))
     with mlflow.start_run():
-        try:
-            configs = create_configs(args, lists)
-            with Pool(args['pool_size']) as pool:
-                pool.map(run_nested, configs)
-        finally:
-            mlflow.log_artifact(log)
+        configs = create_configs(args, lists)
+        with Pool(args['pool_size']) as pool:
+            pool.map(safe_run, configs)
+        mlflow.log_artifact(log)
+
+
+def safe_run(config):
+    try:
+        run_nested(config)
+    except Exception:
+        logging.exception('Exception raised on config: {}'.format(config))
 
 
 def run_nested(config):
