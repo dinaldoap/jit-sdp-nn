@@ -289,11 +289,6 @@ class PyTorch(Model):
             if self.has_validation():
                 val_loss = metrics.loss(
                     self.classifier, val_dataloader, criterion=self.criterion)
-                # Best classifier
-                if self.classifier.val_loss is None or val_loss > self.classifier.val_loss:
-                    self.classifier.epoch = epoch
-                    self.classifier.val_loss = val_loss
-                    self.classifier.save()
 
             logger.debug(
                 'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
@@ -328,10 +323,6 @@ class PyTorch(Model):
 
     def has_validation(self):
         return self.val_size > 0
-
-    @property
-    def epoch(self):
-        return self.classifier.epoch
 
     def load(self):
         state = joblib.load(PyTorch.FILENAME)
@@ -483,12 +474,6 @@ class Scikit(Model):
                     val_loss += self.classifier.score(inputs, targets)
                 val_loss = val_loss / len(val_dataloader)
 
-                # Best classifier
-                if self.val_loss is None or val_loss > self.val_loss:
-                    self.epoch = epoch
-                    self.val_loss = val_loss
-                    self.save()
-
             logger.debug(
                 'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
 
@@ -512,22 +497,16 @@ class Scikit(Model):
     def has_validation(self):
         return self.val_size > 0
 
-    @property
-    def epoch(self):
-        return self.epoch
-
     def load(self):
         state = joblib.load(PyTorch.FILENAME)
         self.steps = state['steps']
         self.classifier = state['classifier']
-        self.epoch = state['epoch']
         self.val_loss = state['val_loss']
 
     def save(self):
         mkdir(PyTorch.DIR)
         state = {'steps': self.steps,
                  'classifier': self.classifier,
-                 'epoch': self.epoch,
                  'val_loss': self.val_loss, }
         joblib.dump(state, PyTorch.FILENAME)
 
