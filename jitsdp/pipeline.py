@@ -39,9 +39,11 @@ def create_pipeline(config):
         'sgd': create_sgd_model,
     }
     fn_create_model = map_fn[config['model']]
-    models = [fn_create_model(config)
-              for i in range(config['ensemble_size'])]
-    model = Ensemble(models=models)
+    # TODO: recover Ensemble
+    # models = [fn_create_model(config)
+    #          for i in range(config['ensemble_size'])]
+    #model = Ensemble(models=models)
+    model = fn_create_model(config)
     if config['threshold'] == 1:
         classifier = RateFixed(
             model=model, normal_proportion=config['normal_proportion'])
@@ -69,25 +71,29 @@ def create_mlp_model(config):
 
 def create_nb_model(config):
     classifier = GaussianNB()
-    return Scikit(steps=[], classifier=classifier,
-                  features=FEATURES, target='target', soft_target='soft_target',
-                  max_epochs=config['epochs'], batch_size=None, fading_factor=1)
+    # TODO: remove max_epoch and batch_size
+    return ScikitOld(steps=[], classifier=classifier,
+                     features=FEATURES, target='target', soft_target='soft_target',
+                     max_epochs=config['epochs'], batch_size=None, fading_factor=1)
 
 
 def create_rf_model(config):
     classifier = RandomForestClassifier(
         n_estimators=0, criterion='entropy', max_depth=5, warm_start=True, bootstrap=False, ccp_alpha=0.05)
-    return Scikit(steps=[], classifier=classifier,
-                  features=FEATURES, target='target', soft_target='soft_target',
-                  max_epochs=config['epochs'], batch_size=None, fading_factor=1)
+    # TODO: remove max_epoch and batch_size
+    # TODO: add n_trees
+    return ScikitOld(steps=[], classifier=classifier,
+                     features=FEATURES, target='target', soft_target='soft_target',
+                     max_epochs=config['epochs'], batch_size=None, fading_factor=1)
 
 
+# TODO: rename sgd to lr
 def create_sgd_model(config):
     scaler = StandardScaler()
     classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
-    return Scikit(steps=[scaler], classifier=classifier,
-                  features=FEATURES, target='target', soft_target='soft_target',
-                  max_epochs=config['epochs'], batch_size=512, fading_factor=1)
+    return LogisticRegression(n_epochs=config['epochs'], steps=[scaler], classifier=classifier,
+                              features=FEATURES, target='target', soft_target='soft_target',
+                              batch_size=512, fading_factor=1)
 
 
 class Model(metaclass=ABCMeta):
@@ -105,6 +111,11 @@ class Model(metaclass=ABCMeta):
 
     @abstractmethod
     def load(self):
+        pass
+
+    @property
+    @abstractmethod
+    def n_iterations(self):
         pass
 
 
@@ -129,6 +140,10 @@ class Threshold(Classifier):
 
     def load(self):
         self.model.load()
+
+    @property
+    def n_iterations(self):
+        return self.model.n_iterations
 
 
 class ScoreFixed(Threshold):
@@ -207,8 +222,7 @@ class ORB(Classifier):
     def train(self, df_train, **kwargs):
         df_ma = kwargs.pop('df_ma', None)
         ma = .4
-        max_epochs = 50
-        for epoch in range(max_epochs):
+        for i in range(self.classifier.n_iterations):
             obf0 = 1
             obf1 = 1
             if ma > self.th:
@@ -219,7 +233,7 @@ class ORB(Classifier):
                         (self.m ** self.th - 1)) + 1
             new_kwargs = dict(kwargs)
             new_kwargs['weights'] = [obf0, obf1]
-            new_kwargs['max_epochs'] = 1
+            new_kwargs['n_iterations'] = 1
             self.classifier.train(df_train, **new_kwargs)
             df_output = self.classifier.predict(df_ma)
             ma = df_output['prediction'].mean()
@@ -235,6 +249,10 @@ class ORB(Classifier):
 
     def load(self):
         self.classifier.load()
+
+    @property
+    def n_iterations(self):
+        return self.classifier.n_iterations
 
 
 class PyTorch(Model):
@@ -255,6 +273,10 @@ class PyTorch(Model):
         self.fading_factor = fading_factor
         self.val_size = val_size
         self.trained = False
+
+    @property
+    def n_iterations(self):        
+        return self.max_epochs
 
     def train(self, df_train, **kwargs):
         try:
@@ -411,7 +433,7 @@ def _steps_transform(steps, X):
     return X
 
 
-class Scikit(Model):
+class ScikitOld(Model):
 
     def __init__(self, steps, classifier, features, target, soft_target, max_epochs, batch_size, fading_factor, val_size=0.0):
         super().__init__()
@@ -478,6 +500,93 @@ class Scikit(Model):
                 'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
 
     def predict_proba(self, df_features):
+        if self.trained:
+            X = df_features[self.features].values
+            X = _steps_transform(self.steps, X)
+
+            try:
+                probabilities = self.classifier.predict_proba(X)
+                probabilities = probabilities[:, 1]
+            except AttributeError:
+                probabilities = self.classifier.predict(X)
+        else:
+            probabilities = np.zeros(len(df_features))
+
+        probability = df_features.copy()
+        probability['probability'] = probabilities
+        return probability
+
+    def has_validation(self):
+        return self.val_size > 0
+
+    def load(self):
+        state = joblib.load(PyTorch.FILENAME)
+        self.steps = state['steps']
+        self.classifier = state['classifier']
+        self.val_loss = state['val_loss']
+
+    def save(self):
+        mkdir(PyTorch.DIR)
+        state = {'steps': self.steps,
+                 'classifier': self.classifier,
+                 'val_loss': self.val_loss, }
+        joblib.dump(state, PyTorch.FILENAME)
+
+
+class Scikit(Model):
+
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, batch_size, val_size=0.0):
+        super().__init__()
+        self.steps = steps
+        self.classifier = classifier
+        self.features = features
+        self.target = target
+        self.soft_target = soft_target
+        self.batch_size = batch_size
+        self.fading_factor = fading_factor
+        self.val_size = val_size
+        self.trained = False
+
+    def train(self, df_train, **kwargs):
+        batch_size = self.batch_size if self.batch_size is not None else len(
+            df_train)
+        try:
+            sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
+                df_train, self.features, self.target, self.soft_target, self.val_size, batch_size, self.fading_factor, self.steps, **kwargs)
+        except ValueError as e:
+            logger.warning(e)
+            return
+
+        n_iterations = kwargs.pop('n_iterations', self.n_iterations)
+        sampled_classes = set()
+        for i in range(n_iterations):
+            for inputs, targets in sampled_train_dataloader:
+                inputs, targets = inputs.numpy(), targets.numpy()
+                sampled_classes.update(targets)
+                self.train_iteration(inputs=inputs, targets=targets)
+
+            if self.has_validation():
+                train_loss = 0
+                for inputs, targets in train_dataloader:
+                    inputs, targets = inputs.numpy(), targets.numpy()
+                    train_loss += self.classifier.score(inputs, targets)
+                train_loss = train_loss / len(val_dataloader)
+                val_loss = 0
+                for inputs, targets in val_dataloader:
+                    inputs, targets = inputs.numpy(), targets.numpy()
+                    val_loss += self.classifier.score(inputs, targets)
+                val_loss = val_loss / len(val_dataloader)
+                logger.debug(
+                    'Iteration: {}, Train loss: {}, Val loss: {}'.format(i, train_loss, val_loss))
+
+        if len(sampled_classes) == 2:
+            self.trained = True
+
+    @abstractmethod
+    def train_iteration(self, inputs, targets):
+        pass
+
+    def predict_proba(self, df_features):
         X = df_features[self.features].values
         X = _steps_transform(self.steps, X)
 
@@ -511,6 +620,23 @@ class Scikit(Model):
         joblib.dump(state, PyTorch.FILENAME)
 
 
+class LogisticRegression(Scikit):
+
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_epochs, batch_size, val_size=0.0):
+        super().__init__(steps=steps, classifier=classifier, features=features, target=target,
+                         soft_target=soft_target, fading_factor=fading_factor, batch_size=batch_size, val_size=val_size)
+        self.n_epochs = n_epochs
+
+    @property
+    def n_iterations(self):
+        return self.n_epochs
+
+    def train_iteration(self, inputs, targets):
+        self.classifier.partial_fit(
+            inputs, targets, classes=[0, 1])
+
+
+# TODO: implement n_iterations
 class Ensemble(Model):
     def __init__(self, models):
         super().__init__()
