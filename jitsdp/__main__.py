@@ -20,16 +20,20 @@ def main():
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--seeds',   type=int,
                         help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
+    # TODO: rename to n_epochs
     parser.add_argument('--epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
+    # TODO: add --n_trees
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0). The first fold is not used despite this parameter.',    default=0)
+    # TODO: rename to f_folds and replace 0 to 0.0 0.0
     parser.add_argument('--folds',   type=float,
                         help='Fraction of folds to be used by the evaluation. A minimum of two folds is always used despite this parameter. (default: 0).',  default=0)
     parser.add_argument('--fold_size',   type=int,
                         help='Number of commits in each fold (default: 50).',    default=50)
     parser.add_argument('--normal_proportion',   type=float,
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
+    # TODO: make zero disables ensemble and default to zero
     parser.add_argument('--ensemble_size',   type=int,
                         help='Number of models in the ensemble (default: 1).',    default=1)
     parser.add_argument('--models',   type=str,
