@@ -35,6 +35,7 @@ def create_pipeline(config):
     map_fn = {
         'mlp': create_mlp_model,
         'nb': create_nb_model,
+        'rf': create_rf_model,
         'sgd': create_sgd_model,
     }
     fn_create_model = map_fn[config['model']]
@@ -68,6 +69,14 @@ def create_mlp_model(config):
 
 def create_nb_model(config):
     classifier = GaussianNB()
+    return Scikit(steps=[], classifier=classifier,
+                  features=FEATURES, target='target', soft_target='soft_target',
+                  max_epochs=config['epochs'], batch_size=None, fading_factor=1)
+
+
+def create_rf_model(config):
+    classifier = RandomForestClassifier(
+        n_estimators=0, criterion='entropy', max_depth=5, warm_start=True, bootstrap=False, ccp_alpha=0.05)
     return Scikit(steps=[], classifier=classifier,
                   features=FEATURES, target='target', soft_target='soft_target',
                   max_epochs=config['epochs'], batch_size=None, fading_factor=1)
@@ -442,10 +451,24 @@ class Scikit(Model):
             for inputs, targets in sampled_train_dataloader:
                 inputs, targets = inputs.numpy(), targets.numpy()
                 sampled_classes.update(targets)
-                self.classifier.partial_fit(
-                    inputs, targets, classes=[0, 1])
-                train_loss += self.classifier.score(inputs, targets)
-            if len(sampled_classes) != 2:
+                # a single batch with only one class (nb and rf)
+                if self.batch_size is None and len(sampled_classes) != 2:
+                    # does not train classifier
+                    logger.warning(
+                        'It is expected two classes in the sampled data.')
+                    return
+                try:
+                    # mlp, lr and nb models
+                    self.classifier.partial_fit(
+                        inputs, targets, classes=[0, 1])
+                    train_loss += self.classifier.score(inputs, targets)
+                except AttributeError:
+                    # rf model
+                    self.classifier.n_estimators += 1
+                    self.classifier.fit(inputs, targets)
+                    train_loss = self.classifier.score(inputs, targets)
+            # multiple mini-batches with only one class (sgd)
+            if self.batch_size is not None and len(sampled_classes) != 2:
                 # reset classifier to become not fitted
                 self.classifier = clone(self.classifier)
                 logger.warning(
