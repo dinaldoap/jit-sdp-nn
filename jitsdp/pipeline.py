@@ -71,10 +71,9 @@ def create_mlp_model(config):
 
 def create_nb_model(config):
     classifier = GaussianNB()
-    # TODO: remove max_epoch and batch_size
-    return ScikitOld(steps=[], classifier=classifier,
+    return NaiveBayes(steps=[], classifier=classifier,
                      features=FEATURES, target='target', soft_target='soft_target',
-                     max_epochs=config['epochs'], batch_size=None, fading_factor=1)
+                     n_updates=config['epochs'], fading_factor=1)
 
 
 def create_rf_model(config):
@@ -431,106 +430,6 @@ def _steps_transform(steps, X):
     return X
 
 
-class ScikitOld(Model):
-
-    def __init__(self, steps, classifier, features, target, soft_target, max_epochs, batch_size, fading_factor, val_size=0.0):
-        super().__init__()
-        self.steps = steps
-        self.classifier = classifier
-        self.features = features
-        self.target = target
-        self.soft_target = soft_target
-        self.max_epochs = max_epochs
-        self.batch_size = batch_size
-        self.fading_factor = fading_factor
-        self.val_size = val_size
-
-    def train(self, df_train, **kwargs):
-        batch_size = self.batch_size if self.batch_size is not None else len(
-            df_train)
-        try:
-            sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
-                df_train, self.features, self.target, self.soft_target, self.val_size, batch_size, self.fading_factor, self.steps, **kwargs)
-        except ValueError as e:
-            logger.warning(e)
-            return
-
-        self.max_epochs = kwargs.pop('max_epochs', self.max_epochs)
-        train_loss = 0
-        sampled_classes = set()
-        for epoch in range(self.max_epochs):
-            for inputs, targets in sampled_train_dataloader:
-                inputs, targets = inputs.numpy(), targets.numpy()
-                sampled_classes.update(targets)
-                # a single batch with only one class (nb and rf)
-                if self.batch_size is None and len(sampled_classes) != 2:
-                    # does not train classifier
-                    logger.warning(
-                        'It is expected two classes in the sampled data.')
-                    return
-                try:
-                    # mlp, lr and nb models
-                    self.classifier.partial_fit(
-                        inputs, targets, classes=[0, 1])
-                    train_loss += self.classifier.score(inputs, targets)
-                except AttributeError:
-                    # rf model
-                    self.classifier.n_estimators += 1
-                    self.classifier.fit(inputs, targets)
-                    train_loss = self.classifier.score(inputs, targets)
-            # multiple mini-batches with only one class (sgd)
-            if self.batch_size is not None and len(sampled_classes) != 2:
-                # reset classifier to become not fitted
-                self.classifier = clone(self.classifier)
-                logger.warning(
-                    'It is expected two classes in the sampled data.')
-                return
-            train_loss = train_loss / len(sampled_train_dataloader)
-            val_loss = None
-            if self.has_validation():
-                val_loss = 0
-                for inputs, targets in val_dataloader:
-                    inputs, targets = inputs.numpy(), targets.numpy()
-                    val_loss += self.classifier.score(inputs, targets)
-                val_loss = val_loss / len(val_dataloader)
-
-            logger.debug(
-                'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
-
-    def predict_proba(self, df_features):
-        if self.trained:
-            X = df_features[self.features].values
-            X = _steps_transform(self.steps, X)
-
-            try:
-                probabilities = self.classifier.predict_proba(X)
-                probabilities = probabilities[:, 1]
-            except AttributeError:
-                probabilities = self.classifier.predict(X)
-        else:
-            probabilities = np.zeros(len(df_features))
-
-        probability = df_features.copy()
-        probability['probability'] = probabilities
-        return probability
-
-    def has_validation(self):
-        return self.val_size > 0
-
-    def load(self):
-        state = joblib.load(PyTorch.FILENAME)
-        self.steps = state['steps']
-        self.classifier = state['classifier']
-        self.val_loss = state['val_loss']
-
-    def save(self):
-        mkdir(PyTorch.DIR)
-        state = {'steps': self.steps,
-                 'classifier': self.classifier,
-                 'val_loss': self.val_loss, }
-        joblib.dump(state, PyTorch.FILENAME)
-
-
 class Scikit(Model):
 
     def __init__(self, steps, classifier, features, target, soft_target, fading_factor, batch_size, val_size=0.0):
@@ -617,6 +516,20 @@ class Scikit(Model):
                  'val_loss': self.val_loss, }
         joblib.dump(state, PyTorch.FILENAME)
 
+class NaiveBayes(Scikit):
+
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_updates, val_size=0.0):
+        super().__init__(steps=steps, classifier=classifier, features=features, target=target,
+                         soft_target=soft_target, fading_factor=fading_factor, batch_size=None, val_size=val_size)
+        self.n_updates = n_updates
+
+    @property
+    def n_iterations(self):
+        return self.n_updates
+
+    def train_iteration(self, inputs, targets):
+        self.classifier.partial_fit(
+                        inputs, targets, classes=[0, 1])
 
 class RandomForest(Scikit):
 
