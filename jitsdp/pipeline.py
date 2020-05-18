@@ -42,7 +42,7 @@ def create_pipeline(config):
     # TODO: recover Ensemble
     if config['ensemble_size'] > 1:
         models = [fn_create_model(config)
-                for i in range(config['ensemble_size'])]
+                  for i in range(config['ensemble_size'])]
         model = Ensemble(models=models)
     else:
         model = fn_create_model(config)
@@ -74,8 +74,8 @@ def create_mlp_model(config):
 def create_nb_model(config):
     classifier = GaussianNB()
     return NaiveBayes(steps=[], classifier=classifier,
-                     features=FEATURES, target='target', soft_target='soft_target',
-                     n_updates=config['epochs'], fading_factor=1)
+                      features=FEATURES, target='target', soft_target='soft_target',
+                      n_updates=config['epochs'], fading_factor=1)
 
 
 def create_rf_model(config):
@@ -518,6 +518,7 @@ class Scikit(Model):
                  'val_loss': self.val_loss, }
         joblib.dump(state, PyTorch.FILENAME)
 
+
 class NaiveBayes(Scikit):
 
     def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_updates, val_size=0.0):
@@ -531,7 +532,8 @@ class NaiveBayes(Scikit):
 
     def train_iteration(self, inputs, targets):
         self.classifier.partial_fit(
-                        inputs, targets, classes=[0, 1])
+            inputs, targets, classes=[0, 1])
+
 
 class RandomForest(Scikit):
 
