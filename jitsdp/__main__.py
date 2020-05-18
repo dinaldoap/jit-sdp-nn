@@ -23,7 +23,8 @@ def main():
     # TODO: rename to n_epochs
     parser.add_argument('--epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
-    # TODO: add --n_trees
+    parser.add_argument('--n_trees',   type=int,
+                        help='Number of trees trained by the random forest (default: 100).',    default=100)
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0). The first fold is not used despite this parameter.',    default=0)
     # TODO: rename to f_folds and replace 0 to 0.0 0.0

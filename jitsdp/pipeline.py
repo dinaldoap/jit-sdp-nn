@@ -82,7 +82,7 @@ def create_rf_model(config):
         n_estimators=0, criterion='entropy', max_depth=5, warm_start=True, bootstrap=False, ccp_alpha=0.05)
     return RandomForest(steps=[], classifier=classifier,
                         features=FEATURES, target='target', soft_target='soft_target',
-                        n_trees=config['epochs'], fading_factor=1)
+                        n_trees=config['n_trees'], fading_factor=1)
 
 
 # TODO: rename sgd to lr
