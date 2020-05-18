@@ -36,7 +36,7 @@ def create_pipeline(config):
         'mlp': create_mlp_model,
         'nb': create_nb_model,
         'rf': create_rf_model,
-        'sgd': create_sgd_model,
+        'lr': create_lr_model,
     }
     fn_create_model = map_fn[config['model']]
     if config['ensemble_size'] > 1:
@@ -85,8 +85,7 @@ def create_rf_model(config):
                         n_trees=config['n_trees'], fading_factor=1)
 
 
-# TODO: rename sgd to lr
-def create_sgd_model(config):
+def create_lr_model(config):
     scaler = StandardScaler()
     classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
     return LogisticRegression(n_epochs=config['n_epochs'], steps=[scaler], classifier=classifier,
