@@ -39,7 +39,6 @@ def create_pipeline(config):
         'sgd': create_sgd_model,
     }
     fn_create_model = map_fn[config['model']]
-    # TODO: recover Ensemble
     if config['ensemble_size'] > 1:
         models = [fn_create_model(config)
                   for i in range(config['ensemble_size'])]
@@ -568,11 +567,13 @@ class LogisticRegression(Scikit):
             inputs, targets, classes=[0, 1])
 
 
-# TODO: implement n_iterations
 class Ensemble(Model):
     def __init__(self, models):
         super().__init__()
         self.models = models
+
+    def n_iterations(self):
+        return self.models[0].n_iterations
 
     def train(self, df_train, **kwargs):
         for model in self.models:
