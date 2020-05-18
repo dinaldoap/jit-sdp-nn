@@ -67,14 +67,14 @@ def create_mlp_model(config):
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                    features=FEATURES, target='target', soft_target='soft_target',
-                   max_epochs=config['epochs'], batch_size=512, fading_factor=1)
+                   max_epochs=config['n_epochs'], batch_size=512, fading_factor=1)
 
 
 def create_nb_model(config):
     classifier = GaussianNB()
     return NaiveBayes(steps=[], classifier=classifier,
                       features=FEATURES, target='target', soft_target='soft_target',
-                      n_updates=config['epochs'], fading_factor=1)
+                      n_updates=config['n_epochs'], fading_factor=1)
 
 
 def create_rf_model(config):
@@ -89,7 +89,7 @@ def create_rf_model(config):
 def create_sgd_model(config):
     scaler = StandardScaler()
     classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
-    return LogisticRegression(n_epochs=config['epochs'], steps=[scaler], classifier=classifier,
+    return LogisticRegression(n_epochs=config['n_epochs'], steps=[scaler], classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
                               batch_size=512, fading_factor=1)
 

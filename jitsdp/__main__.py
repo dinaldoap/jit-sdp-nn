@@ -20,8 +20,7 @@ def main():
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--seeds',   type=int,
                         help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
-    # TODO: rename to n_epochs
-    parser.add_argument('--epochs',   type=int,
+    parser.add_argument('--n_epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--n_trees',   type=int,
                         help='Number of trees trained by the random forest (default: 100).',    default=100)
