@@ -34,7 +34,6 @@ def main():
                         help='Number of commits in each fold (default: 50).',    default=50)
     parser.add_argument('--normal_proportion',   type=float,
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
-    # TODO: make zero disables ensemble and default to zero
     parser.add_argument('--ensemble_size',   type=int,
                         help='Number of models in the ensemble (default: 1).',    default=1)
     parser.add_argument('--models',   type=str,

@@ -40,10 +40,12 @@ def create_pipeline(config):
     }
     fn_create_model = map_fn[config['model']]
     # TODO: recover Ensemble
-    # models = [fn_create_model(config)
-    #          for i in range(config['ensemble_size'])]
-    #model = Ensemble(models=models)
-    model = fn_create_model(config)
+    if config['ensemble_size'] > 1:
+        models = [fn_create_model(config)
+                for i in range(config['ensemble_size'])]
+        model = Ensemble(models=models)
+    else:
+        model = fn_create_model(config)
     if config['threshold'] == 1:
         classifier = RateFixed(
             model=model, normal_proportion=config['normal_proportion'])
