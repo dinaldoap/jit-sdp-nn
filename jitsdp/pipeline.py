@@ -80,11 +80,9 @@ def create_nb_model(config):
 def create_rf_model(config):
     classifier = RandomForestClassifier(
         n_estimators=0, criterion='entropy', max_depth=5, warm_start=True, bootstrap=False, ccp_alpha=0.05)
-    # TODO: remove max_epoch and batch_size
-    # TODO: add n_trees
-    return ScikitOld(steps=[], classifier=classifier,
-                     features=FEATURES, target='target', soft_target='soft_target',
-                     max_epochs=config['epochs'], batch_size=None, fading_factor=1)
+    return RandomForest(steps=[], classifier=classifier,
+                        features=FEATURES, target='target', soft_target='soft_target',
+                        n_trees=config['epochs'], fading_factor=1)
 
 
 # TODO: rename sgd to lr
@@ -275,7 +273,7 @@ class PyTorch(Model):
         self.trained = False
 
     @property
-    def n_iterations(self):        
+    def n_iterations(self):
         return self.max_epochs
 
     def train(self, df_train, **kwargs):
@@ -618,6 +616,23 @@ class Scikit(Model):
                  'classifier': self.classifier,
                  'val_loss': self.val_loss, }
         joblib.dump(state, PyTorch.FILENAME)
+
+
+class RandomForest(Scikit):
+
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_trees, val_size=0.0):
+        super().__init__(steps=steps, classifier=classifier, features=features, target=target,
+                         soft_target=soft_target, fading_factor=fading_factor, batch_size=None, val_size=val_size)
+        self.n_trees = n_trees
+
+    @property
+    def n_iterations(self):
+        return self.n_trees
+
+    def train_iteration(self, inputs, targets):
+        self.classifier.n_estimators += 1
+        self.classifier.fit(
+            inputs, targets)
 
 
 class LogisticRegression(Scikit):
