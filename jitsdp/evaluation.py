@@ -23,7 +23,7 @@ def run(config):
     interval = len(df_prequential) - start  # last commit
     n_folds = math.ceil(interval / fold_size)  # number of folds rounded up
     # use a fraction of folds (minimum of one)
-    n_folds = max(math.ceil(n_folds * config['folds']), 1)
+    n_folds = max(math.ceil(n_folds * config['f_folds']), 1)
     end = start + n_folds * fold_size  # last fold end
 
     pipeline = create_pipeline(config)
