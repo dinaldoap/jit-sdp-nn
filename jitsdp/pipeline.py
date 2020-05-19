@@ -545,6 +545,8 @@ class RandomForest(Scikit):
         return self.n_trees
 
     def train_iteration(self, inputs, targets):
+        if len(np.unique(targets)) != 2:
+            return
         self.classifier.n_estimators += 1
         self.classifier.fit(
             inputs, targets)
