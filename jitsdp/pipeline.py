@@ -484,16 +484,16 @@ class Scikit(Model):
         pass
 
     def predict_proba(self, df_features):
-        X = df_features[self.features].values
-        X = _steps_transform(self.steps, X)
+        if self.trained:
+            X = df_features[self.features].values
+            X = _steps_transform(self.steps, X)
 
-        try:
             try:
                 probabilities = self.classifier.predict_proba(X)
                 probabilities = probabilities[:, 1]
             except AttributeError:
                 probabilities = self.classifier.predict(X)
-        except NotFittedError:
+        else:
             probabilities = np.zeros(len(df_features))
 
         probability = df_features.copy()
