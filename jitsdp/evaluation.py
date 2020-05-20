@@ -10,6 +10,7 @@ import pandas as pd
 
 
 def run(config):
+    mlflow.log_params(config)
     set_seed(config)
     df_prequential = make_stream(
         'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/{}.csv'.format(config['dataset']))
@@ -73,7 +74,6 @@ def report(config):
     metrics = ['r0', 'r1', 'r0-r1', 'gmean', 't1', 's1', 'p1']
     metrics = {'avg_{}'.format(
         metric): results[metric].mean() for metric in metrics}
-    mlflow.log_params(config)
     mlflow.log_metrics(metrics)
     mlflow.log_artifacts(local_dir=dir)
 
