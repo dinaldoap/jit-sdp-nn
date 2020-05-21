@@ -79,7 +79,7 @@ def create_nb_model(config):
 
 def create_rf_model(config):
     classifier = RandomForestClassifier(
-        n_estimators=0, criterion='entropy', max_depth=5, warm_start=True, bootstrap=False, ccp_alpha=0.05)
+        n_estimators=0, criterion='entropy', max_depth=3, warm_start=True, bootstrap=False)
     return RandomForest(steps=[], classifier=classifier,
                         features=FEATURES, target='target', soft_target='soft_target',
                         n_trees=config['n_trees'], fading_factor=1)
