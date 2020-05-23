@@ -286,9 +286,9 @@ class PyTorch(Model):
         if torch.cuda.is_available():
             self.classifier = self.classifier.cuda()
 
-        self.max_epochs = kwargs.pop('max_epochs', self.max_epochs)
+        n_iterations = kwargs.pop('n_iterations', self.n_iterations)
         train_loss = 0
-        for epoch in range(self.max_epochs):
+        for epoch in range(n_iterations):
             self.classifier.train()
             for inputs, targets in sampled_train_dataloader:
                 if torch.cuda.is_available():
