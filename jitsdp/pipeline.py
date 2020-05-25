@@ -287,7 +287,6 @@ class PyTorch(Model):
             self.classifier = self.classifier.cuda()
 
         n_iterations = kwargs.pop('n_iterations', self.n_iterations)
-        train_loss = 0
         for epoch in range(n_iterations):
             self.classifier.train()
             for inputs, targets in sampled_train_dataloader:
@@ -297,13 +296,13 @@ class PyTorch(Model):
                 outputs = self.classifier(inputs.float())
                 loss = self.criterion(outputs.view(
                     outputs.shape[0]), targets.float())
-                train_loss += loss.item()
 
                 self.optimizer.zero_grad()
                 loss.backward()
                 self.optimizer.step()
 
-            train_loss = train_loss / len(sampled_train_dataloader)
+            train_loss = metrics.loss(
+                self.classifier, train_dataloader, criterion=self.criterion)
             val_loss = None
             if self.has_validation():
                 val_loss = metrics.loss(
