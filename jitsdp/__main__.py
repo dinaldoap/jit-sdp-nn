@@ -30,6 +30,8 @@ def main():
                         help='Fraction of folds to be used by the evaluation. A minimum of two folds is always used despite this parameter. (default: 0.0).',  default=0.0)
     parser.add_argument('--fold_size',   type=int,
                         help='Number of commits in each fold (default: 50).',    default=50)
+    parser.add_argument('--f_val',   type=float,
+                        help='Fraction of labeled data to be used for validation. (default: 0.0).',  default=0.0)
     parser.add_argument('--normal_proportion',   type=float,
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
     parser.add_argument('--ensemble_size',   type=int,

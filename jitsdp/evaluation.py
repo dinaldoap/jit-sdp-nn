@@ -31,6 +31,7 @@ def run(config):
     if config['incremental']:
         pipeline.save()
     target_prediction = None
+    train_step = 0
     for current in range(start, end, fold_size):
         df_train = df_prequential[:current].copy()
         df_test = df_prequential[current:min(current + fold_size, end)].copy()
@@ -52,7 +53,9 @@ def run(config):
         pipeline = create_pipeline(config)
         if config['incremental']:
             pipeline.load()
-        pipeline.train(df_train, df_ma=df_val)
+        for metrics in pipeline.train(df_train, df_ma=df_val):
+            mlflow.log_metrics(metrics=metrics, step=train_step)
+            train_step += 1
         if config['incremental']:
             pipeline.save()
         target_prediction_test = pipeline.predict(

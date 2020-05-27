@@ -67,14 +67,14 @@ def create_mlp_model(config):
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                    features=FEATURES, target='target', soft_target='soft_target',
-                   max_epochs=config['n_epochs'], batch_size=512, fading_factor=1)
+                   max_epochs=config['n_epochs'], batch_size=512, fading_factor=1, val_size=config['f_val'])
 
 
 def create_nb_model(config):
     classifier = GaussianNB()
     return NaiveBayes(steps=[], classifier=classifier,
                       features=FEATURES, target='target', soft_target='soft_target',
-                      n_updates=config['n_epochs'], fading_factor=1)
+                      n_updates=config['n_epochs'], fading_factor=1, val_size=config['f_val'])
 
 
 def create_rf_model(config):
@@ -82,7 +82,7 @@ def create_rf_model(config):
         n_estimators=0, criterion='entropy', max_depth=3, warm_start=True, bootstrap=False)
     return RandomForest(steps=[], classifier=classifier,
                         features=FEATURES, target='target', soft_target='soft_target',
-                        n_trees=config['n_trees'], fading_factor=1)
+                        n_trees=config['n_trees'], fading_factor=1, val_size=config['f_val'])
 
 
 def create_lr_model(config):
@@ -90,7 +90,7 @@ def create_lr_model(config):
     classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
     return LogisticRegression(n_epochs=config['n_epochs'], steps=[scaler], classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
-                              batch_size=512, fading_factor=1)
+                              batch_size=512, fading_factor=1, val_size=config['f_val'])
 
 
 class Model(metaclass=ABCMeta):
@@ -127,7 +127,7 @@ class Threshold(Classifier):
         self.model = model
 
     def train(self, df_train, **kwargs):
-        self.model.train(df_train, **kwargs)
+        yield from self.model.train(df_train, **kwargs)
 
     def predict_proba(self, df_features):
         return self.model.predict_proba(df_features)
@@ -231,7 +231,7 @@ class ORB(Classifier):
             new_kwargs = dict(kwargs)
             new_kwargs['weights'] = [obf0, obf1]
             new_kwargs['n_iterations'] = 1
-            self.classifier.train(df_train, **new_kwargs)
+            yield from self.classifier.train(df_train, **new_kwargs)
             df_output = self.classifier.predict(df_ma)
             ma = df_output['prediction'].mean()
 
@@ -301,15 +301,13 @@ class PyTorch(Model):
                 loss.backward()
                 self.optimizer.step()
 
-            train_loss = metrics.loss(
-                self.classifier, train_dataloader, criterion=self.criterion)
-            val_loss = None
             if self.has_validation():
-                val_loss = metrics.loss(
-                    self.classifier, val_dataloader, criterion=self.criterion)
+                train_loss = metrics.loss(
+                    self.classifier, train_dataloader, criterion=self.criterion)
+                yield {
+                    'train_loss': train_loss,
+                }
 
-            logger.debug(
-                'Epoch: {}, Train loss: {}, Val loss: {}'.format(epoch, train_loss, val_loss))
         self.trained = True
 
     def predict_proba(self, df_features):
@@ -368,6 +366,7 @@ def _prepare_dataloaders(df_train, features, target, soft_target, val_size, batc
 
     val_dataloader = None
     if val_size > 0:
+        # TODO: stratified shuffle split
         X_train, X_val, y_train, y_val, soft_y_train, soft_y_val = train_test_split(
             X, y, soft_y, test_size=val_size, shuffle=False)
         val_dataloader = _dataloader(X_val, y_val)
