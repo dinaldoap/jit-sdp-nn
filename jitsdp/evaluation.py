@@ -27,14 +27,19 @@ def run(config):
     n_folds = max(math.ceil(n_folds * config['f_folds']), 1)
     end = start + n_folds * fold_size  # last fold end
 
+    if config['f_val'] > 0:
+        step = (n_folds // 4) * fold_size
+    else:
+        step = fold_size
+
     pipeline = create_pipeline(config)
     if config['incremental']:
         pipeline.save()
     target_prediction = None
     train_step = 0
-    for current in range(start, end, fold_size):
+    for current in range(start, end, step):
         df_train = df_prequential[:current].copy()
-        df_test = df_prequential[current:min(current + fold_size, end)].copy()
+        df_test = df_prequential[current:min(current + step, end)].copy()
         # check if fix has been done (bug) or verification latency has passed (normal), otherwise is unlabeled
         train_timestamp = df_train['timestamp'].max()
         df_train['soft_target'] = df_train.apply(lambda row: 1 if row.timestamp_fix <= train_timestamp

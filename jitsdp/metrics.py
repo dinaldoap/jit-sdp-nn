@@ -3,22 +3,13 @@ import jitsdp.constants as const
 import numpy as np
 import pandas as pd
 from scipy.stats import mstats
+from sklearn import metrics as met
 import torch
 
 
-def loss(classifier, dataloader, criterion):
-    with torch.no_grad():
-        classifier.eval()
-        loss = 0
-        for inputs, targets in dataloader:
-            if torch.cuda.is_available():
-                inputs, targets = inputs.cuda(), targets.cuda()
-
-            outputs = classifier(inputs.float())
-            batch_loss = criterion(outputs.squeeze(), targets.float())
-            loss += batch_loss.item()
-
-        return loss / len(dataloader)
+def loss(model, df_features_target):
+    df_prediction = model.predict_proba(df_features_target)
+    return met.log_loss(df_features_target['target'], df_prediction['probability'])
 
 
 def __recalls(targets, predictions):

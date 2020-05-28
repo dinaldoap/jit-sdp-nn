@@ -277,7 +277,7 @@ class PyTorch(Model):
 
     def train(self, df_train, **kwargs):
         try:
-            sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
+            sampled_train_dataloader, df_train, df_val = _prepare_dataloaders(
                 df_train, self.features, self.target, self.soft_target, self.val_size, self.batch_size, self.fading_factor, self.steps, **kwargs)
         except ValueError as e:
             logger.warning(e)
@@ -301,14 +301,9 @@ class PyTorch(Model):
                 loss.backward()
                 self.optimizer.step()
 
-            if self.has_validation():
-                train_loss = metrics.loss(
-                    self.classifier, train_dataloader, criterion=self.criterion)
-                yield {
-                    'train_loss': train_loss,
-                }
+            self.trained = True
+            yield from _track_loss(self, df_train)
 
-        self.trained = True
 
     def predict_proba(self, df_features):
         if self.trained:
@@ -357,30 +352,26 @@ class PyTorch(Model):
 
 
 def _prepare_dataloaders(df_train, features, target, soft_target, val_size, batch_size, fading_factor, steps, **kwargs):
-    X = df_train[features].values
-    y = df_train[target].values
-    soft_y = df_train[soft_target].values
-    classes = np.unique(y)
-    if len(classes) != 2:
-        raise ValueError('It is expected two classes to train.')
-
-    val_dataloader = None
     if val_size > 0:
         # TODO: stratified shuffle split
-        X_train, X_val, y_train, y_val, soft_y_train, soft_y_val = train_test_split(
-            X, y, soft_y, test_size=val_size, shuffle=False)
-        val_dataloader = _dataloader(X_val, y_val)
+        df_train, df_val = train_test_split(
+            df_train, test_size=val_size, shuffle=False)
     else:
-        X_train, y_train, soft_y_train = X, y, soft_y
+        df_val = None
+    X_train = df_train[features].values
+    y_train = df_train[target].values
+    soft_y_train = df_train[soft_target].values
+    classes = np.unique(y_train)
+    if len(classes) != 2:
+        raise ValueError('It is expected two classes to train.')
 
     X_train = _steps_fit_transform(steps, X_train, y_train)
 
     weights = kwargs.pop('weights', [1, 1])
     sampled_train_dataloader = _dataloader(
         X_train, soft_y_train, batch_size=batch_size, sampler=_sampler(y_train, weights, fading_factor))
-    train_dataloader = _dataloader(X_train, y_train)
 
-    return sampled_train_dataloader, train_dataloader, val_dataloader
+    return sampled_train_dataloader, df_train, df_val
 
 
 def _tensor(X, y):
@@ -604,3 +595,12 @@ def _combine(prediction):
     prediction['probability'] = prediction[probability_cols].mean(
         axis='columns')
     return prediction
+
+
+def _track_loss(model, df_features_target):
+    if model.has_validation():
+        train_loss = metrics.loss(
+            model, df_features_target)
+        yield {
+            'train_loss': train_loss,
+        }
