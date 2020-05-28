@@ -304,7 +304,6 @@ class PyTorch(Model):
             self.trained = True
             yield from _track_loss(self, df_train)
 
-
     def predict_proba(self, df_features):
         if self.trained:
             X = df_features[self.features].values
