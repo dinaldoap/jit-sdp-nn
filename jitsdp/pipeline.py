@@ -436,7 +436,7 @@ class Scikit(Model):
         batch_size = self.batch_size if self.batch_size is not None else len(
             df_train)
         try:
-            sampled_train_dataloader, train_dataloader, val_dataloader = _prepare_dataloaders(
+            sampled_train_dataloader, df_train, df_val = _prepare_dataloaders(
                 df_train, self.features, self.target, self.soft_target, self.val_size, batch_size, self.fading_factor, self.steps, **kwargs)
         except ValueError as e:
             logger.warning(e)
@@ -450,22 +450,9 @@ class Scikit(Model):
                 sampled_classes.update(targets)
                 self.train_iteration(inputs=inputs, targets=targets)
 
-            if self.has_validation():
-                train_loss = 0
-                for inputs, targets in train_dataloader:
-                    inputs, targets = inputs.numpy(), targets.numpy()
-                    train_loss += self.classifier.score(inputs, targets)
-                train_loss = train_loss / len(val_dataloader)
-                val_loss = 0
-                for inputs, targets in val_dataloader:
-                    inputs, targets = inputs.numpy(), targets.numpy()
-                    val_loss += self.classifier.score(inputs, targets)
-                val_loss = val_loss / len(val_dataloader)
-                logger.debug(
-                    'Iteration: {}, Train loss: {}, Val loss: {}'.format(i, train_loss, val_loss))
-
-        if len(sampled_classes) == 2:
-            self.trained = True
+            if len(sampled_classes) == 2:
+                self.trained = True
+            yield from _track_loss(model=self, df_features_target=df_train)
 
     @abstractmethod
     def train_iteration(self, inputs, targets):
