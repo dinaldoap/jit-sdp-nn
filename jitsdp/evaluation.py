@@ -46,11 +46,12 @@ def run(config):
                                                  else 0 if row.timestamp <= train_timestamp - verification_latency
                                                  else __verification_latency_label(train_timestamp, row.timestamp, verification_latency, config), axis='columns')
         if config['threshold'] in [1, 2] or config['orb']:
-            val_size = min(int(len(df_train) * .1), 100)
-            df_val = df_train[-val_size:]
-            df_train = df_train[:-val_size]
+            # most recent commits  (labeled or not)
+            tail_size = min(int(len(df_train) * .1), 100)
+            df_tail = df_train[-tail_size:]
+            df_train = df_train[:-tail_size]
         else:
-            df_val = None
+            df_tail = None
 
         df_train = df_train.dropna(subset=['soft_target'])
         df_train['target'] = df_train['soft_target'] > .5
@@ -58,13 +59,13 @@ def run(config):
         pipeline = create_pipeline(config)
         if config['incremental']:
             pipeline.load()
-        for metrics in pipeline.train(df_train, df_ma=df_val):
+        for metrics in pipeline.train(df_train, df_ma=df_tail):
             mlflow.log_metrics(metrics=metrics, step=update_step)
             update_step += 1
         if config['incremental']:
             pipeline.save()
         target_prediction_test = pipeline.predict(
-            df_test, df_threshold=df_val, df_proportion=df_train)
+            df_test, df_threshold=df_tail, df_proportion=df_train)
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
 
