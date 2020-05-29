@@ -67,14 +67,14 @@ def create_mlp_model(config):
     optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
     return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                    features=FEATURES, target='target', soft_target='soft_target',
-                   max_epochs=config['n_epochs'], batch_size=512, fading_factor=1, val_size=config['f_val'])
+                   max_epochs=config['n_epochs'], batch_size=512, fading_factor=1)
 
 
 def create_nb_model(config):
     classifier = GaussianNB()
     return NaiveBayes(steps=[], classifier=classifier,
                       features=FEATURES, target='target', soft_target='soft_target',
-                      n_updates=config['n_epochs'], fading_factor=1, val_size=config['f_val'])
+                      n_updates=config['n_epochs'], fading_factor=1)
 
 
 def create_rf_model(config):
@@ -82,7 +82,7 @@ def create_rf_model(config):
         n_estimators=0, criterion='entropy', max_depth=3, warm_start=True, bootstrap=False)
     return RandomForest(steps=[], classifier=classifier,
                         features=FEATURES, target='target', soft_target='soft_target',
-                        n_trees=config['n_trees'], fading_factor=1, val_size=config['f_val'])
+                        n_trees=config['n_trees'], fading_factor=1)
 
 
 def create_lr_model(config):
@@ -90,7 +90,7 @@ def create_lr_model(config):
     classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
     return LogisticRegression(n_epochs=config['n_epochs'], steps=[scaler], classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
-                              batch_size=512, fading_factor=1, val_size=config['f_val'])
+                              batch_size=512, fading_factor=1)
 
 
 class Model(metaclass=ABCMeta):
@@ -256,7 +256,7 @@ class PyTorch(Model):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'steps.cpt'
 
-    def __init__(self, steps, classifier, optimizer, criterion, features, target, soft_target, max_epochs, batch_size, fading_factor, val_size=0.0):
+    def __init__(self, steps, classifier, optimizer, criterion, features, target, soft_target, max_epochs, batch_size, fading_factor):
         super().__init__()
         self.steps = steps
         self.classifier = classifier
@@ -268,7 +268,6 @@ class PyTorch(Model):
         self.max_epochs = max_epochs
         self.batch_size = batch_size
         self.fading_factor = fading_factor
-        self.val_size = val_size
         self.trained = False
 
     @property
@@ -302,7 +301,7 @@ class PyTorch(Model):
                 self.optimizer.step()
 
             self.trained = True
-            yield from _track_loss(self, df_train)
+            yield from _track_loss(model=self, df_features_target=df_train, **kwargs)
 
     def predict_proba(self, df_features):
         if self.trained:
@@ -330,9 +329,6 @@ class PyTorch(Model):
         probability = df_features.copy()
         probability['probability'] = probabilities
         return probability
-
-    def has_validation(self):
-        return self.val_size > 0
 
     def load(self):
         state = joblib.load(PyTorch.FILENAME)
@@ -414,7 +410,7 @@ def _steps_transform(steps, X):
 
 class Scikit(Model):
 
-    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, batch_size, val_size=0.0):
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, batch_size):
         super().__init__()
         self.steps = steps
         self.classifier = classifier
@@ -423,7 +419,6 @@ class Scikit(Model):
         self.soft_target = soft_target
         self.batch_size = batch_size
         self.fading_factor = fading_factor
-        self.val_size = val_size
         self.trained = False
 
     def train(self, df_train, **kwargs):
@@ -446,7 +441,7 @@ class Scikit(Model):
 
             if len(sampled_classes) == 2:
                 self.trained = True
-            yield from _track_loss(model=self, df_features_target=df_train)
+            yield from _track_loss(model=self, df_features_target=df_train, **kwargs)
 
     @abstractmethod
     def train_iteration(self, inputs, targets):
@@ -469,9 +464,6 @@ class Scikit(Model):
         probability['probability'] = probabilities
         return probability
 
-    def has_validation(self):
-        return self.val_size > 0
-
     def load(self):
         state = joblib.load(PyTorch.FILENAME)
         self.steps = state['steps']
@@ -488,9 +480,9 @@ class Scikit(Model):
 
 class NaiveBayes(Scikit):
 
-    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_updates, val_size=0.0):
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_updates):
         super().__init__(steps=steps, classifier=classifier, features=features, target=target,
-                         soft_target=soft_target, fading_factor=fading_factor, batch_size=None, val_size=val_size)
+                         soft_target=soft_target, fading_factor=fading_factor, batch_size=None)
         self.n_updates = n_updates
 
     @property
@@ -504,9 +496,9 @@ class NaiveBayes(Scikit):
 
 class RandomForest(Scikit):
 
-    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_trees, val_size=0.0):
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_trees):
         super().__init__(steps=steps, classifier=classifier, features=features, target=target,
-                         soft_target=soft_target, fading_factor=fading_factor, batch_size=None, val_size=val_size)
+                         soft_target=soft_target, fading_factor=fading_factor, batch_size=None)
         self.n_trees = n_trees
 
     @property
@@ -523,9 +515,9 @@ class RandomForest(Scikit):
 
 class LogisticRegression(Scikit):
 
-    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_epochs, batch_size, val_size=0.0):
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_epochs, batch_size):
         super().__init__(steps=steps, classifier=classifier, features=features, target=target,
-                         soft_target=soft_target, fading_factor=fading_factor, batch_size=batch_size, val_size=val_size)
+                         soft_target=soft_target, fading_factor=fading_factor, batch_size=batch_size)
         self.n_epochs = n_epochs
 
     @property
@@ -577,8 +569,9 @@ def _combine(prediction):
     return prediction
 
 
-def _track_loss(model, df_features_target):
-    if model.has_validation():
+def _track_loss(model, df_features_target, **kwargs):
+    df_val = kwargs.pop('df_val', None)
+    if df_val is not None:
         train_loss = metrics.loss(
             model, df_features_target)
         yield {
