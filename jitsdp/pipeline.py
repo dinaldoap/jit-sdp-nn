@@ -277,8 +277,8 @@ class PyTorch(Model):
 
     def train(self, df_train, **kwargs):
         try:
-            sampled_train_dataloader, df_train, df_val = _prepare_dataloaders(
-                df_train, self.features, self.target, self.soft_target, self.val_size, self.batch_size, self.fading_factor, self.steps, **kwargs)
+            sampled_train_dataloader = _prepare_dataloaders(
+                df_train, self.features, self.target, self.soft_target, self.batch_size, self.fading_factor, self.steps, **kwargs)
         except ValueError as e:
             logger.warning(e)
             return
@@ -350,13 +350,7 @@ class PyTorch(Model):
         self.classifier.save()
 
 
-def _prepare_dataloaders(df_train, features, target, soft_target, val_size, batch_size, fading_factor, steps, **kwargs):
-    if val_size > 0:
-        # TODO: stratified shuffle split
-        df_train, df_val = train_test_split(
-            df_train, test_size=val_size, shuffle=False)
-    else:
-        df_val = None
+def _prepare_dataloaders(df_train, features, target, soft_target, batch_size, fading_factor, steps, **kwargs):
     X_train = df_train[features].values
     y_train = df_train[target].values
     soft_y_train = df_train[soft_target].values
@@ -370,7 +364,7 @@ def _prepare_dataloaders(df_train, features, target, soft_target, val_size, batc
     sampled_train_dataloader = _dataloader(
         X_train, soft_y_train, batch_size=batch_size, sampler=_sampler(y_train, weights, fading_factor))
 
-    return sampled_train_dataloader, df_train, df_val
+    return sampled_train_dataloader
 
 
 def _tensor(X, y):
@@ -436,8 +430,8 @@ class Scikit(Model):
         batch_size = self.batch_size if self.batch_size is not None else len(
             df_train)
         try:
-            sampled_train_dataloader, df_train, df_val = _prepare_dataloaders(
-                df_train, self.features, self.target, self.soft_target, self.val_size, batch_size, self.fading_factor, self.steps, **kwargs)
+            sampled_train_dataloader = _prepare_dataloaders(
+                df_train, self.features, self.target, self.soft_target, batch_size, self.fading_factor, self.steps, **kwargs)
         except ValueError as e:
             logger.warning(e)
             return

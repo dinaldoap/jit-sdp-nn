@@ -65,7 +65,7 @@ def run(config):
         pipeline = create_pipeline(config)
         if config['incremental']:
             pipeline.load()
-        for metrics in pipeline.train(df_train, df_ma=df_tail):
+        for metrics in pipeline.train(df_train, df_ma=df_tail, df_val=df_val):
             mlflow.log_metrics(metrics=metrics, step=update_step)
             update_step += 1
         if config['incremental']:
@@ -106,7 +106,7 @@ def __verification_latency_label(train_timestamp, commit_timestamp, verification
 
 def __prepare_val_data(df_train, config):
     f_val = config['f_val']
-    if f_val > .0:
+    if f_val > .0 and len(df_train) > 1:
         train_index, val_index = next(StratifiedShuffleSplit(
             n_splits=1, test_size=f_val).split(df_train, df_train['target']))
         df_train, df_val = df_train.iloc[train_index], df_train.iloc[val_index]
