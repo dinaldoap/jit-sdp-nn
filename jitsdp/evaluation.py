@@ -7,6 +7,7 @@ from jitsdp.plot import plot_recalls_gmean, plot_proportions
 import math
 import mlflow
 import pandas as pd
+from sklearn.model_selection import StratifiedShuffleSplit
 
 
 def run(config):
@@ -55,6 +56,8 @@ def run(config):
 
         df_train = df_train.dropna(subset=['soft_target'])
         df_train['target'] = df_train['soft_target'] > .5
+
+        df_train, df_val = __prepare_val_data(df_train, config)
         # train and predict
         pipeline = create_pipeline(config)
         if config['incremental']:
@@ -96,3 +99,15 @@ def __verification_latency_label(train_timestamp, commit_timestamp, verification
         return .5 - .5 * (train_timestamp - commit_timestamp) / verification_latency
 
     return None
+
+
+def __prepare_val_data(df_train, config):
+    f_val = config['f_val']
+    if f_val > .0:
+        train_index, val_index = next(StratifiedShuffleSplit(
+            n_splits=1, test_size=f_val).split(df_train, df_train['target']))
+        df_train, df_val = df_train.iloc[train_index], df_train.iloc[val_index]
+    else:
+        df_val = None
+
+    return df_train, df_val
