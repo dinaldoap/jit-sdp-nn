@@ -233,7 +233,8 @@ class ORB(Classifier):
             new_kwargs = dict(kwargs)
             new_kwargs['weights'] = [obf0, obf1]
             new_kwargs['n_iterations'] = 1
-            yield from self.classifier.train(df_train, **new_kwargs)
+            for metrics in self.classifier.train(df_train, **new_kwargs):
+                yield _track_orb(metrics=metrics, ma=ma, obf0=obf0, obf1=obf1, **kwargs)
             df_output = self.classifier.predict(df_ma)
             ma = df_output['prediction'].mean()
 
@@ -586,5 +587,17 @@ def _track_metrics(metrics, classifier, df_train, **kwargs):
             'train_loss': train_loss,
             'train_gmean': train_gmean,
             'val_gmean': val_gmean,
+        })
+        return metrics
+
+
+def _track_orb(metrics, ma, obf0, obf1, **kwargs):
+    df_val = kwargs.pop('df_val', None)
+    if df_val is not None:
+        metrics = dict(metrics)
+        metrics.update({
+            'ma': ma,
+            'obf0': obf0,
+            'obf1': obf1,
         })
         return metrics
