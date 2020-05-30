@@ -66,7 +66,8 @@ def run(config):
         if config['incremental']:
             pipeline.load()
         for metrics in pipeline.train(df_train, df_ma=df_tail, df_val=df_val):
-            mlflow.log_metrics(metrics=metrics, step=update_step)
+            if __has_metrics(metrics):
+                mlflow.log_metrics(metrics=metrics, step=update_step)
             update_step += 1
         if config['incremental']:
             pipeline.save()
@@ -114,3 +115,7 @@ def __prepare_val_data(df_train, config):
         df_val = None
 
     return df_train, df_val
+
+
+def __has_metrics(metrics):
+    return metrics is not None and len(metrics) > 0

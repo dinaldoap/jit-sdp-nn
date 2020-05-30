@@ -129,7 +129,7 @@ class Threshold(Classifier):
     def train(self, df_train, **kwargs):
         for metrics in self.model.train(df_train, **kwargs):
             yield _track_metrics(metrics=metrics,
-                                 classifier=self, df_train=df_train, **kwargs)
+                                     classifier=self, df_train=df_train, **kwargs)
 
     def predict_proba(self, df_features):
         return self.model.predict_proba(df_features)
@@ -304,7 +304,7 @@ class PyTorch(Model):
                 self.optimizer.step()
 
             self.trained = True
-            yield {}
+            yield
 
     def predict_proba(self, df_features):
         if self.trained:
@@ -444,7 +444,7 @@ class Scikit(Model):
 
             if len(sampled_classes) == 2:
                 self.trained = True
-            yield {}
+            yield
 
     @abstractmethod
     def train_iteration(self, inputs, targets):
@@ -582,7 +582,7 @@ def _track_metrics(metrics, classifier, df_train, **kwargs):
             train_prediction)
         val_gmean = met.gmean(
             val_prediction)
-        metrics = dict(metrics)
+        metrics = _prepare_metrics(metrics)
         metrics.update({
             'train_loss': train_loss,
             'train_gmean': train_gmean,
@@ -594,10 +594,14 @@ def _track_metrics(metrics, classifier, df_train, **kwargs):
 def _track_orb(metrics, ma, obf0, obf1, **kwargs):
     df_val = kwargs.pop('df_val', None)
     if df_val is not None:
-        metrics = dict(metrics)
+        metrics = _prepare_metrics(metrics)
         metrics.update({
             'ma': ma,
             'obf0': obf0,
             'obf1': obf1,
         })
         return metrics
+
+
+def _prepare_metrics(metrics):
+    return {} if metrics is None else dict(metrics)
