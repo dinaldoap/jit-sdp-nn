@@ -127,7 +127,12 @@ class Threshold(Classifier):
         self.model = model
 
     def train(self, df_train, **kwargs):
-        yield from self.model.train(df_train, **kwargs)
+        for metrics in self.model.train(df_train, **kwargs):
+            metrics = dict(metrics)
+            gmeans = _track_gmean(classifier=self, df_train=df_train, **kwargs)
+            metrics.update(gmeans)
+            yield metrics
+
 
     def predict_proba(self, df_features):
         return self.model.predict_proba(df_features)
@@ -576,4 +581,16 @@ def _track_loss(model, df_features_target, **kwargs):
             model, df_features_target)
         yield {
             'train_loss': train_loss,
+        }
+
+def _track_gmean(classifier, df_train, **kwargs):
+    df_val = kwargs.pop('df_val', None)
+    if df_val is not None:
+        train_gmean = metrics.gmean(
+            classifier, df_train)
+        val_gmean = metrics.gmean(
+            classifier, df_val)
+        return {
+            'train_gmean': train_gmean,
+            'val_gmean': val_gmean,
         }

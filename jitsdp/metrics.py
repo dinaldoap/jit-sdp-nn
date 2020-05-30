@@ -11,6 +11,11 @@ def loss(model, df_features_target):
     df_prediction = model.predict_proba(df_features_target)
     return met.log_loss(df_features_target['target'], df_prediction['probability'])
 
+def gmean(classifier, df_features_target):
+    df_prediction = classifier.predict(df_features_target)
+    recall_1 = met.recall_score(df_features_target['target'], df_prediction['prediction'])
+    return mstats.gmean([1. - recall_1, recall_1])
+
 
 def __recalls(targets, predictions):
     classes = np.unique(targets)
