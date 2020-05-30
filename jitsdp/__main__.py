@@ -64,15 +64,18 @@ def main():
     with mlflow.start_run():
         configs = create_configs(args, lists)
         with Pool(args['pool_size']) as pool:
-            pool.map(safe_run, configs)
+            codes = pool.map(safe_run, configs)
         mlflow.log_artifact(log)
+        return sum(codes)
 
 
 def safe_run(config):
     try:
         run_nested(config)
+        return 0
     except Exception:
         logging.exception('Exception raised on config: {}'.format(config))
+        return 1
 
 
 def run_nested(config):
@@ -98,4 +101,4 @@ def create_configs(args, lists):
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
