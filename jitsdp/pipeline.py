@@ -1,4 +1,4 @@
-from jitsdp import metrics
+from jitsdp import metrics as met
 from jitsdp.mlp import MLP
 from jitsdp.data import FEATURES
 from jitsdp.utils import mkdir
@@ -128,11 +128,8 @@ class Threshold(Classifier):
 
     def train(self, df_train, **kwargs):
         for metrics in self.model.train(df_train, **kwargs):
-            metrics = dict(metrics)
-            gmeans = _track_gmean(classifier=self, df_train=df_train, **kwargs)
-            metrics.update(gmeans)
-            yield metrics
-
+            yield _track_metrics(metrics=metrics,
+                                 classifier=self, df_train=df_train, **kwargs)
 
     def predict_proba(self, df_features):
         return self.model.predict_proba(df_features)
@@ -306,7 +303,7 @@ class PyTorch(Model):
                 self.optimizer.step()
 
             self.trained = True
-            yield from _track_loss(model=self, df_features_target=df_train, **kwargs)
+            yield {}
 
     def predict_proba(self, df_features):
         if self.trained:
@@ -446,7 +443,7 @@ class Scikit(Model):
 
             if len(sampled_classes) == 2:
                 self.trained = True
-            yield from _track_loss(model=self, df_features_target=df_train, **kwargs)
+            yield {}
 
     @abstractmethod
     def train_iteration(self, inputs, targets):
@@ -574,23 +571,20 @@ def _combine(prediction):
     return prediction
 
 
-def _track_loss(model, df_features_target, **kwargs):
+def _track_metrics(metrics, classifier, df_train, **kwargs):
     df_val = kwargs.pop('df_val', None)
     if df_val is not None:
-        train_loss = metrics.loss(
-            model, df_features_target)
-        yield {
+        train_prediction = classifier.predict(df_train)
+        val_prediction = classifier.predict(df_val)
+        train_loss = met.loss(train_prediction)
+        train_gmean = met.gmean(
+            train_prediction)
+        val_gmean = met.gmean(
+            val_prediction)
+        metrics = dict(metrics)
+        metrics.update({
             'train_loss': train_loss,
-        }
-
-def _track_gmean(classifier, df_train, **kwargs):
-    df_val = kwargs.pop('df_val', None)
-    if df_val is not None:
-        train_gmean = metrics.gmean(
-            classifier, df_train)
-        val_gmean = metrics.gmean(
-            classifier, df_val)
-        return {
             'train_gmean': train_gmean,
             'val_gmean': val_gmean,
-        }
+        })
+        return metrics
