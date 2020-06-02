@@ -29,10 +29,10 @@ def run(config):
     end = start + n_folds * fold_size  # last fold end
 
     if config['f_val'] > 0:
-        folds_by_step = max(n_folds // 5, 1)
+        folds_by_step = max(n_folds // 4, 1)
         step = folds_by_step * fold_size
-        n_steps = min(4, n_folds)
-        start = end - n_steps * step
+        n_steps = min(3, n_folds)
+        start = end - n_steps * step - fold_size
     else:
         step = fold_size
 
