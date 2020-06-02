@@ -128,7 +128,7 @@ class Threshold(Classifier):
 
     def train(self, df_train, **kwargs):
         for metrics in self.model.train(df_train, **kwargs):
-            yield _track_metrics(metrics=metrics,
+            yield _track_performance(metrics=metrics,
                                      classifier=self, df_train=df_train, **kwargs)
 
     def predict_proba(self, df_features):
@@ -572,7 +572,7 @@ def _combine(prediction):
     return prediction
 
 
-def _track_metrics(metrics, classifier, df_train, **kwargs):
+def _track_performance(metrics, classifier, df_train, **kwargs):
     df_val = kwargs.pop('df_val', None)
     if df_val is not None:
         train_prediction = classifier.predict(df_train)
