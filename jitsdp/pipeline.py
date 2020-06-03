@@ -63,8 +63,8 @@ def create_mlp_model(config):
     scaler = StandardScaler()
     criterion = nn.BCELoss()
     classifier = MLP(input_size=len(FEATURES),
-                     hidden_size=len(FEATURES) // 2, drop_prob=0.2)
-    optimizer = optim.Adam(params=classifier.parameters(), lr=0.003)
+                     hidden_size=len(FEATURES) + 1, drop_prob_input=.2, drop_prob_hidden=.5)
+    optimizer = optim.Adam(params=classifier.parameters(), lr=0.001)
     return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                    features=FEATURES, target='target', soft_target='soft_target',
                    max_epochs=config['n_epochs'], batch_size=512, fading_factor=1)

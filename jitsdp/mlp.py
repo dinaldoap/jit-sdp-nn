@@ -9,22 +9,22 @@ class MLP(nn.Module):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'classifier.cpt'
 
-    def __init__(self, input_size, hidden_size, drop_prob, val_loss=None):
+    def __init__(self, input_size, hidden_size, drop_prob_input, drop_prob_hidden, val_loss=None):
         super(MLP, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.drop_prob = drop_prob
+        self.drop_prob_input = drop_prob_input
+        self.drop_prob_hidden = drop_prob_hidden
         self.val_loss = val_loss
         self.fc1 = nn.Linear(input_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, hidden_size)
         self.fcout = nn.Linear(hidden_size, 1)
-        self.dropout = nn.Dropout(drop_prob)
+        self.dropout_input = nn.Dropout(drop_prob_input)
+        self.dropout_hidden = nn.Dropout(drop_prob_hidden)
 
     def forward(self, x):
+        x = self.dropout_input(x)
         x = torch.relu(self.fc1(x))
-        x = self.dropout(x)
-        x = torch.relu(self.fc2(x))
-        x = self.dropout(x)
+        x = self.dropout_hidden(x)
         x = torch.sigmoid(self.fcout(x))
         return x
 
@@ -33,7 +33,8 @@ class MLP(nn.Module):
         checkpoint = {
             'input_size': self.input_size,
             'hidden_size': self.hidden_size,
-            'drop_prob': self.drop_prob,
+            'drop_prob_input': self.drop_prob_input,
+            'drop_prob_hidden': self.drop_prob_hidden,
             'val_loss': self.val_loss,
             'state_dict': self.state_dict()
         }
@@ -45,6 +46,7 @@ class MLP(nn.Module):
             checkpoint = torch.load(f)
             self.input_size = checkpoint['input_size']
             self.hidden_size = checkpoint['hidden_size']
-            self.drop_prob = checkpoint['drop_prob']
+            self.drop_prob_input = checkpoint['drop_prob_input']
+            self.drop_prob_hidden = checkpoint['drop_prob_hidden']
             self.val_loss = checkpoint['val_loss']
             self.load_state_dict(checkpoint['state_dict'])
