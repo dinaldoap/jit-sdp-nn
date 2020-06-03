@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--n_epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--n_trees',   type=int,
-                        help='Number of trees trained by the random forest (default: 100).',    default=100)
+                        help='Number of trees trained by the random forest (default: 1).',    default=1)
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0). The first fold is not used despite this parameter.',    default=0)
     parser.add_argument('--f_folds',   type=float,
