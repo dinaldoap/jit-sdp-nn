@@ -8,8 +8,9 @@ entry_points:
         command: {default: run}
         pool_size: {default: 2}
         n_epochs: {default: 50}
+        n_trees: {default: 100}
         f_folds: {default: 1.0}
         seeds: {default: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29}        
         datasets: {default: brackets camel fabric8 jgroups neutron tomcat broadleaf nova npm spring-integration}
         models: {default: lr mlp nb rf}
-    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --pool_size {pool_size} --n_epochs {n_epochs} --f_folds {f_folds} --seeds {seeds} --datasets {datasets} --models {models}'
+    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --pool_size {pool_size} --n_epochs {n_epochs} --n_trees {n_trees} --f_folds {f_folds} --seeds {seeds} --datasets {datasets} --models {models}'
