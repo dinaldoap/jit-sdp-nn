@@ -87,7 +87,7 @@ def create_rf_model(config):
 
 def create_lr_model(config):
     scaler = StandardScaler()
-    classifier = SGDClassifier(loss='log', penalty='l1', alpha=.01)
+    classifier = SGDClassifier(loss='log', penalty='elasticnet', alpha=.1)
     return LogisticRegression(n_epochs=config['n_epochs'], steps=[scaler], classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
                               batch_size=512, fading_factor=1)
