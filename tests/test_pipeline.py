@@ -16,7 +16,7 @@ from pytest import approx
 
 def create_pipeline():
     pipeline = evaluation.create_pipeline(
-        {'n_epochs': 100, 'normal_proportion': .5, 'ensemble_size': 1, 'model': 'mlp', 'threshold': 0, 'orb': 0, 'f_val': .0})
+        {'mlp_n_hidden_layers': 1, 'mlp_learning_rate': .001, 'mlp_n_epochs': 100, 'normal_proportion': .5, 'ensemble_size': 1, 'model': 'mlp', 'threshold': 0, 'orb': 0, 'f_val': .0})
     return pipeline
 
 

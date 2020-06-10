@@ -63,11 +63,12 @@ def create_mlp_model(config):
     scaler = StandardScaler()
     criterion = nn.BCELoss()
     classifier = MLP(input_size=len(FEATURES),
-                     hidden_size=len(FEATURES) + 1, drop_prob_input=.2, drop_prob_hidden=.5)
-    optimizer = optim.Adam(params=classifier.parameters(), lr=0.001)
+                     hidden_size=len(FEATURES) + 1, n_hidden_layers=config['mlp_n_hidden_layers'], drop_prob_input=.2, drop_prob_hidden=.5)
+    optimizer = optim.Adam(params=classifier.parameters(),
+                           lr=config['mlp_learning_rate'])
     return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                    features=FEATURES, target='target', soft_target='soft_target',
-                   max_epochs=config['n_epochs'], batch_size=512, fading_factor=1)
+                   max_epochs=config['mlp_n_epochs'], batch_size=512, fading_factor=1)
 
 
 def create_nb_model(config):
@@ -87,7 +88,8 @@ def create_rf_model(config):
 
 def create_lr_model(config):
     scaler = StandardScaler()
-    classifier = SGDClassifier(loss='log', penalty='elasticnet', alpha=config['lr_alpha'], l1_ratio=config['lr_l1_ratio'])
+    classifier = SGDClassifier(loss='log', penalty='elasticnet',
+                               alpha=config['lr_alpha'], l1_ratio=config['lr_l1_ratio'])
     return LogisticRegression(n_epochs=config['lr_n_epochs'], steps=[scaler], classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
                               batch_size=512, fading_factor=1)
