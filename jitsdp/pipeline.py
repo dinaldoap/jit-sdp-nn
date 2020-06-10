@@ -75,7 +75,7 @@ def create_nb_model(config):
     classifier = GaussianNB()
     return NaiveBayes(steps=[], classifier=classifier,
                       features=FEATURES, target='target', soft_target='soft_target',
-                      n_updates=config['n_epochs'], fading_factor=1)
+                      n_updates=config['nb_n_updates'], fading_factor=1)
 
 
 def create_rf_model(config):

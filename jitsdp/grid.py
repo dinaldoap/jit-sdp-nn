@@ -20,9 +20,15 @@ def main():
         'mlp_n_epochs': [10, 30, 50],
     }
     mlp.update(general)
+    nb = {
+        'models': ['nb'],
+        'nb_n_updates': [10, 30, 50],
+    }
+    nb.update(general)
     grids = [
         lr,
         mlp,
+        nb,
     ]
     with open('jitsdp/dist/grid.sh', mode='w') as out:
         for grid in grids:
