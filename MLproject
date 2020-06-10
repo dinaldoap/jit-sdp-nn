@@ -7,10 +7,19 @@ entry_points:
     parameters:
         command: {default: run}
         pool_size: {default: 2}
-        n_epochs: {default: 50}
-        n_trees: {default: 100}
         f_folds: {default: 1.0}
         seeds: {default: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29}        
         datasets: {default: brackets camel fabric8 jgroups neutron tomcat broadleaf nova npm spring-integration}
         models: {default: lr mlp nb rf}
-    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --pool_size {pool_size} --n_epochs {n_epochs} --n_trees {n_trees} --f_folds {f_folds} --seeds {seeds} --datasets {datasets} --models {models}'
+        lr_alpha: {default: .1}
+        lr_l1_ratio: {default: .15}
+        lr_n_epochs: {default: 50}
+        mlp_n_hidden_layers: {default: 1}
+        mlp_learning_rate: {default: .001}
+        mlp_n_epochs: {default: 50}
+        nb_n_updates: {default: 50}
+        rf_n_estimators: {default: 100}
+        rf_criterion: {default: entropy}
+        rf_max_depth: {default: 3}
+        rf_max_features: {default: 3}
+    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --pool_size {pool_size} --f_folds {f_folds} --seeds {seeds} --datasets {datasets} --models {models} --lr_alpha .1 --lr_l1_ratio .15 --lr_n_epochs 50 --mlp_n_hidden_layers 1 --mlp_learning_rate .001 --mlp_n_epochs 50 --nb_n_updates 50 --rf_n_estimators 100 --rf_criterion entropy --rf_max_depth 3 --rf_max_features 3'
