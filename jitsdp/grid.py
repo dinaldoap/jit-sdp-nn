@@ -7,7 +7,9 @@ def main():
     }
     lr = {
         'models': ['lr'],
-        'n_epochs': [10, 30, 50],
+        'lr_alpha': [.001, .01, .1],
+        'lr_l1_ratio': [.1, .15, .2],
+        'lr_n_epochs': [10, 30, 50],
     }
     lr.update(general)
 

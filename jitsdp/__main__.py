@@ -20,6 +20,12 @@ def main():
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--seeds',   type=int,
                         help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
+    parser.add_argument('--lr_alpha',   type=float,
+                        help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: .1).',  default=.1)
+    parser.add_argument('--lr_l1_ratio',   type=float,
+                        help='The Elastic Net mixing parameter (default: .15).',  default=.15)
+    parser.add_argument('--lr_n_epochs',   type=int,
+                        help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--n_epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--n_trees',   type=int,
