@@ -9,22 +9,25 @@ class MLP(nn.Module):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'classifier.cpt'
 
-    def __init__(self, input_size, hidden_size, drop_prob_input, drop_prob_hidden, val_loss=None):
+    def __init__(self, input_size, hidden_size, n_hidden_layers, drop_prob_input, drop_prob_hidden, val_loss=None):
         super(MLP, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.drop_prob_input = drop_prob_input
         self.drop_prob_hidden = drop_prob_hidden
         self.val_loss = val_loss
-        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.fcs = nn.ModuleList(
+            [nn.Linear(input_size, hidden_size), nn.ReLU(), nn.Dropout(drop_prob_hidden)])
+        for i in range(n_hidden_layers - 1):
+            self.fcs.extend([nn.Linear(hidden_size, hidden_size),
+                             nn.ReLU(), nn.Dropout(drop_prob_hidden)])
         self.fcout = nn.Linear(hidden_size, 1)
         self.dropout_input = nn.Dropout(drop_prob_input)
-        self.dropout_hidden = nn.Dropout(drop_prob_hidden)
 
     def forward(self, x):
         x = self.dropout_input(x)
-        x = torch.relu(self.fc1(x))
-        x = self.dropout_hidden(x)
+        for func in self.fcs:
+            x = func(x)
         x = torch.sigmoid(self.fcout(x))
         return x
 
