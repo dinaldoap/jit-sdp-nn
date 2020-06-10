@@ -34,8 +34,14 @@ def main():
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--nb_n_updates',   type=int,
                         help='Number of updates performed by the training (default: 1).',    default=1)
-    parser.add_argument('--n_trees',   type=int,
-                        help='Number of trees trained by the random forest (default: 1).',    default=1)
+    parser.add_argument('--rf_n_estimators',   type=int,
+                        help='The number of trees in the forest (default: 1).',    default=1)
+    parser.add_argument('--rf_criterion',   type=str,
+                        help='The function to measure the quality of a split (default: \'entropy\').', default='entropy', choices=['entropy', 'gini'])
+    parser.add_argument('--rf_max_depth',   type=int,
+                        help='The maximum depth of the tree (default: 3).', default=3)
+    parser.add_argument('--rf_max_features',   type=int,
+                        help='The number of features to consider when looking for the best split (default: 3).', default=3)
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0). The first fold is not used despite this parameter.',    default=0)
     parser.add_argument('--f_folds',   type=float,
