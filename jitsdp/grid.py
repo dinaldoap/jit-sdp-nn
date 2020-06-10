@@ -1,5 +1,6 @@
 from itertools import product
 
+
 def main():
     general = {
         'seeds': [0, 1, 2, 3, 4],
@@ -12,16 +13,24 @@ def main():
         'lr_n_epochs': [10, 30, 50],
     }
     lr.update(general)
-
+    mlp = {
+        'models': ['mlp'],
+        'mlp_n_hidden_layers': [1, 2, 3, 4],
+        'mlp_learning_rate': [.0001, .001, .01, .1, .3],
+        'mlp_n_epochs': [10, 30, 50],
+    }
+    mlp.update(general)
     grids = [
         lr,
+        mlp,
     ]
     with open('jitsdp/dist/grid.sh', mode='w') as out:
         for grid in grids:
             keys = grid.keys()
             values_lists = grid.values()
             for values_tuple in product(*values_lists):
-                params = ['--{} {}'.format(key, values_tuple[i]) for i, key in enumerate(keys)]
+                params = ['--{} {}'.format(key, values_tuple[i])
+                          for i, key in enumerate(keys)]
                 params = ' '.join(params)
                 out.write('./borb run --f_folds 0. --orb 1 {}\n'.format(params))
 
