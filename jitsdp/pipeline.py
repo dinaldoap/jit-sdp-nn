@@ -61,7 +61,7 @@ def create_pipeline(config):
 
 def create_mlp_model(config):
     scaler = StandardScaler()
-    criterion = nn.BCELoss()
+    criterion = nn.BCEWithLogitsLoss()
     classifier = MLP(input_size=len(FEATURES),
                      hidden_size=len(FEATURES) + 1, n_hidden_layers=config['mlp_n_hidden_layers'], drop_prob_input=.2, drop_prob_hidden=.5)
     optimizer = optim.Adam(params=classifier.parameters(),
@@ -325,7 +325,7 @@ class PyTorch(Model):
                     if torch.cuda.is_available():
                         inputs, targets = inputs.cuda(), targets.cuda()
 
-                    outputs = self.classifier(inputs.float())
+                    outputs = self.classifier.forward_proba(inputs.float())
                     probabilities.append(outputs.detach().cpu().numpy())
             probabilities = np.concatenate(probabilities)
         else:

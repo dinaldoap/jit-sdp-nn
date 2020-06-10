@@ -28,8 +28,11 @@ class MLP(nn.Module):
         x = self.dropout_input(x)
         for func in self.fcs:
             x = func(x)
-        x = torch.sigmoid(self.fcout(x))
-        return x
+        return self.fcout(x)
+
+    def forward_proba(self, x):
+        x = self.forward(x)
+        return torch.sigmoid(x)
 
     def save(self):
         mkdir(MLP.DIR)
