@@ -18,8 +18,22 @@ def main():
                         default='run', choices=['run', 'report'])
     parser.add_argument('--pool_size',   type=int,
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
+    parser.add_argument('--start',   type=int,
+                        help='First commit to be used for testing (default: 0). The first fold is not used despite this parameter.',    default=0)
+    parser.add_argument('--f_folds',   type=float,
+                        help='Fraction of folds to be used by the evaluation. A minimum of two folds is always used despite this parameter. (default: 0.0).',  default=0.0)
+    parser.add_argument('--fold_size',   type=int,
+                        help='Number of commits in each fold (default: 50).',    default=50)
+    parser.add_argument('--normal_proportion',   type=float,
+                        help='Expected proportion for normal commits. (default: .6).',  default=.6)
+    parser.add_argument('--orb',   type=int,
+                        help='Whether must use oversampling rate boosting to balance output proportions (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--seeds',   type=int,
                         help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
+    parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
+                        default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
+    parser.add_argument('--models',   type=str,
+                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['lr', 'mlp', 'nb', 'rf'], nargs='+')
     parser.add_argument('--lr_alpha',   type=float,
                         help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: .1).',  default=.1)
     parser.add_argument('--lr_l1_ratio',   type=float,
@@ -42,30 +56,16 @@ def main():
                         help='The maximum depth of the tree (default: 3).', default=3)
     parser.add_argument('--rf_max_features',   type=int,
                         help='The number of features to consider when looking for the best split (default: 3).', default=3)
-    parser.add_argument('--start',   type=int,
-                        help='First commit to be used for testing (default: 0). The first fold is not used despite this parameter.',    default=0)
-    parser.add_argument('--f_folds',   type=float,
-                        help='Fraction of folds to be used by the evaluation. A minimum of two folds is always used despite this parameter. (default: 0.0).',  default=0.0)
-    parser.add_argument('--fold_size',   type=int,
-                        help='Number of commits in each fold (default: 50).',    default=50)
     parser.add_argument('--f_val',   type=float,
                         help='Fraction of labeled data to be used for validation. (default: 0.0).',  default=0.0)
-    parser.add_argument('--normal_proportion',   type=float,
-                        help='Expected proportion for normal commits. (default: .6).',  default=.6)
     parser.add_argument('--ensemble_size',   type=int,
                         help='Number of models in the ensemble (default: 1).',    default=1)
-    parser.add_argument('--models',   type=str,
-                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['lr', 'mlp', 'nb', 'rf'], nargs='+')
-    parser.add_argument('--orb',   type=int,
-                        help='Whether must use oversampling rate boosting to balance output proportions (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--threshold',   type=int,
                         help='Whether must tune threshold to balance output proportions (default: 0).', default=0, choices=[0, 1, 2])
     parser.add_argument('--uncertainty',   type=int,
                         help='Whether must use decreasing uncertainty about normal commit labels inside verification latency (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--incremental',   type=int,
                         help='Whether must do incremental training along the stream (default: 0).', default=0, choices=[0, 1])
-    parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
-                        default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
     lists = ['seed', 'dataset', 'model']
     sys.argv = split_args(sys.argv, lists)
     args = parser.parse_args()
