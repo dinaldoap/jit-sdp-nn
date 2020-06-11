@@ -22,4 +22,4 @@ entry_points:
         rf_criterion: {default: entropy}
         rf_max_depth: {default: 3}
         rf_max_features: {default: 3}
-    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --pool_size {pool_size} --f_folds {f_folds} --seeds {seeds} --datasets {datasets} --models {models} --lr_alpha .1 --lr_l1_ratio .15 --lr_n_epochs 50 --mlp_n_hidden_layers 1 --mlp_learning_rate .001 --mlp_n_epochs 50 --nb_n_updates 50 --rf_n_estimators 100 --rf_criterion entropy --rf_max_depth 3 --rf_max_features 3'
+    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --pool_size {pool_size} --f_folds {f_folds} --seeds {seeds} --datasets {datasets} --models {models} --lr_alpha {lr_alpha} --lr_l1_ratio {lr_l1_ratio} --lr_n_epochs {lr_n_epochs} --mlp_n_hidden_layers {mlp_n_hidden_layers} --mlp_learning_rate {mlp_learning_rate} --mlp_n_epochs {mlp_n_epochs} --nb_n_updates {nb_n_updates} --rf_n_estimators {rf_n_estimators} --rf_criterion {rf_criterion} --rf_max_depth {rf_max_depth} --rf_max_features {rf_max_features}'
