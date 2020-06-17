@@ -80,7 +80,7 @@ def create_nb_model(config):
 
 def create_rf_model(config):
     classifier = RandomForestClassifier(
-        n_estimators=0, criterion=config['rf_criterion'], max_depth=config['rf_max_depth'], max_features=config['rf_max_features'], warm_start=True, bootstrap=False)
+        n_estimators=0, criterion=config['rf_criterion'], max_depth=config['rf_max_depth'], max_features=config['rf_max_features'], min_impurity_decrease=config['rf_min_impurity_decrease'], warm_start=True, bootstrap=False)
     return RandomForest(steps=[], classifier=classifier,
                         features=FEATURES, target='target', soft_target='soft_target',
                         n_trees=config['rf_n_estimators'], fading_factor=1)

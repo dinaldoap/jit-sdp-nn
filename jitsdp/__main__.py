@@ -56,6 +56,8 @@ def main():
                         help='The maximum depth of the tree (default: 3).', default=3)
     parser.add_argument('--rf_max_features',   type=int,
                         help='The number of features to consider when looking for the best split (default: 3).', default=3)
+    parser.add_argument('--rf_min_impurity_decrease',   type=float,
+                        help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .02).', default=.02)
     parser.add_argument('--f_val',   type=float,
                         help='Fraction of labeled data to be used for validation. (default: 0.0).',  default=0.0)
     parser.add_argument('--ensemble_size',   type=int,
