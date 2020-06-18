@@ -31,6 +31,8 @@ def main():
         'rf_criterion': ['entropy', 'gini'],
         'rf_max_depth': [3, 5, 7],
         'rf_max_features': [3, 5, 7],
+        'rf_min_samples_leaf': [50, 100, 150],
+        'rf_min_impurity_decrease': [.01, .02, .03]
     }
     rf.update(general)
     grids = [
