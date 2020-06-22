@@ -46,11 +46,16 @@ def run(config):
         df_train = df_prequential[:current].copy()
         df_test = df_prequential[current:min(current + step, end)].copy()
         df_train, df_tail = __prepare_tail_data(df_train, config)
-        # check if fix has been done (bug) or verification latency has passed (normal), otherwise is unlabeled
         train_timestamp = df_train['timestamp'].max()
-        df_train['soft_target'] = df_train.apply(lambda row: 1 if row.timestamp_fix <= train_timestamp
-                                                 else 0 if row.timestamp <= train_timestamp - verification_latency
-                                                 else __verification_latency_label(train_timestamp, row.timestamp, verification_latency, config), axis='columns')
+        # check if fix has been done (bug) or verification latency has passed (normal), otherwise is unlabeled
+        indices_1 = df_train['timestamp_fix'] <= train_timestamp
+        indices_0 = ~indices_1 & (
+            df_train['timestamp'] <= train_timestamp - verification_latency)
+        indices_vl = ~indices_1 & ~indices_0
+        df_train.loc[indices_1, 'soft_target'] = 1.
+        df_train.loc[indices_0, 'soft_target'] = 0.
+        df_train.loc[indices_vl, 'soft_target'] = df_train[indices_vl].apply(lambda row: __verification_latency_label(
+            train_timestamp, row.timestamp, verification_latency, config), axis='columns')
 
         df_train = df_train.dropna(subset=['soft_target'])
         df_train['target'] = df_train['soft_target'] > .5
