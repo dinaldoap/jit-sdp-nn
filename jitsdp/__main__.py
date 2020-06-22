@@ -28,6 +28,8 @@ def main():
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
     parser.add_argument('--orb',   type=int,
                         help='Whether must use oversampling rate boosting to balance output proportions (default: 0).', default=0, choices=[0, 1])
+    parser.add_argument('--cross_project',   type=int,
+                        help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--seeds',   type=int,
                         help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
