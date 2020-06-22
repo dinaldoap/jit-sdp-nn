@@ -10,6 +10,10 @@ FEATURES = ['fix', 'ns', 'nd', 'nf', 'entrophy', 'la',
             'ld', 'lt', 'ndev', 'age', 'nuc', 'exp', 'rexp', 'sexp']
 LABEL = 'contains_bug'
 
+RAW_DATASETS = ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat']
+PREPROCESSED_DATASETS = ['broadleaf', 'nova', 'npm', 'spring-integration']
+DATASETS = RAW_DATASETS + PREPROCESSED_DATASETS
+
 memory = Memory(location='data', verbose=0)
 
 
@@ -18,9 +22,9 @@ def make_stream(url):
     dataset = re.search('(?P<dataset>[-\\w]+)\\.csv', url)
     dataset = dataset.group('dataset')
     df_raw = download(url)
-    if dataset in ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat']:
+    if dataset in RAW_DATASETS:
         df_preprocess = preprocess(df_raw)
-    elif dataset in ['broadleaf', 'nova', 'npm', 'spring-integration']:
+    elif dataset in PREPROCESSED_DATASETS:
         df_preprocess = preprocess_daystofix(df_raw)
     else:
         raise NotImplementedError('Dataset not supported: {}.'.format(dataset))
