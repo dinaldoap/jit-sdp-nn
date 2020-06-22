@@ -49,13 +49,8 @@ def run(config):
         df_train['soft_target'] = df_train.apply(lambda row: 1 if row.timestamp_fix <= train_timestamp
                                                  else 0 if row.timestamp <= train_timestamp - verification_latency
                                                  else __verification_latency_label(train_timestamp, row.timestamp, verification_latency, config), axis='columns')
-        if config['threshold'] in [1, 2] or config['orb']:
-            # most recent commits  (labeled or not)
-            tail_size = min(int(len(df_train) * .1), 100)
-            df_tail = df_train[-tail_size:]
-            df_train = df_train[:-tail_size]
-        else:
-            df_tail = None
+
+        df_train, df_tail = __prepare_tail_data(df_train, config)
 
         df_train = df_train.dropna(subset=['soft_target'])
         df_train['target'] = df_train['soft_target'] > .5
@@ -103,6 +98,17 @@ def __verification_latency_label(train_timestamp, commit_timestamp, verification
         return .5 - .5 * (train_timestamp - commit_timestamp) / verification_latency
 
     return None
+
+
+def __prepare_tail_data(df_train, config):
+    if config['threshold'] in [1, 2] or config['orb']:
+            # most recent commits  (labeled or not)
+        tail_size = min(int(len(df_train) * .1), 100)
+        df_tail = df_train[-tail_size:]
+        df_train = df_train[:-tail_size]
+    else:
+        df_tail = None
+    return df_train, df_tail
 
 
 def __prepare_val_data(df_train, config):
