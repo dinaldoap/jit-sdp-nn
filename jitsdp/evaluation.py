@@ -1,6 +1,6 @@
 from jitsdp import metrics as met
 from jitsdp.constants import DIR
-from jitsdp.data import make_stream, save_results, load_results
+from jitsdp.data import make_stream, save_results, load_results, DATASETS
 from jitsdp.pipeline import create_pipeline, set_seed
 from jitsdp.plot import plot_recalls_gmean, plot_proportions
 
@@ -37,6 +37,14 @@ def run(config):
     else:
         step = fold_size
 
+    cross_project = 1
+    if cross_project:
+        others = DATASETS - set([dataset])
+        df_others = [make_stream(dataset) for dataset in others]
+        df_others = pd.concat(df_others)
+    else:
+        df_others = pd.DataFrame(columns=df_prequential.columns)
+
     pipeline = create_pipeline(config)
     if config['incremental']:
         pipeline.save()
@@ -46,7 +54,12 @@ def run(config):
         df_train = df_prequential[:current].copy()
         df_test = df_prequential[current:min(current + step, end)].copy()
         df_train, df_tail = __prepare_tail_data(df_train, config)
+
         train_timestamp = df_train['timestamp'].max()
+        df_train_others = df_others[df_others['timestamp']
+                                    <= train_timestamp].copy()
+        df_train = pd.concat([df_train, df_train_others])
+
         # check if fix has been done (bug) or verification latency has passed (normal), otherwise is unlabeled
         indices_1 = df_train['timestamp_fix'] <= train_timestamp
         indices_0 = ~indices_1 & (
