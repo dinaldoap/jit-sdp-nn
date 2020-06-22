@@ -10,7 +10,8 @@ FEATURES = ['fix', 'ns', 'nd', 'nf', 'entrophy', 'la',
             'ld', 'lt', 'ndev', 'age', 'nuc', 'exp', 'rexp', 'sexp']
 LABEL = 'contains_bug'
 
-RAW_DATASETS = set(['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat'])
+RAW_DATASETS = set(['brackets', 'camel', 'fabric8',
+                    'jgroups', 'neutron', 'tomcat'])
 PREPROCESSED_DATASETS = set(['broadleaf', 'nova', 'npm', 'spring-integration'])
 DATASETS = RAW_DATASETS.union(PREPROCESSED_DATASETS)
 
@@ -28,8 +29,10 @@ def make_stream(dataset):
         raise NotImplementedError('Dataset not supported: {}.'.format(dataset))
     return prequential(df_preprocess)
 
+
 def format_url(dataset):
     return 'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/{}.csv'.format(dataset)
+
 
 def download(url):
     return pd.read_csv(url, skipinitialspace=True)
