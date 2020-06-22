@@ -6,6 +6,7 @@ from jitsdp.plot import plot_recalls_gmean, plot_proportions
 
 import math
 import mlflow
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import StratifiedShuffleSplit
 
@@ -96,7 +97,7 @@ def __verification_latency_label(train_timestamp, commit_timestamp, verification
     if config['uncertainty']:
         return .5 - .5 * (train_timestamp - commit_timestamp) / verification_latency
 
-    return None
+    return np.nan
 
 
 def __prepare_tail_data(df_train, config):
