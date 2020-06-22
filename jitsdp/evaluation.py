@@ -43,7 +43,8 @@ def run(config):
         df_others = [make_stream(dataset) for dataset in others]
         df_others = pd.concat(df_others)
     else:
-        df_others = pd.DataFrame(columns=df_prequential.columns)
+        # empty df with same schema
+        df_others = df_prequential.head(0).copy()
 
     pipeline = create_pipeline(config)
     if config['incremental']:
