@@ -13,8 +13,8 @@ from sklearn.model_selection import StratifiedShuffleSplit
 def run(config):
     mlflow.log_params(config)
     set_seed(config)
-    df_prequential = make_stream(
-        'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/{}.csv'.format(config['dataset']))
+    dataset = config['dataset']
+    df_prequential = make_stream(dataset)
     # split test partition in folds and iterate over them (fold from current to current + fold_size or end)
     # the previous commits until current are used for training
     seconds_by_day = 24 * 60 * 60

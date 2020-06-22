@@ -10,18 +10,16 @@ FEATURES = ['fix', 'ns', 'nd', 'nf', 'entrophy', 'la',
             'ld', 'lt', 'ndev', 'age', 'nuc', 'exp', 'rexp', 'sexp']
 LABEL = 'contains_bug'
 
-RAW_DATASETS = ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat']
-PREPROCESSED_DATASETS = ['broadleaf', 'nova', 'npm', 'spring-integration']
-DATASETS = RAW_DATASETS + PREPROCESSED_DATASETS
+RAW_DATASETS = set(['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat'])
+PREPROCESSED_DATASETS = set(['broadleaf', 'nova', 'npm', 'spring-integration'])
+DATASETS = RAW_DATASETS.union(PREPROCESSED_DATASETS)
 
 memory = Memory(location='data', verbose=0)
 
 
 @memory.cache
-def make_stream(url):
-    dataset = re.search('(?P<dataset>[-\\w]+)\\.csv', url)
-    dataset = dataset.group('dataset')
-    df_raw = download(url)
+def make_stream(dataset):
+    df_raw = download(format_url(dataset))
     if dataset in RAW_DATASETS:
         df_preprocess = preprocess(df_raw)
     elif dataset in PREPROCESSED_DATASETS:
@@ -30,6 +28,8 @@ def make_stream(url):
         raise NotImplementedError('Dataset not supported: {}.'.format(dataset))
     return prequential(df_preprocess)
 
+def format_url(dataset):
+    return 'https://raw.githubusercontent.com/dinaldoap/jit-sdp-data/master/{}.csv'.format(dataset)
 
 def download(url):
     return pd.read_csv(url, skipinitialspace=True)
