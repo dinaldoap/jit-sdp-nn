@@ -68,8 +68,11 @@ def run(config):
         indices_vl = ~indices_1 & ~indices_0
         df_train.loc[indices_1, 'soft_target'] = 1.
         df_train.loc[indices_0, 'soft_target'] = 0.
-        df_train.loc[indices_vl, 'soft_target'] = df_train[indices_vl].apply(lambda row: __verification_latency_label(
-            train_timestamp, row.timestamp, verification_latency, config), axis='columns')
+        if config['uncertainty']:
+            df_train.loc[indices_vl, 'soft_target'] = df_train[indices_vl].apply(lambda row: __verification_latency_label(
+                train_timestamp, row.timestamp, verification_latency), axis='columns')
+        else:
+            df_train.loc[indices_vl, 'soft_target'] = np.nan
 
         df_train = df_train.dropna(subset=['soft_target'])
         df_train['target'] = df_train['soft_target'] > .5
@@ -112,12 +115,8 @@ def __unique_dir(config):
     return DIR / '{}_{}_{}'.format(config['seed'], config['dataset'], config['model'])
 
 
-def __verification_latency_label(train_timestamp, commit_timestamp, verification_latency, config):
-    if config['uncertainty']:
-        return .5 - .5 * (train_timestamp - commit_timestamp) / verification_latency
-
-    return np.nan
-
+def __verification_latency_label(train_timestamp, commit_timestamp, verification_latency):
+    return .5 - .5 * (train_timestamp - commit_timestamp) / verification_latency
 
 def __prepare_tail_data(df_train, config):
     if config['threshold'] in [1, 2] or config['orb']:
