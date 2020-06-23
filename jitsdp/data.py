@@ -10,10 +10,9 @@ FEATURES = ['fix', 'ns', 'nd', 'nf', 'entrophy', 'la',
             'ld', 'lt', 'ndev', 'age', 'nuc', 'exp', 'rexp', 'sexp']
 LABEL = 'contains_bug'
 
-RAW_DATASETS = set(['brackets', 'camel', 'fabric8',
-                    'jgroups', 'neutron', 'tomcat'])
-PREPROCESSED_DATASETS = set(['broadleaf', 'nova', 'npm', 'spring-integration'])
-DATASETS = RAW_DATASETS.union(PREPROCESSED_DATASETS)
+RAW_DATASETS = ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat']
+PREPROCESSED_DATASETS = ['broadleaf', 'nova', 'npm', 'spring-integration']
+DATASETS = RAW_DATASETS + PREPROCESSED_DATASETS
 
 memory = Memory(location='data', verbose=0)
 

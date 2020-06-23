@@ -38,7 +38,8 @@ def run(config):
         step = fold_size
 
     if config['cross_project']:
-        others = DATASETS - set([dataset])
+        others = list(DATASETS)
+        others.remove(dataset)
         df_others = [make_stream(dataset) for dataset in others]
         df_others = pd.concat(df_others)
     else:
