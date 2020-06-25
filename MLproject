@@ -11,17 +11,8 @@ entry_points:
         seeds: {default: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29}        
         datasets: {default: brackets camel fabric8 jgroups neutron tomcat broadleaf nova npm spring-integration}
         models: {default: lr mlp nb rf}
-        lr_alpha: {default: .1}
-        lr_l1_ratio: {default: .15}
         lr_n_epochs: {default: 50}
-        mlp_n_hidden_layers: {default: 1}
-        mlp_learning_rate: {default: .001}
         mlp_n_epochs: {default: 50}
         nb_n_updates: {default: 50}
         rf_n_estimators: {default: 100}
-        rf_criterion: {default: entropy}
-        rf_max_depth: {default: 3}
-        rf_max_features: {default: 3}
-        rf_min_samples_leaf: {default: 100}
-        rf_min_impurity_decrease: {default: .02}
-    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --pool_size {pool_size} --f_folds {f_folds} --seeds {seeds} --datasets {datasets} --models {models} --lr_alpha {lr_alpha} --lr_l1_ratio {lr_l1_ratio} --lr_n_epochs {lr_n_epochs} --mlp_n_hidden_layers {mlp_n_hidden_layers} --mlp_learning_rate {mlp_learning_rate} --mlp_n_epochs {mlp_n_epochs} --nb_n_updates {nb_n_updates} --rf_n_estimators {rf_n_estimators} --rf_criterion {rf_criterion} --rf_max_depth {rf_max_depth} --rf_max_features {rf_max_features} --rf_min_impurity_decrease {rf_min_impurity_decrease} --rf_min_samples_leaf {rf_min_samples_leaf}'
+    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --pool_size {pool_size} --f_folds {f_folds} --seeds {seeds} --datasets {datasets} --models {models} --lr_n_epochs {lr_n_epochs} --mlp_n_epochs {mlp_n_epochs} --nb_n_updates {nb_n_updates} --rf_n_estimators {rf_n_estimators}'

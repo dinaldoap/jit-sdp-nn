@@ -21,7 +21,7 @@ def main():
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0). The first fold is not used despite this parameter.',    default=0)
     parser.add_argument('--f_folds',   type=float,
-                        help='Fraction of folds to be used by the evaluation. A minimum of two folds is always used despite this parameter. (default: 0.0).',  default=0.0)
+                        help='Fraction of folds to be used by the evaluation. A minimum of two folds is always used despite this parameter. (default: .0).',  default=.0)
     parser.add_argument('--fold_size',   type=int,
                         help='Number of commits in each fold (default: 50).',    default=50)
     parser.add_argument('--normal_proportion',   type=float,
@@ -63,7 +63,7 @@ def main():
     parser.add_argument('--rf_min_impurity_decrease',   type=float,
                         help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .02).', default=.02)
     parser.add_argument('--f_val',   type=float,
-                        help='Fraction of labeled data to be used for validation. (default: 0.0).',  default=0.0)
+                        help='Fraction of labeled data to be used for validation. (default: .0).',  default=.0)
     parser.add_argument('--ensemble_size',   type=int,
                         help='Number of models in the ensemble (default: 1).',    default=1)
     parser.add_argument('--threshold',   type=int,
