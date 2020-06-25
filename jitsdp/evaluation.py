@@ -117,6 +117,10 @@ def __prepare_train_data(df_train, df_others, verification_latency, config):
                                 <= train_timestamp].copy()
     df_train = pd.concat([df_train, df_train_others])
 
+    # add invalid label as a safe-guard
+    df_train['soft_target'] = -1.
+    if df_train.empty:
+        return df_train
     # check if fix has been done (bug) or verification latency has passed (normal), otherwise is unlabeled
     indices_1 = df_train['timestamp_fix'] <= train_timestamp
     indices_0 = ~indices_1 & (
