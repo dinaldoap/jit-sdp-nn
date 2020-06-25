@@ -56,26 +56,8 @@ def run(config):
         df_test = df_prequential[current:min(current + step, end)].copy()
         df_train, df_tail = __prepare_tail_data(df_train, config)
 
-        train_timestamp = df_train['timestamp'].max()
-        df_train_others = df_others[df_others['timestamp']
-                                    <= train_timestamp].copy()
-        df_train = pd.concat([df_train, df_train_others])
-
-        # check if fix has been done (bug) or verification latency has passed (normal), otherwise is unlabeled
-        indices_1 = df_train['timestamp_fix'] <= train_timestamp
-        indices_0 = ~indices_1 & (
-            df_train['timestamp'] <= train_timestamp - verification_latency)
-        indices_vl = ~indices_1 & ~indices_0
-        df_train.loc[indices_1, 'soft_target'] = 1.
-        df_train.loc[indices_0, 'soft_target'] = 0.
-        if config['uncertainty']:
-            df_train.loc[indices_vl, 'soft_target'] = df_train[indices_vl].apply(lambda row: __verification_latency_label(
-                train_timestamp, row.timestamp, verification_latency), axis='columns')
-        else:
-            df_train.loc[indices_vl, 'soft_target'] = np.nan
-
-        df_train = df_train.dropna(subset=['soft_target'])
-        df_train['target'] = df_train['soft_target'] > .5
+        df_train = __prepare_train_data(
+            df_train, df_others, verification_latency, config)
 
         df_train, df_val = __prepare_val_data(df_train, config)
         # train and predict
@@ -118,6 +100,7 @@ def __unique_dir(config):
 def __verification_latency_label(train_timestamp, commit_timestamp, verification_latency):
     return .5 - .5 * (train_timestamp - commit_timestamp) / verification_latency
 
+
 def __prepare_tail_data(df_train, config):
     if config['threshold'] in [1, 2] or config['orb']:
             # most recent commits  (labeled or not)
@@ -127,6 +110,30 @@ def __prepare_tail_data(df_train, config):
     else:
         df_tail = None
     return df_train, df_tail
+
+
+def __prepare_train_data(df_train, df_others, verification_latency, config):
+    train_timestamp = df_train['timestamp'].max()
+    df_train_others = df_others[df_others['timestamp']
+                                <= train_timestamp].copy()
+    df_train = pd.concat([df_train, df_train_others])
+
+    # check if fix has been done (bug) or verification latency has passed (normal), otherwise is unlabeled
+    indices_1 = df_train['timestamp_fix'] <= train_timestamp
+    indices_0 = ~indices_1 & (
+        df_train['timestamp'] <= train_timestamp - verification_latency)
+    indices_vl = ~indices_1 & ~indices_0
+    df_train.loc[indices_1, 'soft_target'] = 1.
+    df_train.loc[indices_0, 'soft_target'] = 0.
+    if config['uncertainty']:
+        df_train.loc[indices_vl, 'soft_target'] = df_train[indices_vl].apply(lambda row: __verification_latency_label(
+            train_timestamp, row.timestamp, verification_latency), axis='columns')
+    else:
+        df_train.loc[indices_vl, 'soft_target'] = np.nan
+
+    df_train = df_train.dropna(subset=['soft_target'])
+    df_train['target'] = df_train['soft_target'] > .5
+    return df_train
 
 
 def __prepare_val_data(df_train, config):
