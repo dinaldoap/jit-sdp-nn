@@ -23,7 +23,7 @@ setup(name='jitsdp',
                         'scikit-learn==0.22',
                         'matplotlib==3.1.2',
                         'seaborn==0.9.0',
-                        'mlflow==1.7.2',
+                        'mlflow==1.9.1',
                         ],
       python_requires='>=3.7',
       zip_safe=True)
