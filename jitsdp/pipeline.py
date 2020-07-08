@@ -13,7 +13,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
-from sklearn.base import clone
+from sklearn.base import clone, BaseEstimator, TransformerMixin
+from sklearn.kernel_approximation import Nystroem
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -37,6 +38,7 @@ def create_pipeline(config):
         'nb': create_nb_model,
         'rf': create_rf_model,
         'lr': create_lr_model,
+        'svm': create_svm_model,
     }
     fn_create_model = map_fn[config['model']]
     if config['ensemble_size'] > 1:
@@ -93,6 +95,37 @@ def create_lr_model(config):
     return LogisticRegression(n_epochs=config['lr_n_epochs'], steps=[scaler], classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
                               batch_size=512, fading_factor=1)
+
+
+def create_svm_model(config):
+    kernel = StratifiedNystroem(
+        gamma=config['svm_gamma'], n_components=config['svm_n_components'])
+    scaler1 = StandardScaler()
+    scaler2 = StandardScaler()
+    classifier = SGDClassifier(loss='hinge', penalty='elasticnet',
+                               alpha=config['svm_alpha'], l1_ratio=config['svm_l1_ratio'], shuffle=False)
+    return LogisticRegression(n_epochs=config['svm_n_epochs'], steps=[scaler1, kernel, scaler2], classifier=classifier,
+                              features=FEATURES, target='target', soft_target='soft_target',
+                              batch_size=512, fading_factor=1)
+
+
+class StratifiedNystroem(TransformerMixin, BaseEstimator):
+    def __init__(self, gamma=None, n_components=100):
+        super().__init__()
+        self.n_components = n_components
+        self.kernel = Nystroem(gamma=gamma, n_components=n_components)
+
+    def fit(self, X, y=None):
+        X_train, _, y_train, _ = train_test_split(
+            X, y, train_size=self.n_components, stratify=y)
+        self.kernel.fit(X_train, y_train)
+
+    def transform(self, X):
+        return self.kernel.transform(X)
+
+    def fit_transform(self, X, y=None):
+        self.fit(X, y)
+        return self.transform(X)
 
 
 class Model(metaclass=ABCMeta):

@@ -35,7 +35,7 @@ def main():
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
     parser.add_argument('--models',   type=str,
-                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['lr', 'mlp', 'nb', 'rf'], nargs='+')
+                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['lr', 'mlp', 'nb', 'rf', 'svm'], nargs='+')
     parser.add_argument('--lr_alpha',   type=float,
                         help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: .1).',  default=.1)
     parser.add_argument('--lr_l1_ratio',   type=float,
@@ -62,6 +62,16 @@ def main():
                         help='he minimum number of samples required to be at a leaf node (default: 100).', default=100)
     parser.add_argument('--rf_min_impurity_decrease',   type=float,
                         help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .02).', default=.02)
+    parser.add_argument('--svm_gamma',   type=float,
+                        help='Gamma parameter for the RBF kernel (default: .01).',    default=.01)
+    parser.add_argument('--svm_n_components',   type=int,
+                        help='Number of features to construct. How many data points will be used to construct the mapping (default: 100).',    default=100)
+    parser.add_argument('--svm_alpha',   type=float,
+                        help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: 1.).',  default=1.)
+    parser.add_argument('--svm_l1_ratio',   type=float,
+                        help='The Elastic Net mixing parameter (default: .15).',  default=.15)
+    parser.add_argument('--svm_n_epochs',   type=int,
+                        help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--f_val',   type=float,
                         help='Fraction of labeled data to be used for validation. (default: .0).',  default=.0)
     parser.add_argument('--ensemble_size',   type=int,
