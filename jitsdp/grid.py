@@ -35,11 +35,21 @@ def main():
         'rf_min_impurity_decrease': [.01, .02, .03]
     }
     rf.update(general)
+    svm = {
+        'models': ['svm'],
+        'svm_gamma': [.001, .01, .1],
+        'svm_n_components': [50, 100, 150],
+        'svm_alpha': [.01, .1, 1.],
+        'svm_l1_ratio': [.15, .5, .85],
+        'svm_n_epochs': [10, 30, 50],
+    }
+    svm.update(general)
     grids = [
         lr,
         mlp,
         nb,
         rf,
+        svm,
     ]
     with open('jitsdp/dist/grid.sh', mode='w') as out:
         for grid in grids:
