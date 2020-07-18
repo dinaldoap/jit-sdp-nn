@@ -5,6 +5,7 @@ def main():
     general = {
         'seeds': [0, 1, 2, 3, 4],
         'datasets': ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'],
+        'cross_project': [0, 1]
     }
     lr = {
         'models': ['lr'],
