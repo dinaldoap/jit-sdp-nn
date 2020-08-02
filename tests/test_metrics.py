@@ -1,3 +1,4 @@
+# coding=utf-8
 from jitsdp import metrics
 import numpy as np
 import pandas as pd

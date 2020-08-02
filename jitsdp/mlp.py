@@ -1,3 +1,4 @@
+# coding=utf-8
 from jitsdp.utils import mkdir
 
 import torch

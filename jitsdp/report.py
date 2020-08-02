@@ -1,3 +1,4 @@
+# coding=utf-8
 import pandas as pd
 
 df_runs = pd.read_csv('data/runs.csv')

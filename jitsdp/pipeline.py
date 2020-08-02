@@ -1,3 +1,4 @@
+# coding=utf-8
 from jitsdp import metrics as met
 from jitsdp.mlp import MLP
 from jitsdp.data import FEATURES

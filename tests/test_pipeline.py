@@ -1,3 +1,4 @@
+# coding=utf-8
 from jitsdp import evaluation
 from jitsdp import metrics
 from jitsdp.data import FEATURES

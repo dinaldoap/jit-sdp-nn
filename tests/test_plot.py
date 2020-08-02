@@ -1,3 +1,4 @@
+# coding=utf-8
 from jitsdp import plot
 
 from constants import DIR

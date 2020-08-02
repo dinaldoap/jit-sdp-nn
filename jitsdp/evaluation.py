@@ -1,3 +1,4 @@
+# coding=utf-8
 from jitsdp import metrics as met
 from jitsdp.constants import DIR
 from jitsdp.data import make_stream, save_results, load_results, DATASETS

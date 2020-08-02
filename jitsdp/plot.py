@@ -1,3 +1,4 @@
+# coding=utf-8
 from jitsdp.constants import DIR
 from jitsdp.utils import mkdir
 

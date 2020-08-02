@@ -1,3 +1,4 @@
+# coding=utf-8
 from jitsdp.evaluation import run, report
 from jitsdp.utils import mkdir, split_args, create_config_template, to_plural
 

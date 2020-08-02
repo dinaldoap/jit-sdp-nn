@@ -1,3 +1,4 @@
+# coding=utf-8
 from jitsdp.data import save_results, load_results
 
 from constants import DIR

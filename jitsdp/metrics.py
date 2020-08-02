@@ -1,3 +1,4 @@
+# coding=utf-8
 import jitsdp.constants as const
 
 import numpy as np
