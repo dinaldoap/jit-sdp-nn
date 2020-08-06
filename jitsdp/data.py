@@ -45,8 +45,6 @@ def preprocess(df_raw):
     # timestamp
     df_preprocess = df_preprocess.rename(columns={'author_date_unix_timestamp': 'timestamp',
                                                   LABEL: 'target'})
-    # filter rows with missing data
-    df_preprocess = df_preprocess.dropna(subset=['fix'])
     # convert fix
     df_preprocess['fix'] = df_preprocess['fix'].astype('int')
     # timeline order
