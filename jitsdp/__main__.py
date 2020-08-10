@@ -63,12 +63,8 @@ def main():
                         help='he minimum number of samples required to be at a leaf node (default: 100).', default=100)
     parser.add_argument('--rf_min_impurity_decrease',   type=float,
                         help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .02).', default=.02)
-    parser.add_argument('--svm_gamma',   type=float,
-                        help='Gamma parameter for the RBF kernel (default: .01).',    default=.01)
-    parser.add_argument('--svm_n_components',   type=int,
-                        help='Number of features to construct. How many data points will be used to construct the mapping (default: 100).',    default=100)
     parser.add_argument('--svm_alpha',   type=float,
-                        help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: 1.).',  default=1.)
+                        help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: .1).',  default=.1)
     parser.add_argument('--svm_l1_ratio',   type=float,
                         help='The Elastic Net mixing parameter (default: .15).',  default=.15)
     parser.add_argument('--svm_n_epochs',   type=int,
