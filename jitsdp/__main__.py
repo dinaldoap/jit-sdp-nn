@@ -20,9 +20,9 @@ def main():
     parser.add_argument('--pool_size',   type=int,
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--start',   type=int,
-                        help='First commit to be used for testing (default: 0). The first fold is not used despite this parameter.',    default=0)
-    parser.add_argument('--f_folds',   type=float,
-                        help='Fraction of folds to be used by the evaluation. A minimum of two folds is always used despite this parameter. (default: .0).',  default=.0)
+                        help='First commit to be used for testing (default: 0).',    default=0)
+    parser.add_argument('--end',   type=int,
+                        help='Last commit to be used for testing (default: last dataset commit).',  default=None)
     parser.add_argument('--fold_size',   type=int,
                         help='Number of commits in each fold (default: 50).',    default=50)
     parser.add_argument('--normal_proportion',   type=float,

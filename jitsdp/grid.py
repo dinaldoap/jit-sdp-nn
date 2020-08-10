@@ -62,7 +62,7 @@ def main():
                           for i, key in enumerate(keys)]
                 params = ' '.join(params)
                 out.write(
-                    './jitsdp run --f_folds 1. --orb 1 {}\n'.format(params))
+                    './jitsdp run --orb 1 {}\n'.format(params))
 
 
 if __name__ == '__main__':
