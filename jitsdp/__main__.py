@@ -82,7 +82,7 @@ def main():
     parser.add_argument('--rf_max_features',   type=int,
                         help='The number of features to consider when looking for the best split (default: 3).', default=3)
     parser.add_argument('--rf_min_samples_leaf',   type=int,
-                        help='he minimum number of samples required to be at a leaf node (default: 100).', default=100)
+                        help='The minimum number of samples required to be at a leaf node (default: 200).', default=200)
     parser.add_argument('--rf_min_impurity_decrease',   type=float,
                         help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .0).', default=.0)
     parser.add_argument('--svm_alpha',   type=float,
