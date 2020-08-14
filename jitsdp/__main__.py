@@ -45,6 +45,8 @@ def main():
                         help='The Elastic Net mixing parameter (default: .15).',  default=.15)
     parser.add_argument('--lr_n_epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
+    parser.add_argument('--lr_batch_size',   type=int,
+                        help='Number of commits included in each batch (default: 512).',    default=512)
     parser.add_argument('--mlp_n_hidden_layers',   type=int,
                         help='Number of hidden layers (default: 1).',    default=1)
     parser.add_argument('--mlp_learning_rate',   type=float,

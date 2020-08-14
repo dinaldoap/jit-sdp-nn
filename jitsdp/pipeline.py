@@ -95,7 +95,7 @@ def create_lr_model(config):
                                alpha=config['lr_alpha'], l1_ratio=config['lr_l1_ratio'], shuffle=False)
     return LogisticRegression(n_epochs=config['lr_n_epochs'], steps=[scaler], classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
-                              batch_size=512, fading_factor=1)
+                              batch_size=config['lr_batch_size'], fading_factor=1)
 
 
 def create_svm_model(config):
