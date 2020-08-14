@@ -20,7 +20,8 @@ def run(config):
     # split test partition in folds and iterate over them (fold from current to current + fold_size or end)
     # the previous commits until current are used for training
     seconds_by_day = 24 * 60 * 60
-    verification_latency = 90 * seconds_by_day  # seconds
+    # seconds
+    verification_latency = config['borb_waiting_time'] * seconds_by_day
     # each fold has pull_request_size commits
     fold_size = config['pull_request_size']
     start = config['start']
