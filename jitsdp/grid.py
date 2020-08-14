@@ -62,7 +62,7 @@ def main():
                           for i, key in enumerate(keys)]
                 params = ' '.join(params)
                 out.write(
-                    './jitsdp run --borb 1 {}\n'.format(params))
+                    './jitsdp run {}\n'.format(params))
 
 
 if __name__ == '__main__':

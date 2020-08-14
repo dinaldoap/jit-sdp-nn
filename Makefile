@@ -7,7 +7,7 @@ test:
 	pytest tests
 
 run:
-	jitsdp run --models lr nb mlp rf svm --borb 1 --start 2000 --end 2050
+	jitsdp run --models lr nb mlp rf svm --start 2000 --end 2050
 
 clean:
 	rm -rf models/ logs/ tests/logs
