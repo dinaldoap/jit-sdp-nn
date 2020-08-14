@@ -104,7 +104,7 @@ def create_svm_model(config):
                                alpha=config['svm_alpha'], l1_ratio=config['svm_l1_ratio'], shuffle=False)
     return LogisticRegression(n_epochs=config['svm_n_epochs'], steps=[scaler], classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
-                              batch_size=512, fading_factor=1)
+                              batch_size=config['svm_batch_size'], fading_factor=1)
 
 
 class Model(metaclass=ABCMeta):

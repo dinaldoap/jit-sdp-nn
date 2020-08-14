@@ -75,6 +75,8 @@ def main():
                         help='The Elastic Net mixing parameter (default: .15).',  default=.15)
     parser.add_argument('--svm_n_epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
+    parser.add_argument('--svm_batch_size',   type=int,
+                        help='Number of commits included in each batch (default: 512).',    default=512)
     parser.add_argument('--f_val',   type=float,
                         help='Fraction of labeled data to be used for validation. (default: .0).',  default=.0)
     parser.add_argument('--ensemble_size',   type=int,
