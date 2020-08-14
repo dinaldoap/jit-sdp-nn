@@ -106,7 +106,7 @@ def __verification_latency_label(train_timestamp, commit_timestamp, verification
 def __prepare_tail_data(df_train, config):
     if config['threshold'] in [1, 2] or config['orb']:
             # most recent commits  (labeled or not)
-        tail_size = min(int(len(df_train) * .1), 100)
+        tail_size = min(int(len(df_train) * .1), config['borb_ma_window_size'])
         df_tail = df_train[-tail_size:]
         df_train = df_train[:-tail_size]
     else:
