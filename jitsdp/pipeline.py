@@ -65,8 +65,11 @@ def create_pipeline(config):
 def create_mlp_model(config):
     scaler = StandardScaler()
     criterion = nn.BCEWithLogitsLoss()
-    classifier = MLP(input_size=len(FEATURES),
-                     n_hidden_layers=config['mlp_n_hidden_layers'], hidden_layers_size=config['mlp_hidden_layers_size'], drop_prob_input=config['mlp_dropout_input_layer'], drop_prob_hidden=config['mlp_dropout_hidden_layers'])
+    classifier = MLP(input_layer_size=len(FEATURES),
+                     n_hidden_layers=config['mlp_n_hidden_layers'],
+                     hidden_layers_size=config['mlp_hidden_layers_size'],
+                     dropout_input_layer=config['mlp_dropout_input_layer'],
+                     dropout_hidden_layers=config['mlp_dropout_hidden_layers'])
     optimizer = optim.Adam(params=classifier.parameters(),
                            lr=config['mlp_learning_rate'])
     return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,

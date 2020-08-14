@@ -10,20 +10,20 @@ class MLP(nn.Module):
     DIR = pathlib.Path('models')
     FILENAME = DIR / 'classifier.cpt'
 
-    def __init__(self, input_size, n_hidden_layers, hidden_layers_size, drop_prob_input, drop_prob_hidden, val_loss=None):
+    def __init__(self, input_layer_size, n_hidden_layers, hidden_layers_size, dropout_input_layer, dropout_hidden_layers, val_loss=None):
         super(MLP, self).__init__()
-        self.input_size = input_size
+        self.input_layer_size = input_layer_size
         self.hidden_layers_size = hidden_layers_size
-        self.drop_prob_input = drop_prob_input
-        self.drop_prob_hidden = drop_prob_hidden
+        self.dropout_input_layer = dropout_input_layer
+        self.dropout_hidden_layers = dropout_hidden_layers
         self.val_loss = val_loss
         self.fcs = nn.ModuleList(
-            [nn.Linear(input_size, hidden_layers_size), nn.ReLU(), nn.Dropout(drop_prob_hidden)])
+            [nn.Linear(input_layer_size, hidden_layers_size), nn.ReLU(), nn.Dropout(dropout_hidden_layers)])
         for i in range(n_hidden_layers - 1):
             self.fcs.extend([nn.Linear(hidden_layers_size, hidden_layers_size),
-                             nn.ReLU(), nn.Dropout(drop_prob_hidden)])
+                             nn.ReLU(), nn.Dropout(dropout_hidden_layers)])
         self.fcout = nn.Linear(hidden_layers_size, 1)
-        self.dropout_input = nn.Dropout(drop_prob_input)
+        self.dropout_input = nn.Dropout(dropout_input_layer)
 
     def forward(self, x):
         x = self.dropout_input(x)
