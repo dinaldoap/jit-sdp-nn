@@ -25,6 +25,8 @@ def main():
                         help='Last commit to be used for testing (default: last dataset commit).',  default=None)
     parser.add_argument('--fold_size',   type=int,
                         help='Number of commits in each fold (default: 50).',    default=50)
+    parser.add_argument('--max_sample_size',   type=int,
+                        help='Max sample size selected from the training data in each iteration (default: bootstrap).',    default=None)
     parser.add_argument('--normal_proportion',   type=float,
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
     parser.add_argument('--orb',   type=int,

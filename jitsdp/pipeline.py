@@ -57,6 +57,7 @@ def create_pipeline(config):
         classifier = ScoreFixed(model=model)
     if config['orb']:
         classifier = ORB(classifier=classifier,
+                         max_sample_size=config['max_sample_size'],
                          normal_proportion=config['normal_proportion'])
     return classifier
 
@@ -224,8 +225,9 @@ class RateFixedTrain(Threshold):
 
 
 class ORB(Classifier):
-    def __init__(self, classifier, normal_proportion):
+    def __init__(self, classifier, max_sample_size, normal_proportion):
         self.classifier = classifier
+        self.max_sample_size = max_sample_size
         self.th = 1 - normal_proportion
         self.m = 1.5
         self.l0 = 10
@@ -246,6 +248,7 @@ class ORB(Classifier):
             new_kwargs = dict(kwargs)
             new_kwargs['weights'] = [obf0, obf1]
             new_kwargs['n_iterations'] = 1
+            new_kwargs['max_sample_size'] = self.max_sample_size
             for metrics in self.classifier.train(df_train, **new_kwargs):
                 yield _track_orb(metrics=metrics, ma=ma, obf0=obf0, obf1=obf1, **kwargs)
             df_output = self.classifier.predict(df_ma)
@@ -372,9 +375,8 @@ def _prepare_dataloaders(df_train, features, target, soft_target, batch_size, fa
 
     X_train = _steps_fit_transform(steps, X_train, y_train)
 
-    weights = kwargs.pop('weights', [1, 1])
     sampled_train_dataloader = _dataloader(
-        X_train, soft_y_train, batch_size=batch_size, sampler=_sampler(y_train, weights, fading_factor))
+        X_train, soft_y_train, batch_size=batch_size, sampler=_sampler(y_train, fading_factor, **kwargs))
 
     return sampled_train_dataloader
 
@@ -389,7 +391,8 @@ def _dataloader(X, y, batch_size=32, sampler=None):
     return data.DataLoader(dataset, batch_size=batch_size, sampler=sampler)
 
 
-def _sampler(y, weights, fading_factor):
+def _sampler(y, fading_factor, **kwargs):
+    weights = kwargs.pop('weights', [1, 1])
     normal_indices = np.flatnonzero(y == 0)
     bug_indices = np.flatnonzero(y == 1)
     age_weights = np.zeros(len(y))
@@ -399,7 +402,10 @@ def _sampler(y, weights, fading_factor):
     # bug commit doesn't age
     age_weights[bug_indices] = _fading_weights(
         size=len(bug_indices), fading_factor=fading_factor, total=weights[1])
-    return data.WeightedRandomSampler(weights=age_weights, num_samples=len(y), replacement=True)
+    max_sample_size = kwargs.pop('max_sample_size', None)
+    num_samples = len(y) if max_sample_size is None else min(
+        len(y), max_sample_size)
+    return data.WeightedRandomSampler(weights=age_weights, num_samples=num_samples, replacement=True)
 
 
 def _fading_weights(size, fading_factor, total):
