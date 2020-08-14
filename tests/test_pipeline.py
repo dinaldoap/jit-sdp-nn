@@ -28,7 +28,7 @@ def create_pipeline():
         'ensemble_size': 1,
         'model': 'mlp',
         'threshold': 0,
-        'orb': 0,
+        'borb': 0,
         'f_val': .0
     })
     return pipeline
