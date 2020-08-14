@@ -56,7 +56,7 @@ def main():
     parser.add_argument('--lr_n_epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--lr_batch_size',   type=int,
-                        help='Number of commits included in each batch (default: 512).',    default=512)
+                        help='Number of commits included in each batch (default: 256).',    default=256)
     parser.add_argument('--mlp_n_hidden_layers',   type=int,
                         help='Number of hidden layers (default: 1).',    default=1)
     parser.add_argument('--mlp_hidden_layers_size',   type=int,
@@ -70,7 +70,7 @@ def main():
     parser.add_argument('--mlp_dropout_hidden_layers',   type=float,
                         help='Dropout probability of the hidden layers (default: .5).',    default=.5)
     parser.add_argument('--mlp_batch_size',   type=int,
-                        help='Number of commits included in each batch (default: 512).',    default=512)
+                        help='Number of commits included in each batch (default: 256).',    default=256)
     parser.add_argument('--nb_n_updates',   type=int,
                         help='Number of updates performed by the training (default: 1).',    default=1)
     parser.add_argument('--rf_n_estimators',   type=int,
@@ -92,7 +92,7 @@ def main():
     parser.add_argument('--svm_n_epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--svm_batch_size',   type=int,
-                        help='Number of commits included in each batch (default: 512).',    default=512)
+                        help='Number of commits included in each batch (default: 256).',    default=256)
     parser.add_argument('--f_val',   type=float,
                         help='Fraction of labeled data to be used for validation. (default: .0).',  default=.0)
     parser.add_argument('--ensemble_size',   type=int,
