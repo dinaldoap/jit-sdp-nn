@@ -23,8 +23,8 @@ def main():
                         help='First commit to be used for testing (default: 0).',    default=0)
     parser.add_argument('--end',   type=int_or_none,
                         help='Last commit to be used for testing (default: 5000). None means all commits.',  default=5000)
-    parser.add_argument('--fold_size',   type=int,
-                        help='Number of commits in each fold (default: 50).',    default=50)
+    parser.add_argument('--pull_request_size',   type=int,
+                        help='Number of commits to wait before retraining (default: 50).',    default=50)
     parser.add_argument('--max_sample_size',   type=int_or_none,
                         help='Max sample size selected from the training data in each iteration (default: 1000). None means bootstrap.',    default=1000)
     parser.add_argument('--normal_proportion',   type=float,

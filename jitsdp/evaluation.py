@@ -21,7 +21,8 @@ def run(config):
     # the previous commits until current are used for training
     seconds_by_day = 24 * 60 * 60
     verification_latency = 90 * seconds_by_day  # seconds
-    fold_size = config['fold_size']  # commits
+    # each fold has pull_request_size commits
+    fold_size = config['pull_request_size']
     start = config['start']
     end = len(df_prequential) if config['end'] is None else config['end']
     assert start < end, 'start must be lesser than end.'
