@@ -21,12 +21,12 @@ def main():
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0).',    default=0)
-    parser.add_argument('--end',   type=int,
-                        help='Last commit to be used for testing (default: last dataset commit).',  default=None)
+    parser.add_argument('--end',   type=int_or_none,
+                        help='Last commit to be used for testing (default: 5000). None means all commits.',  default=5000)
     parser.add_argument('--fold_size',   type=int,
                         help='Number of commits in each fold (default: 50).',    default=50)
-    parser.add_argument('--max_sample_size',   type=int,
-                        help='Max sample size selected from the training data in each iteration (default: bootstrap).',    default=None)
+    parser.add_argument('--max_sample_size',   type=int_or_none,
+                        help='Max sample size selected from the training data in each iteration (default: 1000). None means bootstrap.',    default=1000)
     parser.add_argument('--normal_proportion',   type=float,
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
     parser.add_argument('--orb',   type=int,
@@ -131,6 +131,10 @@ def create_configs(args, lists):
         for i, name in enumerate(lists):
             config[name] = values_tuple[i]
         yield config
+
+
+def int_or_none(string):
+    return None if string == 'None' else int(string)
 
 
 if __name__ == '__main__':
