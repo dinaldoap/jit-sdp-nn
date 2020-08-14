@@ -66,7 +66,7 @@ def create_mlp_model(config):
     scaler = StandardScaler()
     criterion = nn.BCEWithLogitsLoss()
     classifier = MLP(input_size=len(FEATURES),
-                     n_hidden_layers=config['mlp_n_hidden_layers'], hidden_layers_size=config['mlp_hidden_layers_size'], drop_prob_input=.2, drop_prob_hidden=.5)
+                     n_hidden_layers=config['mlp_n_hidden_layers'], hidden_layers_size=config['mlp_hidden_layers_size'], drop_prob_input=config['mlp_dropout_input_layer'], drop_prob_hidden=config['mlp_dropout_hidden_layers'])
     optimizer = optim.Adam(params=classifier.parameters(),
                            lr=config['mlp_learning_rate'])
     return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,

@@ -21,6 +21,8 @@ def create_pipeline():
         'mlp_hidden_layers_size': 7,
         'mlp_learning_rate': .001,
         'mlp_n_epochs': 100,
+        'mlp_dropout_input_layer': .2,
+        'mlp_dropout_hidden_layers': .5,
         'mlp_batch_size': 512,
         'normal_proportion': .5,
         'ensemble_size': 1,
