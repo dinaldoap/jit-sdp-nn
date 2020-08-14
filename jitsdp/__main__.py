@@ -49,6 +49,8 @@ def main():
                         help='Number of commits included in each batch (default: 512).',    default=512)
     parser.add_argument('--mlp_n_hidden_layers',   type=int,
                         help='Number of hidden layers (default: 1).',    default=1)
+    parser.add_argument('--mlp_hidden_layers_width',   type=int,
+                        help='Hidden layers width (default: 7).',    default=7)
     parser.add_argument('--mlp_learning_rate',   type=float,
                         help='Learning rate (default: .001).',  default=.001)
     parser.add_argument('--mlp_n_epochs',   type=int,
