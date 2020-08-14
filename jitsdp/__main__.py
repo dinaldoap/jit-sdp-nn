@@ -84,7 +84,7 @@ def main():
     parser.add_argument('--rf_min_samples_leaf',   type=int,
                         help='he minimum number of samples required to be at a leaf node (default: 100).', default=100)
     parser.add_argument('--rf_min_impurity_decrease',   type=float,
-                        help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .02).', default=.02)
+                        help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .0).', default=.0)
     parser.add_argument('--svm_alpha',   type=float,
                         help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: .1).',  default=.1)
     parser.add_argument('--svm_l1_ratio',   type=float,
