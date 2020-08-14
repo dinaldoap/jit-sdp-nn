@@ -29,6 +29,12 @@ def main():
                         help='Max sample size selected from the training data in each iteration (default: 1000). None means bootstrap.',    default=1000)
     parser.add_argument('--normal_proportion',   type=float,
                         help='Expected proportion for normal commits. (default: .6).',  default=.6)
+    parser.add_argument('--borb_l0',   type=float,
+                        help='No description. (default: 10.).',  default=10.)
+    parser.add_argument('--borb_l1',   type=float,
+                        help='No description. (default: 12.).',  default=12.)
+    parser.add_argument('--borb_m',   type=float,
+                        help='No description. (default: 1.5).',  default=1.5)
     parser.add_argument('--orb',   type=int,
                         help='Whether must use oversampling rate boosting to balance output proportions (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--cross_project',   type=int,

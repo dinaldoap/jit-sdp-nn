@@ -58,7 +58,10 @@ def create_pipeline(config):
     if config['orb']:
         classifier = ORB(classifier=classifier,
                          max_sample_size=config['max_sample_size'],
-                         normal_proportion=config['normal_proportion'])
+                         th=(1 - config['normal_proportion']),
+                         l0=config['borb_l0'],
+                         l1=config['borb_l1'],
+                         m=config['borb_m'])
     return classifier
 
 
@@ -228,17 +231,17 @@ class RateFixedTrain(Threshold):
 
 
 class ORB(Classifier):
-    def __init__(self, classifier, max_sample_size, normal_proportion):
+    def __init__(self, classifier, max_sample_size, th, l0, l1, m):
         self.classifier = classifier
         self.max_sample_size = max_sample_size
-        self.th = 1 - normal_proportion
-        self.m = 1.5
-        self.l0 = 10
-        self.l1 = 12
+        self.th = th
+        self.l0 = l0
+        self.l1 = l1
+        self.m = m
 
     def train(self, df_train, **kwargs):
         df_ma = kwargs.pop('df_ma', None)
-        ma = .4
+        ma = self.th
         for i in range(self.classifier.n_iterations):
             obf0 = 1
             obf1 = 1
