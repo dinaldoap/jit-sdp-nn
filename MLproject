@@ -6,7 +6,6 @@ entry_points:
   main:
     parameters:
         command: {default: run}
-        pool_size: {default: 2}
         end: {default: None}
         seeds: {default: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29}        
         datasets: {default: brackets camel fabric8 jgroups neutron tomcat broadleaf nova npm spring-integration}
@@ -16,4 +15,4 @@ entry_points:
         nb_n_updates: {default: 50}
         rf_n_estimators: {default: 100}
         svm_n_epochs: {default: 50}
-    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --pool_size {pool_size} --end {end} --seeds {seeds} --datasets {datasets} --models {models} --lr_n_epochs {lr_n_epochs} --mlp_n_epochs {mlp_n_epochs} --nb_n_updates {nb_n_updates} --rf_n_estimators {rf_n_estimators} --svm_n_epochs {svm_n_epochs}'
+    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --end {end} --seeds {seeds} --datasets {datasets} --models {models} --lr_n_epochs {lr_n_epochs} --mlp_n_epochs {mlp_n_epochs} --nb_n_updates {nb_n_updates} --rf_n_estimators {rf_n_estimators} --svm_n_epochs {svm_n_epochs}'
