@@ -18,7 +18,7 @@ from pytest import approx
 def create_pipeline():
     pipeline = evaluation.create_pipeline({
         'mlp_n_hidden_layers': 1,
-        'mlp_hidden_layers_width': 7,
+        'mlp_hidden_layers_size': 7,
         'mlp_learning_rate': .001,
         'mlp_n_epochs': 100,
         'mlp_batch_size': 512,
