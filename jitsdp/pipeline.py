@@ -71,7 +71,7 @@ def create_mlp_model(config):
                            lr=config['mlp_learning_rate'])
     return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
                    features=FEATURES, target='target', soft_target='soft_target',
-                   max_epochs=config['mlp_n_epochs'], batch_size=512, fading_factor=1)
+                   max_epochs=config['mlp_n_epochs'], batch_size=config['mlp_batch_size'], fading_factor=1)
 
 
 def create_nb_model(config):

@@ -53,6 +53,8 @@ def main():
                         help='Learning rate (default: .001).',  default=.001)
     parser.add_argument('--mlp_n_epochs',   type=int,
                         help='Number of epochs performed by the training (default: 1).',    default=1)
+    parser.add_argument('--mlp_batch_size',   type=int,
+                        help='Number of commits included in each batch (default: 512).',    default=512)
     parser.add_argument('--nb_n_updates',   type=int,
                         help='Number of updates performed by the training (default: 1).',    default=1)
     parser.add_argument('--rf_n_estimators',   type=int,
