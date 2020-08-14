@@ -49,7 +49,7 @@ def create_pipeline(config):
         model = fn_create_model(config)
     if config['threshold'] == 1:
         classifier = RateFixed(
-            model=model, normal_proportion=config['normal_proportion'])
+            model=model, normal_proportion=(1 - config['borb_th']))
     elif config['threshold'] == 2:
         classifier = RateFixedTrain(
             model=model)
@@ -58,7 +58,7 @@ def create_pipeline(config):
     if config['orb']:
         classifier = ORB(classifier=classifier,
                          max_sample_size=config['max_sample_size'],
-                         th=(1 - config['normal_proportion']),
+                         th=config['borb_th'],
                          l0=config['borb_l0'],
                          l1=config['borb_l1'],
                          m=config['borb_m'])

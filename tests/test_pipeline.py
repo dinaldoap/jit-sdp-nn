@@ -24,7 +24,7 @@ def create_pipeline():
         'mlp_dropout_input_layer': .2,
         'mlp_dropout_hidden_layers': .5,
         'mlp_batch_size': 512,
-        'normal_proportion': .5,
+        'borb_th': .5,
         'ensemble_size': 1,
         'model': 'mlp',
         'threshold': 0,

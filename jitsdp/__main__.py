@@ -31,8 +31,8 @@ def main():
                         help='Number of commits to wait before retraining (default: 50).',    default=50)
     parser.add_argument('--max_sample_size',   type=int_or_none,
                         help='Max sample size selected from the training data in each iteration (default: 1000). None means bootstrap.',    default=1000)
-    parser.add_argument('--normal_proportion',   type=float,
-                        help='Expected proportion for normal commits. (default: .6).',  default=.6)
+    parser.add_argument('--borb_th',   type=float,
+                        help='Expected proportion for bug commits. (default: .4).',  default=.4)
     parser.add_argument('--borb_l0',   type=float,
                         help='No description. (default: 10.).',  default=10.)
     parser.add_argument('--borb_l1',   type=float,
