@@ -78,7 +78,7 @@ def main():
     parser.add_argument('--rf_criterion',   type=str,
                         help='The function to measure the quality of a split (default: \'entropy\').', default='entropy', choices=['entropy', 'gini'])
     parser.add_argument('--rf_max_depth',   type=int,
-                        help='The maximum depth of the tree (default: 3).', default=3)
+                        help='The maximum depth of the tree (default: unlimited).', default=None)
     parser.add_argument('--rf_max_features',   type=int,
                         help='The number of features to consider when looking for the best split (default: 3).', default=3)
     parser.add_argument('--rf_min_samples_leaf',   type=int,
