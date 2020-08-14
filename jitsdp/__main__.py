@@ -27,9 +27,9 @@ def main():
                         help='Number of days to wait before labeling the commit as clean (default: 90).',    default=90)
     parser.add_argument('--borb_ma_window_size',   type=int,
                         help='Number of recent commits to use to calculate the moving average of the model\'s output (default: 100).',    default=100)
-    parser.add_argument('--pull_request_size',   type=int,
+    parser.add_argument('--borb_pull_request_size',   type=int,
                         help='Number of commits to wait before retraining (default: 50).',    default=50)
-    parser.add_argument('--max_sample_size',   type=int_or_none,
+    parser.add_argument('--borb_max_sample_size',   type=int_or_none,
                         help='Max sample size selected from the training data in each iteration (default: 1000). None means bootstrap.',    default=1000)
     parser.add_argument('--borb_th',   type=float,
                         help='Expected proportion for bug commits. (default: .4).',  default=.4)

@@ -23,7 +23,7 @@ def run(config):
     # seconds
     verification_latency = config['borb_waiting_time'] * seconds_by_day
     # each fold has pull_request_size commits
-    fold_size = config['pull_request_size']
+    fold_size = config['borb_pull_request_size']
     start = config['start']
     end = len(df_prequential) if config['end'] is None else config['end']
     assert start < end, 'start must be lesser than end.'
