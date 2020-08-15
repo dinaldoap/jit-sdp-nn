@@ -17,6 +17,8 @@ def main():
         description='JIT-SDP: experiment execution')
     parser.add_argument('command',   type=str, help='Which command should execute (default: run).',
                         default='run', choices=['run', 'report'])
+    parser.add_argument('--experiment_name',   type=str,
+                        help='Experiment name (default: Default).', default='Default')
     parser.add_argument('--pool_size',   type=int,
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--start',   type=int,
@@ -116,6 +118,10 @@ def main():
     logging.basicConfig(filename=log,
                         filemode='w', level=logging.INFO)
     logging.info('Main config: {}'.format(args))
+
+    mlflow.set_experiment(args['experiment_name'])
+    del args['experiment_name']
+
     with mlflow.start_run():
         configs = create_configs(args, lists)
         with Pool(args['pool_size']) as pool:
