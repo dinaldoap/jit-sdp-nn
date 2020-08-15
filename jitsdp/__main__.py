@@ -18,7 +18,7 @@ def main():
     parser.add_argument('command',   type=str, help='Which command should execute (default: run).',
                         default='run', choices=['run', 'report'])
     parser.add_argument('--experiment_name',   type=str,
-                        help='Experiment name (default: Default).', default='Default')
+                        help='Experiment name (default: None). None means default behavior of MLflow', default=None)
     parser.add_argument('--pool_size',   type=int,
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--start',   type=int,
@@ -119,7 +119,8 @@ def main():
                         filemode='w', level=logging.INFO)
     logging.info('Main config: {}'.format(args))
 
-    mlflow.set_experiment(args['experiment_name'])
+    if args['experiment_name'] is not None:
+        mlflow.set_experiment(args['experiment_name'])
     del args['experiment_name']
 
     with mlflow.start_run():
