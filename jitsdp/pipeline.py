@@ -119,7 +119,7 @@ class Model(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def predict_proba(self, df_features):
+    def predict_proba(self, df_features, **kwargs):
         pass
 
     @abstractmethod
@@ -151,8 +151,8 @@ class Threshold(Classifier):
             yield _track_performance(metrics=metrics,
                                      classifier=self, df_train=df_train, **kwargs)
 
-    def predict_proba(self, df_features):
-        return self.model.predict_proba(df_features)
+    def predict_proba(self, df_features, **kwargs):
+        return self.model.predict_proba(df_features, **kwargs)
 
     def save(self):
         self.model.save()
@@ -171,7 +171,7 @@ class ScoreFixed(Threshold):
         self.score = score
 
     def predict(self, df_features, **kwargs):
-        prediction = self.predict_proba(df_features=df_features)
+        prediction = self.predict_proba(df_features=df_features, **kwargs)
         prediction['prediction'] = (
             prediction['probability'] >= self.score).round().astype('int')
         return prediction
@@ -185,8 +185,8 @@ class RateFixed(Threshold):
     def predict(self, df_features, **kwargs):
         df_threshold = kwargs.pop('df_threshold', None)
         val_probabilities = self.predict_proba(
-            df_threshold)['probability'] if df_threshold is not None else None
-        prediction = self.predict_proba(df_features=df_features)
+            df_threshold, **kwargs)['probability'] if df_threshold is not None else None
+        prediction = self.predict_proba(df_features=df_features, **kwargs)
         threshold = _tune_threshold(val_probabilities=val_probabilities,
                                     test_probabilities=prediction['probability'], normal_proportion=self.normal_proportion)
         threshold = threshold.values
@@ -219,7 +219,7 @@ class RateFixedTrain(Threshold):
         normal_proportion = 1 - df_proportion['soft_target'].mean()
         normal_proportion = (normal_proportion + .5) / 2
         df_threshold = kwargs.pop('df_threshold', None)
-        threshold_probabilities = self.predict_proba(df_threshold)[
+        threshold_probabilities = self.predict_proba(df_threshold, **kwargs)[
             'probability']
         prediction = self.predict_proba(df_features=df_features)
         threshold = _tune_threshold(val_probabilities=threshold_probabilities,
@@ -263,8 +263,8 @@ class ORB(Classifier):
     def predict(self, df_features, **kwargs):
         return self.classifier.predict(df_features, **kwargs)
 
-    def predict_proba(self, df_features):
-        return self.classifier.predict_proba(df_features)
+    def predict_proba(self, df_features, **kwargs):
+        return self.classifier.predict_proba(df_features, **kwargs)
 
     def save(self):
         self.classifier.save()
@@ -328,7 +328,7 @@ class PyTorch(Model):
             self.trained = True
             yield
 
-    def predict_proba(self, df_features):
+    def predict_proba(self, df_features, **kwargs):
         if self.trained:
             X = df_features[self.features].values
             X = _steps_transform(self.steps, X)
@@ -475,7 +475,7 @@ class Scikit(Model):
     def train_iteration(self, inputs, targets):
         pass
 
-    def predict_proba(self, df_features):
+    def predict_proba(self, df_features, **kwargs):
         if self.trained:
             X = df_features[self.features].values
             X = _steps_transform(self.steps, X)
@@ -540,8 +540,8 @@ class RandomForest(Scikit):
         self.classifier.fit(
             inputs, targets)
 
-    def predict_proba(self, df_features):
-        prediction = super().predict_proba(df_features)
+    def predict_proba(self, df_features, **kwargs):
+        prediction = super().predict_proba(df_features, **kwargs)
         prediction = _track_rf(prediction, self)
         return prediction
 
@@ -574,10 +574,10 @@ class Ensemble(Model):
         for model in self.models:
             model.train(df_train, **kwargs)
 
-    def predict_proba(self, df_features):
+    def predict_proba(self, df_features, **kwargs):
         probability = df_features
         for index, model in enumerate(self.models):
-            probability = model.predict_proba(probability)
+            probability = model.predict_proba(probability, **kwargs)
             probability = probability.rename({
                 'probability': 'probability{}'.format(index),
             },
