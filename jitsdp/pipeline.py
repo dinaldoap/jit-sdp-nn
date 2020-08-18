@@ -542,7 +542,8 @@ class RandomForest(Scikit):
 
     def predict_proba(self, df_features, **kwargs):
         prediction = super().predict_proba(df_features, **kwargs)
-        prediction = _track_rf(prediction, self)
+        if kwargs.pop('track_rf', 0):
+            prediction = _track_rf(prediction, self)
         return prediction
 
 
