@@ -95,6 +95,8 @@ def main():
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--svm-batch-size',   type=int,
                         help='Number of commits included in each batch (default: 256).',    default=256)
+    parser.add_argument('--track-time',   type=int,
+                        help='Whether must track time. (default: 0).',  default=0)
     parser.add_argument('--track-rf',   type=int,
                         help='Whether must track random forest complexity. (default: 0).',  default=0)
     parser.add_argument('--f-val',   type=float,
