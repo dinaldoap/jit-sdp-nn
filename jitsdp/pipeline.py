@@ -7,6 +7,7 @@ from jitsdp.utils import mkdir
 from abc import ABCMeta, abstractmethod
 import joblib
 import logging
+import time
 import numpy as np
 import pandas as pd
 import pathlib
@@ -152,7 +153,10 @@ class Threshold(Classifier):
                                      classifier=self, df_train=df_train, **kwargs)
 
     def predict_proba(self, df_features, **kwargs):
-        return self.model.predict_proba(df_features, **kwargs)
+        prediction = self.model.predict_proba(df_features, **kwargs)
+        if kwargs.pop('track_time', 0):
+            prediction = _track_time(prediction)
+        return prediction
 
     def save(self):
         self.model.save()
@@ -666,3 +670,8 @@ def _concat_property(prediction, name, values):
     prop = pd.concat(template + [prop] * len(prediction))
     prop.index = prediction.index
     return pd.concat([prediction, prop], axis='columns')
+
+
+def _track_time(prediction):
+    prediction['timestamp_test'] = time.time()
+    return prediction
