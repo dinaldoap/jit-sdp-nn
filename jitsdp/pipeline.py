@@ -23,6 +23,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.exceptions import NotFittedError
+from skmultiflow.data import DataStream
+from skmultiflow.meta import OzaBaggingClassifier
+from skmultiflow.trees import HoeffdingTreeClassifier
 
 logger = logging.getLogger(__name__)
 
@@ -35,6 +38,7 @@ def set_seed(config):
 
 def create_pipeline(config):
     map_fn = {
+        'obht': create_obht_model,
         'mlp': create_mlp_model,
         'nb': create_nb_model,
         'rf': create_rf_model,
@@ -64,6 +68,15 @@ def create_pipeline(config):
                          l1=config['borb_l1'],
                          m=config['borb_m'])
     return classifier
+
+
+def create_obht_model(config):
+    hoeffding_tree = HoeffdingTreeClassifier()
+    classifier = OzaBaggingClassifier(
+        base_estimator=hoeffding_tree, n_estimators=20)
+    return OzaBag(steps=[], classifier=classifier,
+                  features=FEATURES, target='target', soft_target='soft_target',
+                  n_updates=1, fading_factor=1)
 
 
 def create_mlp_model(config):
@@ -508,6 +521,21 @@ class Scikit(Model):
                  'classifier': self.classifier,
                  'val_loss': self.val_loss, }
         joblib.dump(state, PyTorch.FILENAME)
+
+
+class OzaBag(Scikit):
+
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_updates):
+        super().__init__(steps=steps, classifier=classifier, features=features, target=target,
+                         soft_target=soft_target, fading_factor=fading_factor, batch_size=None)
+        self.n_updates = n_updates
+
+    @property
+    def n_iterations(self):
+        return self.n_updates
+
+    def train_iteration(self, inputs, targets):
+        self.classifier.partial_fit(inputs, targets, classes=[0, 1])
 
 
 class NaiveBayes(Scikit):
