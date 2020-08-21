@@ -78,7 +78,7 @@ def create_bht_model(config):
         base_estimator=base_estimator, n_estimators=0, warm_start=True, bootstrap=False)
     return RandomForest(steps=[], classifier=classifier,
                         features=FEATURES, target='target', soft_target='soft_target',
-                        n_trees=20, fading_factor=1)
+                        n_trees=config['bht_n_estimators'], fading_factor=1)
 
 
 def create_obht_model(config):
