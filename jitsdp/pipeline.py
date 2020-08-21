@@ -19,7 +19,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.kernel_approximation import Nystroem
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.exceptions import NotFittedError
@@ -39,6 +39,7 @@ def set_seed(config):
 def create_pipeline(config):
     map_fn = {
         'obht': create_obht_model,
+        'bht': create_bht_model,
         'mlp': create_mlp_model,
         'nb': create_nb_model,
         'rf': create_rf_model,
@@ -68,6 +69,16 @@ def create_pipeline(config):
                          l1=config['borb_l1'],
                          m=config['borb_m'])
     return classifier
+
+
+def create_bht_model(config):
+    hoeffding_tree = HoeffdingTreeClassifier()
+    base_estimator = MultiflowBaseEstimator(hoeffding_tree)
+    classifier = BaggingClassifier(
+        base_estimator=base_estimator, n_estimators=0, warm_start=True, bootstrap=False)
+    return RandomForest(steps=[], classifier=classifier,
+                        features=FEATURES, target='target', soft_target='soft_target',
+                        n_trees=20, fading_factor=1)
 
 
 def create_obht_model(config):
@@ -521,6 +532,25 @@ class Scikit(Model):
                  'classifier': self.classifier,
                  'val_loss': self.val_loss, }
         joblib.dump(state, PyTorch.FILENAME)
+
+
+class MultiflowBaseEstimator(BaseEstimator):
+
+    def __init__(self, mf_classifier):
+        self.mf_classifier = mf_classifier
+
+    @property
+    def classes_(self):
+        return self.mf_classifier.classes
+
+    def fit(self, X, y):
+        self.mf_classifier.fit(X, y, classes=[0, 1])
+
+    def predict(self, X):
+        return self.mf_classifier.predict(X)
+
+    def predict_proba(self, X):
+        return self.mf_classifier.predict_proba(X)
 
 
 class OzaBag(Scikit):
