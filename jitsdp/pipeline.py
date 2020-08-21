@@ -552,6 +552,12 @@ class MultiflowBaseEstimator(BaseEstimator):
     def predict_proba(self, X):
         return self.mf_classifier.predict_proba(X)
 
+    def get_depth(self):
+        return self.mf_classifier.measure_tree_depth()
+
+    def get_n_leaves(self):
+        return self.mf_classifier._active_leaf_node_cnt + self.mf_classifier._inactive_leaf_node_cnt
+
 
 class OzaBag(Scikit):
 
