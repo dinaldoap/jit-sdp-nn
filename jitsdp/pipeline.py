@@ -72,7 +72,8 @@ def create_pipeline(config):
 
 
 def create_bht_model(config):
-    hoeffding_tree = HoeffdingTreeClassifier()
+    hoeffding_tree = HoeffdingTreeClassifier(
+        split_confidence=config['bht_split_confidence'])
     base_estimator = MultiflowBaseEstimator(hoeffding_tree)
     classifier = BaggingClassifier(
         base_estimator=base_estimator, n_estimators=0, warm_start=True, bootstrap=False)
