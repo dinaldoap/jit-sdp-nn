@@ -15,7 +15,8 @@ setup(name='jitsdp',
       packages=find_packages(),
       entry_points={
           'console_scripts': [
-              'jitsdp = jitsdp.__main__:main'
+              'jitsdp = jitsdp.__main__:main',
+              'baseline = jitsdp.baseline:main',
           ]
       },
       install_requires=['numpy==1.17.2',
