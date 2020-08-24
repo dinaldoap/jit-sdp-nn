@@ -50,7 +50,7 @@ def main():
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
     parser.add_argument('--models',   type=str,
-                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['bht', 'obht', 'lr', 'mlp', 'nb', 'rf', 'svm'], nargs='+')
+                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['bht', 'lr', 'mlp', 'nb', 'rf', 'svm'], nargs='+')
     parser.add_argument('--bht-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',    default=1)
     parser.add_argument('--bht-split-confidence',   type=float,

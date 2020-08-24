@@ -38,7 +38,6 @@ def set_seed(config):
 
 def create_pipeline(config):
     map_fn = {
-        'obht': create_obht_model,
         'bht': create_bht_model,
         'mlp': create_mlp_model,
         'nb': create_nb_model,
@@ -80,15 +79,6 @@ def create_bht_model(config):
     return RandomForest(steps=[], classifier=classifier,
                         features=FEATURES, target='target', soft_target='soft_target',
                         n_trees=config['bht_n_estimators'], fading_factor=1)
-
-
-def create_obht_model(config):
-    hoeffding_tree = HoeffdingTreeClassifier()
-    classifier = OzaBaggingClassifier(
-        base_estimator=hoeffding_tree, n_estimators=20)
-    return OzaBag(steps=[], classifier=classifier,
-                  features=FEATURES, target='target', soft_target='soft_target',
-                  n_updates=1, fading_factor=1)
 
 
 def create_mlp_model(config):
