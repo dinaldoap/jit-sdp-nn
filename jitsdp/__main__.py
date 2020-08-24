@@ -50,7 +50,7 @@ def main():
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
     parser.add_argument('--models',   type=str,
-                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['bht', 'lr', 'mlp', 'nb', 'rf', 'svm'], nargs='+')
+                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['bht', 'lr', 'mlp', 'nb', 'rf'], nargs='+')
     parser.add_argument('--bht-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',    default=1)
     parser.add_argument('--bht-split-confidence',   type=float,
@@ -91,14 +91,6 @@ def main():
                         help='The minimum number of samples required to be at a leaf node (default: 200).', default=200)
     parser.add_argument('--rf-min-impurity-decrease',   type=float,
                         help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .0).', default=.0)
-    parser.add_argument('--svm-alpha',   type=float,
-                        help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: .1).',  default=.1)
-    parser.add_argument('--svm-l1-ratio',   type=float,
-                        help='The Elastic Net mixing parameter (default: .15).',  default=.15)
-    parser.add_argument('--svm-n-epochs',   type=int,
-                        help='Number of epochs performed by the training (default: 1).',    default=1)
-    parser.add_argument('--svm-batch-size',   type=int,
-                        help='Number of commits included in each batch (default: 256).',    default=256)
     parser.add_argument('--track-time',   type=int,
                         help='Whether must track time. (default: 0).',  default=0)
     parser.add_argument('--track-rf',   type=int,

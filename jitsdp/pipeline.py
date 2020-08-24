@@ -43,7 +43,6 @@ def create_pipeline(config):
         'nb': create_nb_model,
         'rf': create_rf_model,
         'lr': create_lr_model,
-        'svm': create_svm_model,
     }
     fn_create_model = map_fn[config['model']]
     if config['ensemble_size'] > 1:
