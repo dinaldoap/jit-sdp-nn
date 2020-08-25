@@ -79,7 +79,7 @@ def extract_events(df_commit):
     df_bugged['timestamp_event'] = df_bugged['timestamp_fix'].astype(int)
     # bug cleaned
     df_bug_cleaned = df_bug.copy()
-    waited_time = df_bug_cleaned['timestamp'] - df_bug_cleaned['timestamp_fix']
+    waited_time = df_bug_cleaned['timestamp_fix'] - df_bug_cleaned['timestamp']
     df_bug_cleaned = df_bug_cleaned[waited_time >= verification_latency]
     df_bug_cleaned['target'] = 0
     df_bug_cleaned['timestamp_event'] = df_bug_cleaned['timestamp'] + \
