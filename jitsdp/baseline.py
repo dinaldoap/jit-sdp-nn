@@ -1,4 +1,5 @@
 from jitsdp.data import make_stream, save_results, load_results, DATASETS
+from jitsdp.pipeline import set_seed
 from jitsdp.utils import mkdir, split_args, create_config_template, to_plural
 
 import argparse
@@ -7,6 +8,7 @@ from itertools import product
 import logging
 import mlflow
 import pathlib
+import pandas as pd
 import sys
 
 
@@ -44,7 +46,41 @@ def main():
 
 
 def run(config):
-    print(config)
+    mlflow.log_params(config)
+    set_seed(config)
+    dataset = config['dataset']
+    # stream with commit order
+    df_commit = make_stream(dataset)
+    # stream with labeling order
+    df_test = df_commit.copy()
+    df_train = extract_events(df_commit)
+
+
+def extract_events(df_commit):
+    seconds_by_day = 24 * 60 * 60
+    # seconds
+    verification_latency = 90 * seconds_by_day
+    # cleaned
+    df_clean = df_commit[df_commit['target'] == 0]
+    df_cleaned = df_clean.copy()
+    df_cleaned['timestamp_event'] = df_cleaned['timestamp'] + \
+        verification_latency
+    # bugged
+    df_bug = df_commit[df_commit['target'] == 1]
+    df_bugged = df_bug.copy()
+    df_bugged['timestamp_event'] = df_bugged['timestamp_fix']
+    # bug cleaned
+    df_bug_cleaned = df_bug.copy()
+    waited_time = df_bug_cleaned['timestamp'] - df_bug_cleaned['timestamp_fix']
+    df_bug_cleaned = df_bug_cleaned[waited_time >= verification_latency]
+    df_bug_cleaned['target'] = 0
+    df_bug_cleaned['timestamp_event'] = df_bug_cleaned['timestamp'] + \
+        verification_latency
+    # events
+    df_events = pd.concat([df_cleaned, df_bugged, df_bug_cleaned])
+    df_events = df_events.sort_values('timestamp_event')
+    print(df_events.head())
+    return df_events
 
 
 def create_configs(args, lists):
