@@ -56,6 +56,13 @@ def run(config):
     df_train = extract_events(df_commit)
     df_train = remove_noise(df_train)
 
+    test_steps = calculate_steps(
+        df_test['timestamp'], df_train['timestamp_event'])
+    print(test_steps)
+    train_steps = calculate_steps(
+        df_train['timestamp_event'], df_test['timestamp'])
+    print(train_steps)
+
 
 def extract_events(df_commit):
     seconds_by_day = 24 * 60 * 60
@@ -69,7 +76,7 @@ def extract_events(df_commit):
     # bugged
     df_bug = df_commit[df_commit['target'] == 1]
     df_bugged = df_bug.copy()
-    df_bugged['timestamp_event'] = df_bugged['timestamp_fix']
+    df_bugged['timestamp_event'] = df_bugged['timestamp_fix'].astype(int)
     # bug cleaned
     df_bug_cleaned = df_bug.copy()
     waited_time = df_bug_cleaned['timestamp'] - df_bug_cleaned['timestamp_fix']
@@ -92,6 +99,19 @@ def remove_noise(df_events):
     noise = cumcount - cumsum >= previous_clean
     noise = noise & (df_events['target'] == 1)
     return df_events[~noise]
+
+
+def calculate_steps(data, bins):
+    min_max = pd.concat([data[:1], data[-1:],
+                         bins[:1], bins[-1:]])
+    min_max = min_max.sort_values()
+    full_bins = pd.concat([min_max[:1], bins, min_max[-1:]])
+    full_bins = full_bins.drop_duplicates()
+    steps = pd.cut(data, bins=full_bins,
+                   labels=full_bins[1:], include_lowest=True)
+    steps = steps.value_counts(sort=False)
+    steps = steps[steps > 0]
+    return steps
 
 
 def create_configs(args, lists):
