@@ -9,7 +9,10 @@ import logging
 import mlflow
 import pathlib
 import pandas as pd
+import numpy as np
 import sys
+from skmultiflow.data import DataStream
+from skmultiflow.trees import HoeffdingTreeClassifier
 
 
 def main():
@@ -57,11 +60,30 @@ def run(config):
     df_train = remove_noise(df_train)
 
     test_steps = calculate_steps(
-        df_test['timestamp'], df_train['timestamp_event'])
-    print(test_steps)
+        df_test['timestamp'], df_train['timestamp_event'], right=False)
     train_steps = calculate_steps(
-        df_train['timestamp_event'], df_test['timestamp'])
-    print(train_steps)
+        df_train['timestamp_event'], df_test['timestamp'], right=True)
+    train_steps = train_steps.to_list()
+
+    test_stream = DataStream(df_test[FEATURES], y=df_test[['target']])
+    train_stream = DataStream(df_train[FEATURES], y=df_train[['target']])
+    model = HoeffdingTreeClassifier()
+    predictions = []
+    for test_step in test_steps:
+        # test
+        X_test, _ = test_stream.next_sample(test_step)
+        prediction = model.predict(X_test)
+        predictions.append(prediction)
+        # train
+        train_step = train_steps.pop(0)
+        X_train, y_train = train_stream.next_sample(train_step)
+        model.partial_fit(X_train, y_train, classes=[0, 1])
+
+    predictions = np.concatenate(predictions)
+    df_results = df_test.copy()
+    df_results['prediction'] = predictions
+    print(df_results.head())
+    print(df_results['prediction'].describe())
 
 
 def extract_events(df_commit):
@@ -101,13 +123,13 @@ def remove_noise(df_events):
     return df_events[~noise]
 
 
-def calculate_steps(data, bins):
+def calculate_steps(data, bins, right):
     min_max = pd.concat([data[:1], data[-1:],
                          bins[:1], bins[-1:]])
     min_max = min_max.sort_values()
     full_bins = pd.concat([min_max[:1], bins, min_max[-1:]])
     full_bins = full_bins.drop_duplicates()
-    steps = pd.cut(data, bins=full_bins,
+    steps = pd.cut(data, bins=full_bins, right=right,
                    labels=full_bins[1:], include_lowest=True)
     steps = steps.value_counts(sort=False)
     steps = steps[steps > 0]
