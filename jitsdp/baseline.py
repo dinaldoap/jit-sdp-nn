@@ -1,6 +1,7 @@
 from jitsdp.data import make_stream, save_results, load_results, DATASETS, FEATURES
 from jitsdp.pipeline import set_seed
 from jitsdp.utils import mkdir, split_args, create_config_template, to_plural
+from jitsdp.orb import ORB
 
 import argparse
 from datetime import datetime
@@ -12,7 +13,6 @@ import pandas as pd
 import numpy as np
 import sys
 from skmultiflow.data import DataStream
-from skmultiflow.trees import HoeffdingTreeClassifier
 
 
 def main():
@@ -68,7 +68,7 @@ def run(config):
 
     test_stream = DataStream(df_test[FEATURES], y=df_test[['target']])
     train_stream = DataStream(df_train[FEATURES], y=df_train[['target']])
-    model = HoeffdingTreeClassifier()
+    model = ORB()
     predictions = []
     train_first = len(test_steps) < len(train_steps)
     for test_index, test_step in test_steps.items():
