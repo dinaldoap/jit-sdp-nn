@@ -64,7 +64,9 @@ def run(config):
     df_test = df_commit.copy()
     end = len(df_test) if config['end'] is None else config['end']
     df_test = df_test[config['start']:end]
-    df_train = extract_events(df_commit)
+    df_train = df_commit.copy()
+    df_train = df_train[:end]
+    df_train = extract_events(df_train)
     df_train = remove_noise(df_train)
 
     test_steps = calculate_steps(
