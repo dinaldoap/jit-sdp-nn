@@ -71,12 +71,10 @@ def preprocess_daystofix(df_raw):
     df_preprocess['fix'] = df_preprocess['fix'].astype('int')
     # convert contains_bug
     df_preprocess['target'] = df_preprocess['target'].astype('int')
-    # zero to nan
-    df_preprocess['daystofix'] = df_preprocess['daystofix'].apply(
-        lambda x: None if x == 0. else x)
-    # fixes
-    df_preprocess['timestamp_fix'] = df_preprocess['timestamp'] + \
-        df_preprocess['daystofix'] * 24 * 60 * 60
+    # timestamp fix
+    bug = df_preprocess['target'] == 1
+    df_preprocess.loc[bug, 'timestamp_fix'] = df_preprocess.loc[bug,
+                                                                'timestamp'] + df_preprocess.loc[bug, 'daystofix'] * 24 * 60 * 60
     return df_preprocess
 
 
