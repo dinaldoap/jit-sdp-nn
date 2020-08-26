@@ -1,7 +1,10 @@
+from jitsdp import metrics as met
+from jitsdp.constants import DIR
 from jitsdp.data import make_stream, save_results, load_results, DATASETS, FEATURES
-from jitsdp.pipeline import set_seed
-from jitsdp.utils import mkdir, split_args, create_config_template, to_plural
 from jitsdp.orb import ORB
+from jitsdp.pipeline import set_seed
+from jitsdp.plot import plot_recalls_gmean, plot_proportions
+from jitsdp.utils import mkdir, split_args, create_config_template, to_plural
 
 import argparse
 from datetime import datetime
@@ -51,6 +54,7 @@ def main():
 
 
 def run(config):
+    config['model'] = 'orb'
     mlflow.log_params(config)
     set_seed(config)
     dataset = config['dataset']
@@ -88,10 +92,14 @@ def run(config):
         predictions.append(prediction)
 
     predictions = np.concatenate(predictions)
-    df_results = df_test.copy()
-    df_results['prediction'] = predictions
-    print(df_results.head())
-    print(df_results['prediction'].describe())
+    target_prediction = df_test.copy()
+    target_prediction = target_prediction.reset_index(drop=True)
+    target_prediction['prediction'] = predictions
+    target_prediction['probability'] = predictions
+
+    results = met.prequential_metrics(target_prediction, .99)
+    save_results(results=results, dir=__unique_dir(config))
+    report(config)
 
 
 def extract_events(df_commit):
@@ -151,3 +159,19 @@ def create_configs(args, lists):
         for i, name in enumerate(lists):
             config[name] = values_tuple[i]
         yield config
+
+
+def report(config):
+    dir = __unique_dir(config)
+    results = load_results(dir=dir)
+    plot_recalls_gmean(results, config=config, dir=dir)
+    plot_proportions(results, config=config, dir=dir)
+    metrics = ['r0', 'r1', 'r0-r1', 'gmean', 't1', 's1', 'p1']
+    metrics = {'avg_{}'.format(
+        metric): results[metric].mean() for metric in metrics}
+    mlflow.log_metrics(metrics)
+    mlflow.log_artifacts(local_dir=dir)
+
+
+def __unique_dir(config):
+    return DIR / '{}_{}_{}'.format(config['seed'], config['dataset'], config['model'])
