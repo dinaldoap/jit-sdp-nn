@@ -49,7 +49,8 @@ def main():
     with mlflow.start_run():
         configs = create_configs(args, lists)
         for config in configs:
-            run(config)
+            with mlflow.start_run(nested=True):
+                run(config)
         mlflow.log_artifact(log)
 
 
