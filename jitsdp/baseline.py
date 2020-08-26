@@ -56,6 +56,7 @@ def run(config):
     df_commit = make_stream(dataset)
     # stream with labeling order
     df_test = df_commit.copy()
+    df_test = df_test[config['start']:]
     df_train = extract_events(df_commit)
     df_train = remove_noise(df_train)
 
@@ -69,15 +70,19 @@ def run(config):
     train_stream = DataStream(df_train[FEATURES], y=df_train[['target']])
     model = HoeffdingTreeClassifier()
     predictions = []
-    for test_step in test_steps:
+    train_first = len(test_steps) < len(train_steps)
+    for test_index, test_step in test_steps.items():
+        # train
+        if train_first:
+            train_step = train_steps.pop(0)
+            X_train, y_train = train_stream.next_sample(train_step)
+            model.partial_fit(X_train, y_train, classes=[0, 1])
+        else:
+            train_first = True
         # test
         X_test, _ = test_stream.next_sample(test_step)
         prediction = model.predict(X_test)
         predictions.append(prediction)
-        # train
-        train_step = train_steps.pop(0)
-        X_train, y_train = train_stream.next_sample(train_step)
-        model.partial_fit(X_train, y_train, classes=[0, 1])
 
     predictions = np.concatenate(predictions)
     df_results = df_test.copy()
@@ -124,13 +129,11 @@ def remove_noise(df_events):
 
 
 def calculate_steps(data, bins, right):
-    min_max = pd.concat([data[:1], data[-1:],
-                         bins[:1], bins[-1:]])
-    min_max = min_max.sort_values()
-    full_bins = pd.concat([min_max[:1], bins, min_max[-1:]])
+    min_max = pd.concat([data[:1] - int(right), data[-1:] + int(not right)])
+    internal_bins = bins[(min_max.min() < bins) & (bins < min_max.max())]
+    full_bins = pd.concat([min_max[:1], internal_bins, min_max[-1:]])
     full_bins = full_bins.drop_duplicates()
-    steps = pd.cut(data, bins=full_bins, right=right,
-                   labels=full_bins[1:], include_lowest=True)
+    steps = pd.cut(data, bins=full_bins, right=right, include_lowest=True)
     steps = steps.value_counts(sort=False)
     steps = steps[steps > 0]
     return steps
