@@ -1,4 +1,8 @@
+from jitsdp.pipeline import MultiflowBaseEstimator
+
 import numpy as np
+import pandas as pd
+import time
 from skmultiflow.meta import OzaBaggingClassifier
 from skmultiflow.trees import HoeffdingTreeClassifier
 from skmultiflow.utils import get_dimensions
@@ -9,6 +13,8 @@ class ORB(OzaBaggingClassifier):
     def __init__(self, features):
         super().__init__(base_estimator=HoeffdingTreeClassifier(), n_estimators=20)
         self.features = features
+        self.estimators = [MultiflowBaseEstimator(
+            estimator) for estimator in self.ensemble]
         # parameters
         self.decay_factor = .99
         self.ma_window_size = 100
@@ -17,14 +23,20 @@ class ORB(OzaBaggingClassifier):
         self.l1 = 12
         self.m = 1.5
         # state
+        self.observed_classes = set()
         self.ma_window = np.array([self.th] * self.ma_window_size)
         self.sum_target = 0
         self.count_target = 0
         self.old_random_state = self._random_state
         self._random_state = RandomStateWrapper(self)
 
+    @property
+    def trained(self):
+        return len(self.observed_classes) == 2
+
     def partial_fit(self, X, y, classes=None, sample_weight=None):
         for features, target in zip(X, y):
+            self.observed_classes.update(y)
             self.update_lambda_obf(target)
             super().partial_fit([features], [target], classes, sample_weight)
 
@@ -60,6 +72,8 @@ class ORB(OzaBaggingClassifier):
         prediction = df_test.copy()
         prediction['prediction'] = predictions
         prediction['probability'] = prediction['prediction']
+        prediction = _track_rf(prediction, self)
+        prediction = _track_time(prediction)
         return prediction
 
 
@@ -70,3 +84,38 @@ class RandomStateWrapper():
     def poisson(self):
         k = self.orb.old_random_state.poisson(self.orb.lambda_)
         return int(k * self.orb.obf)
+
+
+def _track_rf(prediction, rf):
+    properties = {
+        'depth': lambda tree: tree.get_depth() if rf.trained else 0,
+        'n_leaves': lambda tree: tree.get_n_leaves() if rf.trained else 0,
+    }
+    for name, func in properties.items():
+        values = _extract_property(rf, func)
+        prediction = _concat_property(prediction, name, values)
+    return prediction
+
+
+def _extract_property(rf, func):
+    if rf.trained:
+        return [func(estimator) for estimator in rf.estimators]
+    else:
+        return [0.]
+
+
+def _concat_property(prediction, name, values):
+    prop = pd.Series(values, dtype=np.float64)
+    prop = prop.describe()
+    prop = prop.to_frame()
+    prop = prop.transpose()
+    prop.columns = ['{}_{}'.format(name, column) for column in prop.columns]
+    template = [prop.head(0)]
+    prop = pd.concat(template + [prop] * len(prediction))
+    prop.index = prediction.index
+    return pd.concat([prediction, prop], axis='columns')
+
+
+def _track_time(prediction):
+    prediction['timestamp_test'] = time.time()
+    return prediction
