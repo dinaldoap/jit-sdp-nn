@@ -73,11 +73,11 @@ def run(config):
         df_train['timestamp_event'], df_test['timestamp'], right=True)
     train_steps = train_steps.to_list()
 
-    test_stream = DataStream(df_test[FEATURES], y=df_test[['target']])
     train_stream = DataStream(df_train[FEATURES], y=df_train[['target']])
-    model = ORB()
-    predictions = []
+    model = ORB(features=FEATURES)
+    target_prediction = None
     train_first = len(test_steps) < len(train_steps)
+    current_test = 0
     for test_index, test_step in test_steps.items():
         # train
         if train_first:
@@ -87,15 +87,13 @@ def run(config):
         else:
             train_first = True
         # test
-        X_test, _ = test_stream.next_sample(test_step)
-        prediction = model.predict(X_test)
-        predictions.append(prediction)
+        df_batch_test = df_test[current_test:current_test + test_step]
+        current_test += test_step
+        target_prediction_test = model.predict(df_batch_test)
+        target_prediction = pd.concat(
+            [target_prediction, target_prediction_test])
 
-    predictions = np.concatenate(predictions)
-    target_prediction = df_test.copy()
     target_prediction = target_prediction.reset_index(drop=True)
-    target_prediction['prediction'] = predictions
-    target_prediction['probability'] = predictions
 
     results = met.prequential_metrics(target_prediction, .99)
     save_results(results=results, dir=__unique_dir(config))

@@ -6,8 +6,9 @@ from skmultiflow.utils import get_dimensions
 
 class ORB(OzaBaggingClassifier):
 
-    def __init__(self):
+    def __init__(self, features):
         super().__init__(base_estimator=HoeffdingTreeClassifier(), n_estimators=20)
+        self.features = features
         # parameters
         self.decay_factor = .99
         self.ma_window_size = 100
@@ -52,11 +53,14 @@ class ORB(OzaBaggingClassifier):
             self.obf = (((self.m ** (self.th - ma) - 1) * self.l1) /
                         (self.m ** self.th - 1)) + 1
 
-    def predict(self, X):
-        predictions = super().predict(X)
+    def predict(self, df_test):
+        predictions = super().predict(df_test[self.features].values)
         size = min(self.ma_window_size, len(predictions))
         self.ma_window[-size:] = predictions[-size:]
-        return predictions
+        prediction = df_test.copy()
+        prediction['prediction'] = predictions
+        prediction['probability'] = prediction['prediction']
+        return prediction
 
 
 class RandomStateWrapper():
