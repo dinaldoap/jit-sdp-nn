@@ -70,8 +70,11 @@ class ORB(OzaBaggingClassifier):
             predictions = super().predict(df_test[self.features].values)
         else:
             predictions = np.zeros(len(df_test))
-        size = min(self.ma_window_size, len(predictions))
-        self.ma_window[-size:] = predictions[-size:]
+        incoming_size = min(self.ma_window_size, len(predictions))
+        old_size = self.ma_window_size - incoming_size
+        if old_size > 0:
+            self.ma_window[:old_size] = self.ma_window[-old_size:]
+        self.ma_window[-incoming_size:] = predictions[-incoming_size:]
         prediction = df_test.copy()
         prediction['prediction'] = predictions
         prediction['probability'] = prediction['prediction']
