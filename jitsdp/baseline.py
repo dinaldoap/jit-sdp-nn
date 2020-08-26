@@ -20,6 +20,8 @@ def main():
         description='Baseline: experiment execution')
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0).',    default=0)
+    parser.add_argument('--end',   type=int,
+                        help='Last commit to be used for testing (default: None). None means all commits.',  default=None)
     parser.add_argument('--cross-project',   type=int,
                         help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--seeds',   type=int,
@@ -56,7 +58,8 @@ def run(config):
     df_commit = make_stream(dataset)
     # stream with labeling order
     df_test = df_commit.copy()
-    df_test = df_test[config['start']:]
+    end = len(df_test) if config['end'] is None else config['end']
+    df_test = df_test[config['start']:end]
     df_train = extract_events(df_commit)
     df_train = remove_noise(df_train)
 
