@@ -50,6 +50,8 @@ class ORB(OzaBaggingClassifier):
         p1 = self.sum_target / self.count_target
         p0 = 1 - p1
         self.lambda_ = 1
+        if not self.trained:
+            return
         if target == 1 and p1 < p0:
             self.lambda_ = p0 / p1
         if target == 0 and p0 < p1:
@@ -57,6 +59,8 @@ class ORB(OzaBaggingClassifier):
 
     def update_obf(self, target):
         self.obf = 1
+        if not self.trained:
+            return
         ma = self.th if self.ma_window is None else self.__predict(
             self.ma_window).mean()
         if target == 0 and ma > self.th:
