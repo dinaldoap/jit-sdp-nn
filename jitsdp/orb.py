@@ -24,7 +24,7 @@ class ORB(OzaBaggingClassifier):
         self.m = 1.5
         # state
         self.observed_classes = set()
-        self.ma_window = np.array([self.th] * self.ma_window_size)
+        self.ma_window = None
         self.sum_target = 0
         self.count_target = 0
         self.old_random_state = self._random_state
@@ -57,7 +57,8 @@ class ORB(OzaBaggingClassifier):
 
     def update_obf(self, target):
         self.obf = 1
-        ma = self.ma_window.mean()
+        ma = self.th if self.ma_window is None else self.__predict(
+            self.ma_window).mean()
         if target == 0 and ma > self.th:
             self.obf = ((self.m ** ma - self.m ** self.th) *
                         self.l0) / (self.m - self.m ** self.th) + 1
@@ -67,20 +68,20 @@ class ORB(OzaBaggingClassifier):
 
     def predict(self, df_test):
         if self.trained:
-            predictions = super().predict(df_test[self.features].values)
+            predictions = self.__predict(df_test)
         else:
             predictions = np.zeros(len(df_test))
-        incoming_size = min(self.ma_window_size, len(predictions))
-        old_size = self.ma_window_size - incoming_size
-        if old_size > 0:
-            self.ma_window[:old_size] = self.ma_window[-old_size:]
-        self.ma_window[-incoming_size:] = predictions[-incoming_size:]
+        self.ma_window = pd.concat([self.ma_window, df_test])
+        self.ma_window = self.ma_window[-self.ma_window_size:]
         prediction = df_test.copy()
         prediction['prediction'] = predictions
         prediction['probability'] = prediction['prediction']
         prediction = _track_rf(prediction, self)
         prediction = _track_time(prediction)
         return prediction
+
+    def __predict(self, df_test):
+        return super().predict(df_test[self.features].values)
 
 
 class RandomStateWrapper():
