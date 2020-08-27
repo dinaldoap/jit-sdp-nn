@@ -10,7 +10,7 @@ from skmultiflow.utils import get_dimensions
 
 class ORB(OzaBaggingClassifier):
 
-    def __init__(self, features):
+    def __init__(self, features, balanced_window_size):
         super().__init__(base_estimator=HoeffdingTreeClassifier(), n_estimators=20)
         self.features = features
         self.estimators = [MultiflowBaseEstimator(
@@ -24,6 +24,8 @@ class ORB(OzaBaggingClassifier):
         self.m = 1.5
         # state
         self.observed_classes = set()
+        self.balanced_window_size = balanced_window_size
+        self.observed_instances = 0
         self.ma_window = None
         self.sum_target = 0
         self.count_target = 0
@@ -34,11 +36,16 @@ class ORB(OzaBaggingClassifier):
     def trained(self):
         return len(self.observed_classes) == 2
 
+    @property
+    def active(self):
+        return self.observed_instances >= self.balanced_window_size
+
     def partial_fit(self, X, y, classes=None, sample_weight=None):
         for features, target in zip(X, y):
-            self.observed_classes.update(y)
             self.update_lambda_obf(target)
             super().partial_fit([features], [target], classes, sample_weight)
+            self.observed_classes.update(y)
+            self.observed_instances += 1
 
     def update_lambda_obf(self, target):
         self.update_lambda(target)
@@ -50,7 +57,7 @@ class ORB(OzaBaggingClassifier):
         p1 = self.sum_target / self.count_target
         p0 = 1 - p1
         self.lambda_ = 1
-        if not self.trained:
+        if not self.trained or not self.active:
             return
         if target == 1 and p1 < p0:
             self.lambda_ = p0 / p1
@@ -59,7 +66,7 @@ class ORB(OzaBaggingClassifier):
 
     def update_obf(self, target):
         self.obf = 1
-        if not self.trained:
+        if not self.trained or not self.active:
             return
         ma = self.th if self.ma_window is None else self.__predict(
             self.ma_window).mean()
