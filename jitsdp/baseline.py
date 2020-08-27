@@ -69,6 +69,7 @@ def run(config):
     df_train = df_train[:end]
     df_train = extract_events(df_train)
     df_train = remove_noise(df_train)
+    df_train = balance_events(df_train)
 
     test_steps = calculate_steps(
         df_test['timestamp'], df_train['timestamp_event'], right=False)
@@ -138,6 +139,31 @@ def remove_noise(df_events):
     noise = cumcount - cumsum >= previous_clean
     noise = noise & (df_events['target'] == 1)
     return df_events[~noise]
+
+
+def balance_events(df_events):
+    cumsum = df_events['target'].cumsum()
+    cumcount = np.array(range(len(df_events))) + 1
+    cumprop = cumsum / cumcount
+    timestamp_event_balance = df_events.loc[cumprop == .5, 'timestamp_event'].min(
+    )
+    # order balanced
+    df_balanced = df_events[df_events['timestamp_event']
+                            <= timestamp_event_balance]
+    df_clean = df_balanced[df_balanced['target'] == 0].copy()
+    df_bug = df_balanced[df_balanced['target'] == 1].copy()
+    # assert balance
+    assert len(df_clean) == len(df_bug)
+    df_bug['timestamp_event'] = df_clean['timestamp_event'].values
+    df_balanced = pd.concat([df_clean, df_bug])
+    df_balanced = df_balanced.sort_values('timestamp_event', kind='mergesort')
+    # assert order
+    even = np.array(range(len(df_balanced))) % 2 == 0
+    assert np.all(df_balanced.iloc[even]['target'].values +
+                  1 == df_balanced.iloc[~even]['target'].values)
+    # order kept
+    df_kept = df_events[df_events['timestamp_event'] > timestamp_event_balance]
+    return pd.concat([df_balanced, df_kept])
 
 
 def calculate_steps(data, bins, right):
