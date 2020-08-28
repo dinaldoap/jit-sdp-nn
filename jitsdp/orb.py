@@ -52,7 +52,7 @@ class ORB():
     def update_state(self, target, **kwargs):
         self.update_lambda(target, **kwargs)
         self.update_obf(target, **kwargs)
-        self.update_k()
+        self.update_k(**kwargs)
 
     def update_lambda(self, target, **kwargs):
         self.p1 = self.decay_factor * self.p1 + \
@@ -85,9 +85,11 @@ class ORB():
                                 'target': target,
                                 'obf': self.obf})
 
-    def update_k(self):
+    def update_k(self, **kwargs):
         self.k = self.random_state.poisson(self.lambda_)
         self.k = int(self.k * self.obf)
+        if kwargs.pop('track_orb', False):
+            mlflow.log_metrics({'k': self.k})
 
     def predict(self, df_test):
         if self.trained:
