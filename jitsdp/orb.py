@@ -1,5 +1,6 @@
 from jitsdp.pipeline import MultiflowBaseEstimator
 
+import mlflow
 import numpy as np
 import pandas as pd
 import time
@@ -40,21 +41,22 @@ class ORB(OzaBaggingClassifier):
     def active(self):
         return self.observed_instances >= self.balanced_window_size
 
-    def partial_fit(self, X, y, classes=None, sample_weight=None):
+    def partial_fit(self, X, y, classes=None, sample_weight=None, **kwargs):
         for features, target in zip(X, y):
-            self.update_lambda_obf(target)
+            self.update_lambda_obf(target, **kwargs)
             super().partial_fit([features], [target], classes, sample_weight)
             self.observed_classes.update(y)
             self.observed_instances += 1
 
-    def update_lambda_obf(self, target):
-        self.update_lambda(target)
-        self.update_obf(target)
+    def update_lambda_obf(self, target, **kwargs):
+        self.update_lambda(target, **kwargs)
+        self.update_obf(target, **kwargs)
 
-    def update_lambda(self, target):
+    def update_lambda(self, target, **kwargs):
         self.sum_target = target + self.decay_factor * self.sum_target
         self.count_target = 1 + self.decay_factor * self.count_target
         p1 = self.sum_target / self.count_target
+        mlflow.log_metrics({'p1': p1})
         p0 = 1 - p1
         self.lambda_ = 1
         if not self.trained or not self.active:
@@ -63,8 +65,10 @@ class ORB(OzaBaggingClassifier):
             self.lambda_ = p0 / p1
         if target == 0 and p0 < p1:
             self.lambda_ = p1 / p0
+        if kwargs.pop('track_orb', False):
+            mlflow.log_metrics({'p1': p1})
 
-    def update_obf(self, target):
+    def update_obf(self, target, **kwargs):
         self.obf = 1
         if not self.trained or not self.active:
             return
@@ -76,6 +80,10 @@ class ORB(OzaBaggingClassifier):
         if target == 1 and ma < self.th:
             self.obf = (((self.m ** (self.th - ma) - 1) * self.l1) /
                         (self.m ** self.th - 1)) + 1
+        if kwargs.pop('track_orb', False):
+            mlflow.log_metrics({'ma': ma,
+                                'target': target,
+                                'obf': self.obf})
 
     def predict(self, df_test):
         if self.trained:

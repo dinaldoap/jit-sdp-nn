@@ -31,6 +31,8 @@ def main():
                         help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
+    parser.add_argument('--track-orb',   type=int,
+                        help='Whether must track ORB state (default: 0)',  default=0)
     lists = ['seed', 'dataset']
     sys.argv = split_args(sys.argv, lists)
     args = parser.parse_args()
@@ -87,7 +89,8 @@ def run(config):
         if train_first:
             train_step = train_steps.pop(0)
             X_train, y_train = train_stream.next_sample(train_step)
-            model.partial_fit(X_train, y_train, classes=[0, 1])
+            model.partial_fit(X_train, y_train, classes=[
+                              0, 1], track_orb=config['track_orb'])
         else:
             train_first = True
         # test
