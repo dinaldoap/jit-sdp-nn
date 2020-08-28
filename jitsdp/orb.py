@@ -8,14 +8,10 @@ from skmultiflow.meta import OzaBaggingClassifier
 from skmultiflow.trees import HoeffdingTreeClassifier
 from skmultiflow.utils import get_dimensions
 
-
-class ORB(OzaBaggingClassifier):
+class ORB():
 
     def __init__(self, features, balanced_window_size):
-        super().__init__(base_estimator=HoeffdingTreeClassifier(), n_estimators=20)
         self.features = features
-        self.estimators = [MultiflowBaseEstimator(
-            estimator) for estimator in self.ensemble]
         # parameters
         self.decay_factor = .99
         self.ma_window_size = 100
@@ -29,8 +25,11 @@ class ORB(OzaBaggingClassifier):
         self.observed_instances = 0
         self.ma_window = None
         self.p1 = .5
-        self.old_random_state = self._random_state
-        self._random_state = RandomStateWrapper(self)
+        self.oza_bag = OzaBaggingClassifier(
+            base_estimator=HoeffdingTreeClassifier(), n_estimators=20)
+        self.estimators = [MultiflowBaseEstimator(
+            estimator) for estimator in self.oza_bag.ensemble]
+        RandomStateWrapper(self)
 
     @property
     def trained(self):
@@ -40,10 +39,10 @@ class ORB(OzaBaggingClassifier):
     def active(self):
         return self.observed_instances >= self.balanced_window_size
 
-    def partial_fit(self, X, y, classes=None, sample_weight=None, **kwargs):
+    def train(self, X, y, **kwargs):
         for features, target in zip(X, y):
             self.update_lambda_obf(target, **kwargs)
-            super().partial_fit([features], [target], classes, sample_weight)
+            self.oza_bag.partial_fit([features], [target], classes=[0, 1])
             self.observed_classes.update(y)
             self.observed_instances += 1
 
@@ -97,12 +96,14 @@ class ORB(OzaBaggingClassifier):
         return prediction
 
     def __predict(self, df_test):
-        return super().predict(df_test[self.features].values)
+        return self.oza_bag.predict(df_test[self.features].values)
 
 
 class RandomStateWrapper():
     def __init__(self, orb):
         self.orb = orb
+        self._random_state = self.orb.oza_bag._random_state
+        self.orb.oza_bag._random_state = self
 
     def poisson(self):
         k = self.orb.old_random_state.poisson(self.orb.lambda_)

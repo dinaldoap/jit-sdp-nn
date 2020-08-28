@@ -89,8 +89,7 @@ def run(config):
         if train_first:
             train_step = train_steps.pop(0)
             X_train, y_train = train_stream.next_sample(train_step)
-            model.partial_fit(X_train, y_train, classes=[
-                              0, 1], track_orb=config['track_orb'])
+            model.train(X_train, y_train, track_orb=config['track_orb'])
         else:
             train_first = True
         # test
