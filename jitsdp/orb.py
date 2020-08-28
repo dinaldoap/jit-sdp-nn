@@ -59,7 +59,7 @@ class ORB():
             (1 - self.decay_factor) * target
         p0 = 1 - self.p1
         self.lambda_ = 1
-        if not self.trained or not self.active:
+        if not self.trained or not self.active or kwargs['ma_boosting']:
             return
         if target == 1 and self.p1 < p0:
             self.lambda_ = p0 / self.p1
