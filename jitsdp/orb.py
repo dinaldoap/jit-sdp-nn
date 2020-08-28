@@ -28,8 +28,7 @@ class ORB(OzaBaggingClassifier):
         self.balanced_window_size = balanced_window_size
         self.observed_instances = 0
         self.ma_window = None
-        self.sum_target = 0
-        self.count_target = 0
+        self.p1 = .5
         self.old_random_state = self._random_state
         self._random_state = RandomStateWrapper(self)
 
@@ -53,20 +52,18 @@ class ORB(OzaBaggingClassifier):
         self.update_obf(target, **kwargs)
 
     def update_lambda(self, target, **kwargs):
-        self.sum_target = target + self.decay_factor * self.sum_target
-        self.count_target = 1 + self.decay_factor * self.count_target
-        p1 = self.sum_target / self.count_target
-        mlflow.log_metrics({'p1': p1})
-        p0 = 1 - p1
+        self.p1 = self.decay_factor * self.p1 + \
+            (1 - self.decay_factor) * target
+        p0 = 1 - self.p1
         self.lambda_ = 1
         if not self.trained or not self.active:
             return
-        if target == 1 and p1 < p0:
-            self.lambda_ = p0 / p1
-        if target == 0 and p0 < p1:
-            self.lambda_ = p1 / p0
+        if target == 1 and self.p1 < p0:
+            self.lambda_ = p0 / self.p1
+        if target == 0 and p0 < self.p1:
+            self.lambda_ = self.p1 / p0
         if kwargs.pop('track_orb', False):
-            mlflow.log_metrics({'p1': p1})
+            mlflow.log_metrics({'p1': self.p1})
 
     def update_obf(self, target, **kwargs):
         self.obf = 1
