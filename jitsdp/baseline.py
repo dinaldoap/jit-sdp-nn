@@ -176,10 +176,6 @@ def balance_events(df_events):
     df_bug['timestamp_event'] = df_clean['timestamp_event'].values
     df_balanced = pd.concat([df_clean, df_bug])
     df_balanced = df_balanced.sort_values('timestamp_event', kind='mergesort')
-    # assert order
-    even = np.array(range(len(df_balanced))) % 2 == 0
-    assert np.all(df_balanced.iloc[even]['target'].values +
-                  1 == df_balanced.iloc[~even]['target'].values)
     # order kept
     df_kept = df_events[df_events['timestamp_event'] > timestamp_event_balance]
     return pd.concat([df_balanced, df_kept]), len(df_balanced)
