@@ -8,10 +8,12 @@ from skmultiflow.meta import OzaBaggingClassifier
 from skmultiflow.trees import HoeffdingTreeClassifier
 from skmultiflow.utils import get_dimensions
 
+
 class ORB():
 
     def __init__(self, features, balanced_window_size):
         self.features = features
+        self.balanced_window_size = balanced_window_size
         # parameters
         self.decay_factor = .99
         self.ma_window_size = 100
@@ -21,7 +23,6 @@ class ORB():
         self.m = 1.5
         # state
         self.observed_classes = set()
-        self.balanced_window_size = balanced_window_size
         self.observed_instances = 0
         self.ma_window = None
         self.p1 = .5
@@ -29,6 +30,7 @@ class ORB():
             base_estimator=HoeffdingTreeClassifier(), n_estimators=20)
         self.estimators = [MultiflowBaseEstimator(
             estimator) for estimator in self.oza_bag.ensemble]
+        self.random_state = self.oza_bag._random_state
         RandomStateWrapper(self)
 
     @property
@@ -41,14 +43,16 @@ class ORB():
 
     def train(self, X, y, **kwargs):
         for features, target in zip(X, y):
-            self.update_lambda_obf(target, **kwargs)
-            self.oza_bag.partial_fit([features], [target], classes=[0, 1])
+            self.update_state(target, **kwargs)
+            self.oza_bag.partial_fit([features], [target], classes=[
+                                     0, 1], sample_weight=[self.k])
             self.observed_classes.update(y)
             self.observed_instances += 1
 
-    def update_lambda_obf(self, target, **kwargs):
+    def update_state(self, target, **kwargs):
         self.update_lambda(target, **kwargs)
         self.update_obf(target, **kwargs)
+        self.update_k()
 
     def update_lambda(self, target, **kwargs):
         self.p1 = self.decay_factor * self.p1 + \
@@ -81,6 +85,10 @@ class ORB():
                                 'target': target,
                                 'obf': self.obf})
 
+    def update_k(self):
+        self.k = self.random_state.poisson(self.lambda_)
+        self.k = int(self.k * self.obf)
+
     def predict(self, df_test):
         if self.trained:
             predictions = self.__predict(df_test)
@@ -102,12 +110,9 @@ class ORB():
 class RandomStateWrapper():
     def __init__(self, orb):
         self.orb = orb
-        self._random_state = self.orb.oza_bag._random_state
-        self.orb.oza_bag._random_state = self
 
     def poisson(self):
-        k = self.orb.old_random_state.poisson(self.orb.lambda_)
-        return int(k * self.orb.obf)
+        return int(self.orb.k > 0)
 
 
 def _track_rf(prediction, rf):
