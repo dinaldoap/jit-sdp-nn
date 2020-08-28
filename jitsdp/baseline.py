@@ -33,6 +33,12 @@ def main():
     parser.add_argument('--ma-boosting',   type=int,
                         help='Whether must use only moving average for boosting (default: 0).',
                         default=0, choices=[0, 1])
+    parser.add_argument('--noise',   type=int,
+                        help='Whether must keep noisy instances (default: 0).',
+                        default=0, choices=[0, 1])
+    parser.add_argument('--order',   type=int,
+                        help='Whether must keep the order of the events (default: 0).',
+                        default=0, choices=[0, 1])
     parser.add_argument('--seeds',   type=int,
                         help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
@@ -76,8 +82,11 @@ def run(config):
     df_train = df_commit.copy()
     df_train = df_train[:end]
     df_train = extract_events(df_train)
-    df_train = remove_noise(df_train)
-    df_train, balanced_window_size = balance_events(df_train)
+    if not config['noise']:
+        df_train = remove_noise(df_train)
+    balanced_window_size = 0
+    if not config['order']:
+        df_train, balanced_window_size = balance_events(df_train)
 
     test_steps = calculate_steps(
         df_test['timestamp'], df_train['timestamp_event'], right=False)
