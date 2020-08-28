@@ -27,6 +27,9 @@ def main():
                         help='Last commit to be used for testing (default: None). None means all commits.',  default=None)
     parser.add_argument('--cross-project',   type=int,
                         help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
+    parser.add_argument('--ma-update',   type=int,
+                        help='Whether must update moving average while training (default: 0).',
+                        default=0, choices=[0, 1])
     parser.add_argument('--seeds',   type=int,
                         help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
@@ -89,13 +92,13 @@ def run(config):
         if train_first:
             train_step = train_steps.pop(0)
             X_train, y_train = train_stream.next_sample(train_step)
-            model.train(X_train, y_train, track_orb=config['track_orb'])
+            model.train(X_train, y_train, ma_update=config['ma_update'], track_orb=config['track_orb'])
         else:
             train_first = True
         # test
         df_batch_test = df_test[current_test:current_test + test_step]
         current_test += test_step
-        target_prediction_test = model.predict(df_batch_test)
+        target_prediction_test = model.predict(df_batch_test, ma_update=config['ma_update'])
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
 

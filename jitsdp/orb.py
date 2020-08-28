@@ -72,8 +72,9 @@ class ORB():
         self.obf = 1
         if not self.trained or not self.active:
             return
-        ma = self.th if self.ma_window is None else self.__predict(
-            self.ma_window).mean()
+        ma = self.th if self.ma_window is None \
+            else self.__predict(self.ma_window).mean() if kwargs['ma_update'] \
+            else self.ma_window.mean()
         if target == 0 and ma > self.th:
             self.obf = ((self.m ** ma - self.m ** self.th) *
                         self.l0) / (self.m - self.m ** self.th) + 1
@@ -91,13 +92,17 @@ class ORB():
         if kwargs.pop('track_orb', False):
             mlflow.log_metrics({'k': self.k})
 
-    def predict(self, df_test):
+    def predict(self, df_test, **kwargs):
         if self.trained:
             predictions = self.__predict(df_test)
+            if kwargs['ma_update']:
+                self.ma_window = pd.concat([self.ma_window, df_test])
+            else:
+                self.ma_window = predictions if self.ma_window is None else np.concatenate(
+                    [self.ma_window, predictions])
+            self.ma_window = self.ma_window[-self.ma_window_size:]
         else:
             predictions = np.zeros(len(df_test))
-        self.ma_window = pd.concat([self.ma_window, df_test])
-        self.ma_window = self.ma_window[-self.ma_window_size:]
         prediction = df_test.copy()
         prediction['prediction'] = predictions
         prediction['probability'] = prediction['prediction']
