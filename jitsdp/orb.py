@@ -54,7 +54,7 @@ class ORB():
         self.update_lambda(target, **kwargs)
         self.update_obf(target, **kwargs)
         self.update_k(**kwargs)
-        if kwargs.pop('track_orb', False):
+        if kwargs.pop('track_orb', False) and self.trained and self.active:
             mlflow.log_metrics({'ma': self.ma,
                                 'target': target,
                                 'k': self.k,
