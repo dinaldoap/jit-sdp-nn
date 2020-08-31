@@ -25,6 +25,7 @@ class ORB():
         self.observed_classes = set()
         self.observed_instances = 0
         self.ma_window = None
+        self.ma_instance_window = None
         self.p1 = .5
         self.oza_bag = OzaBaggingClassifier(
             base_estimator=HoeffdingTreeClassifier(), n_estimators=20)
@@ -72,19 +73,25 @@ class ORB():
         self.obf = 1
         if not self.trained or not self.active:
             return
-        ma = self.th if self.ma_window is None \
-            else self.__predict(self.ma_window).mean() if kwargs['ma_update'] \
-            else self.ma_window.mean()
-        if target == 0 and ma > self.th:
-            self.obf = ((self.m ** ma - self.m ** self.th) *
+        self.update_ma(**kwargs)
+        if target == 0 and self.ma > self.th:
+            self.obf = ((self.m ** self.ma - self.m ** self.th) *
                         self.l0) / (self.m - self.m ** self.th) + 1
-        if target == 1 and ma < self.th:
-            self.obf = (((self.m ** (self.th - ma) - 1) * self.l1) /
+        if target == 1 and self.ma < self.th:
+            self.obf = (((self.m ** (self.th - self.ma) - 1) * self.l1) /
                         (self.m ** self.th - 1)) + 1
         if kwargs.pop('track_orb', False):
-            mlflow.log_metrics({'ma': ma,
+            mlflow.log_metrics({'ma': self.ma,
                                 'target': target,
                                 'obf': self.obf})
+
+    def update_ma(self, **kwargs):
+        if self.ma_window is None:
+            self.ma = self.th
+        else:
+            if kwargs['ma_update'] and self.observed_instances % 500 == 0:
+                self.ma_window = self.__predict(self.ma_instance_window)
+            self.ma = self.ma_window.mean()
 
     def update_k(self, **kwargs):
         self.k = self.random_state.poisson(self.lambda_)
@@ -96,10 +103,10 @@ class ORB():
         if self.trained:
             predictions = self.__predict(df_test)
             if kwargs['ma_update']:
-                self.ma_window = pd.concat([self.ma_window, df_test])
-            else:
-                self.ma_window = predictions if self.ma_window is None else np.concatenate(
-                    [self.ma_window, predictions])
+                self.ma_instance_window = pd.concat(
+                    [self.ma_instance_window, df_test])
+            self.ma_window = predictions if self.ma_window is None else np.concatenate(
+                [self.ma_window, predictions])
             self.ma_window = self.ma_window[-self.ma_window_size:]
         else:
             predictions = np.zeros(len(df_test))
