@@ -24,6 +24,7 @@ class ORB():
         # state
         self.observed_classes = set()
         self.observed_instances = 0
+        self.observed_weight = 0
         self.ma_window = None
         self.ma_instance_window = None
         self.p1 = .5
@@ -47,6 +48,7 @@ class ORB():
                                      0, 1], sample_weight=[self.k])
             self.observed_classes.update(y)
             self.observed_instances += 1
+            self.observed_weight += self.k
 
     def update_state(self, target, **kwargs):
         self.update_lambda(target, **kwargs)
@@ -87,7 +89,8 @@ class ORB():
         if self.ma_window is None:
             self.ma = self.th
         else:
-            if kwargs['rate_driven'] and self.observed_instances % kwargs['rd_max_wait'] == 0:
+            if kwargs['rate_driven'] and self.observed_weight >= kwargs['rd_max_wait']:
+                self.observed_weight = 0
                 self.ma_window, _ = self.__predict(self.ma_instance_window)
             self.ma = self.ma_window.mean()
 
