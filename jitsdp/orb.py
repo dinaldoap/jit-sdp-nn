@@ -54,7 +54,14 @@ class ORB():
         self.update_lambda(target, **kwargs)
         self.update_obf(target, **kwargs)
         self.update_k(**kwargs)
-
+        if kwargs.pop('track_orb', False):
+            mlflow.log_metrics({'ma': self.ma,
+                                'target': target,
+                                'obf': self.obf,
+                                'k': self.k,
+                                'p1': self.p1,
+                                })
+        
     def update_lambda(self, target, **kwargs):
         self.p1 = self.decay_factor * self.p1 + \
             (1 - self.decay_factor) * target
@@ -66,8 +73,6 @@ class ORB():
             self.lambda_ = p0 / self.p1
         if target == 0 and p0 < self.p1:
             self.lambda_ = self.p1 / p0
-        if kwargs.pop('track_orb', False):
-            mlflow.log_metrics({'p1': self.p1})
 
     def update_obf(self, target, **kwargs):
         self.obf = 1
@@ -79,11 +84,7 @@ class ORB():
                         self.l0) / (self.m - self.m ** self.th) + 1
         if target == 1 and self.ma < self.th:
             self.obf = (((self.m ** (self.th - self.ma) - 1) * self.l1) /
-                        (self.m ** self.th - 1)) + 1
-        if kwargs.pop('track_orb', False):
-            mlflow.log_metrics({'ma': self.ma,
-                                'target': target,
-                                'obf': self.obf})
+                        (self.m ** self.th - 1)) + 1        
 
     def update_ma(self, **kwargs):
         if self.ma_window is None:
@@ -96,8 +97,6 @@ class ORB():
     def update_k(self, **kwargs):
         self.k = self.random_state.poisson(self.lambda_)
         self.k = int(self.k * self.obf)
-        if kwargs.pop('track_orb', False):
-            mlflow.log_metrics({'k': self.k})
 
     def predict(self, df_test, **kwargs):
         if self.trained:
