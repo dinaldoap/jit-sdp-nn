@@ -61,7 +61,7 @@ class ORB():
                                 'k': self.k,
                                 'p1': self.p1,
                                 })
-        
+
     def update_lambda(self, target, **kwargs):
         self.p1 = self.decay_factor * self.p1 + \
             (1 - self.decay_factor) * target

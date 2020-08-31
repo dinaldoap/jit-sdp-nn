@@ -101,7 +101,8 @@ def run(config):
         if train_first:
             train_step = train_steps.pop(0)
             X_train, y_train = train_stream.next_sample(train_step)
-            model.train(X_train, y_train, rate_driven=config['rate_driven'], track_orb=config['track_orb'])
+            model.train(
+                X_train, y_train, rate_driven=config['rate_driven'], track_orb=config['track_orb'])
         else:
             train_first = True
         # test
