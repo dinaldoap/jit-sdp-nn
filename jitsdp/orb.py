@@ -31,8 +31,6 @@ class ORB():
             base_estimator=HoeffdingTreeClassifier(), n_estimators=20)
         self.estimators = [MultiflowBaseEstimator(
             estimator) for estimator in self.oza_bag.ensemble]
-        self.random_state = self.oza_bag._random_state
-        RandomStateWrapper(self)
 
     @property
     def trained(self):
@@ -57,7 +55,6 @@ class ORB():
         if kwargs.pop('track_orb', False):
             mlflow.log_metrics({'ma': self.ma,
                                 'target': target,
-                                'obf': self.obf,
                                 'k': self.k,
                                 'p1': self.p1,
                                 })
@@ -95,8 +92,7 @@ class ORB():
             self.ma = self.ma_window.mean()
 
     def update_k(self, **kwargs):
-        self.k = self.random_state.poisson(self.lambda_)
-        self.k = int(self.k * self.obf)
+        self.k = self.lambda_ * self.obf
 
     def predict(self, df_test, **kwargs):
         if self.trained:
@@ -122,14 +118,6 @@ class ORB():
         probabilities = probabilities[:, 1]
         predictions = (probabilities >= .5).round().astype('int')
         return predictions, probabilities
-
-
-class RandomStateWrapper():
-    def __init__(self, orb):
-        self.orb = orb
-
-    def poisson(self):
-        return int(self.orb.k > 0)
 
 
 def _track_rf(prediction, rf):
