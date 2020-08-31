@@ -90,8 +90,8 @@ class ORB():
         if self.ma_window is None:
             self.ma = self.th
         else:
-            if kwargs['rate_driven'] and self.observed_instances % 500 == 0:
-                self.ma_window = self.__predict(self.ma_instance_window)
+            if kwargs['rate_driven'] and self.observed_instances % kwargs['rd_max_wait'] == 0:
+                self.ma_window, _ = self.__predict(self.ma_instance_window)
             self.ma = self.ma_window.mean()
 
     def update_k(self, **kwargs):

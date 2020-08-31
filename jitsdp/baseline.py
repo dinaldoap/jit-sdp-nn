@@ -30,6 +30,9 @@ def main():
     parser.add_argument('--rate-driven',   type=int,
                         help='Whether turn ORB rate-driven (default: 0).',
                         default=0, choices=[0, 1])
+    parser.add_argument('--rd-max-wait',   type=int,
+                        help='The number of instances the model is trained before fully updating the moving average window (default: 300).',
+                        default=300)
     parser.add_argument('--noise',   type=int,
                         help='Whether must keep noisy instances (default: 0).',
                         default=0, choices=[0, 1])
@@ -102,7 +105,7 @@ def run(config):
             train_step = train_steps.pop(0)
             X_train, y_train = train_stream.next_sample(train_step)
             model.train(
-                X_train, y_train, rate_driven=config['rate_driven'], track_orb=config['track_orb'])
+                X_train, y_train, rate_driven=config['rate_driven'], rd_max_wait=config['rd_max_wait'], track_orb=config['track_orb'])
         else:
             train_first = True
         # test
