@@ -84,7 +84,7 @@ class ORB():
                         self.l0) / (self.m - self.m ** self.th) + 1
         if target == 1 and self.ma < self.th:
             self.obf = (((self.m ** (self.th - self.ma) - 1) * self.l1) /
-                        (self.m ** self.th - 1)) + 1        
+                        (self.m ** self.th - 1)) + 1
 
     def update_ma(self, **kwargs):
         if self.ma_window is None:
@@ -100,7 +100,7 @@ class ORB():
 
     def predict(self, df_test, **kwargs):
         if self.trained:
-            predictions = self.__predict(df_test)
+            predictions, probatilities = self.__predict(df_test)
             if kwargs['rate_driven']:
                 self.ma_instance_window = pd.concat(
                     [self.ma_instance_window, df_test])
@@ -111,13 +111,17 @@ class ORB():
             predictions = np.zeros(len(df_test))
         prediction = df_test.copy()
         prediction['prediction'] = predictions
-        prediction['probability'] = prediction['prediction']
+        prediction['probability'] = probatilities
         prediction = _track_rf(prediction, self)
         prediction = _track_time(prediction)
         return prediction
 
     def __predict(self, df_test):
-        return self.oza_bag.predict(df_test[self.features].values)
+        probabilities = self.oza_bag.predict_proba(
+            df_test[self.features].values)
+        probabilities = probabilities[:, 1]
+        predictions = (probabilities >= .5).round().astype('int')
+        return predictions, probabilities
 
 
 class RandomStateWrapper():
