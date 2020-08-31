@@ -15,4 +15,4 @@ entry_points:
         mlp-n-epochs: {default: 50}
         nb-n-updates: {default: 50}
         rf-n-estimators: {default: 100}
-    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --end {end} --seeds {seeds} --datasets {datasets} --models {models} --bht-n-estimators {bht-n-estimators} --lr-n-epochs {lr-n-epochs} --mlp-n-epochs {mlp-n-epochs} --nb-n-updates {nb-n-updates} --rf-n-estimators {rf-n-estimators}
+    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp {command} --end {end} --seeds {seeds} --datasets {datasets} --models {models} --bht-n-estimators {bht-n-estimators} --lr-n-epochs {lr-n-epochs} --mlp-n-epochs {mlp-n-epochs} --nb-n-updates {nb-n-updates} --rf-n-estimators {rf-n-estimators}'
