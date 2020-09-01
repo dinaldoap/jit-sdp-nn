@@ -11,9 +11,8 @@ from skmultiflow.utils import get_dimensions
 
 class ORB():
 
-    def __init__(self, features, balanced_window_size):
+    def __init__(self, features):
         self.features = features
-        self.balanced_window_size = balanced_window_size
         # parameters
         self.decay_factor = .99
         self.ma_window_size = 100
@@ -37,10 +36,6 @@ class ORB():
     def trained(self):
         return len(self.observed_classes) == 2
 
-    @property
-    def active(self):
-        return self.observed_instances >= self.balanced_window_size
-
     def train(self, X, y, **kwargs):
         for features, target in zip(X, y):
             self.update_state(target, **kwargs)
@@ -54,7 +49,7 @@ class ORB():
         self.update_lambda(target, **kwargs)
         self.update_obf(target, **kwargs)
         self.update_k(**kwargs)
-        if kwargs.pop('track_orb', False) and self.trained and self.active:
+        if kwargs.pop('track_orb', False) and self.trained:
             mlflow.log_metrics({'ma': self.ma,
                                 'target': target,
                                 'k': self.k,
@@ -66,7 +61,7 @@ class ORB():
             (1 - self.decay_factor) * target
         p0 = 1 - self.p1
         self.lambda_ = 1
-        if not self.trained or not self.active or kwargs['rate_driven']:
+        if not self.trained or kwargs['rate_driven']:
             return
         if target == 1 and self.p1 < p0:
             self.lambda_ = p0 / self.p1
@@ -75,7 +70,7 @@ class ORB():
 
     def update_obf(self, target, **kwargs):
         self.obf = 1
-        if not self.trained or not self.active:
+        if not self.trained:
             return
         self.update_ma(**kwargs)
         if target == 0 and self.ma > self.th:

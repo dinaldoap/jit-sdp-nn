@@ -84,9 +84,8 @@ def run(config):
     df_train = extract_events(df_train)
     if not config['noise']:
         df_train = remove_noise(df_train)
-    balanced_window_size = 0
     if not config['order']:
-        df_train, balanced_window_size = balance_events(df_train)
+        df_train = balance_events(df_train)
 
     test_steps = calculate_steps(
         df_test['timestamp'], df_train['timestamp_event'], right=False)
@@ -95,7 +94,7 @@ def run(config):
     train_steps = train_steps.to_list()
 
     train_stream = DataStream(df_train[FEATURES], y=df_train[['target']])
-    model = ORB(features=FEATURES, balanced_window_size=balanced_window_size)
+    model = ORB(features=FEATURES)
     target_prediction = None
     train_first = len(test_steps) < len(train_steps)
     current_test = 0
@@ -178,7 +177,7 @@ def balance_events(df_events):
     df_balanced = df_balanced.sort_values('timestamp_event', kind='mergesort')
     # order kept
     df_kept = df_events[df_events['timestamp_event'] > timestamp_event_balance]
-    return pd.concat([df_balanced, df_kept]), len(df_balanced)
+    return pd.concat([df_balanced, df_kept])
 
 
 def calculate_steps(data, bins, right):
