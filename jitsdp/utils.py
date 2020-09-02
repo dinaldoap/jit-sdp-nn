@@ -1,4 +1,7 @@
 # coding=utf-8
+from jitsdp.constants import DIR
+
+from itertools import product
 import mlflow
 import os
 
@@ -38,6 +41,21 @@ def create_config_template(args, names):
 
 def to_plural(names):
     return ['{}s'.format(name) for name in names]
+
+
+def create_configs(args, lists):
+    config_template = create_config_template(args, lists)
+    plurals = to_plural(lists)
+    values_lists = [args[plural] for plural in plurals]
+    for values_tuple in product(*values_lists):
+        config = dict(config_template)
+        for i, name in enumerate(lists):
+            config[name] = values_tuple[i]
+        yield config
+
+
+def unique_dir(config):
+    return DIR / '{}_{}_{}'.format(config['seed'], config['dataset'], config['model'])
 
 
 def set_experiment(args):

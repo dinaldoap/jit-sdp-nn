@@ -1,14 +1,12 @@
 from jitsdp import metrics as met
-from jitsdp.constants import DIR
 from jitsdp.data import make_stream, save_results, load_results, DATASETS, FEATURES
 from jitsdp.orb import ORB
 from jitsdp.pipeline import set_seed
 from jitsdp.plot import plot_recalls_gmean, plot_proportions
-from jitsdp.utils import mkdir, split_args, create_config_template, to_plural, set_experiment
+from jitsdp.utils import mkdir, split_args, create_configs, unique_dir, set_experiment
 
 import argparse
 from datetime import datetime
-from itertools import product
 import logging
 import mlflow
 import pathlib
@@ -142,7 +140,7 @@ def run(config):
     target_prediction = target_prediction.reset_index(drop=True)
 
     results = met.prequential_metrics(target_prediction, .99)
-    save_results(results=results, dir=__unique_dir(config))
+    save_results(results=results, dir=unique_dir(config))
     report(config)
 
 
@@ -215,19 +213,8 @@ def calculate_steps(data, bins, right):
     return steps
 
 
-def create_configs(args, lists):
-    config_template = create_config_template(args, lists)
-    plurals = to_plural(lists)
-    values_lists = [args[plural] for plural in plurals]
-    for values_tuple in product(*values_lists):
-        config = dict(config_template)
-        for i, name in enumerate(lists):
-            config[name] = values_tuple[i]
-        yield config
-
-
 def report(config):
-    dir = __unique_dir(config)
+    dir = unique_dir(config)
     results = load_results(dir=dir)
     plot_recalls_gmean(results, config=config, dir=dir)
     plot_proportions(results, config=config, dir=dir)
@@ -236,7 +223,3 @@ def report(config):
         metric): results[metric].mean() for metric in metrics}
     mlflow.log_metrics(metrics)
     mlflow.log_artifacts(local_dir=dir)
-
-
-def __unique_dir(config):
-    return DIR / '{}_{}_{}'.format(config['seed'], config['dataset'], config['model'])
