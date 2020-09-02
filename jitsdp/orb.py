@@ -61,7 +61,7 @@ class ORB():
             (1 - self.decay_factor) * target
         p0 = 1 - self.p1
         self.lambda_ = 1
-        if not self.trained or kwargs['rate_driven']:
+        if not self.trained or kwargs['rd']:
             return
         if target == 1 and self.p1 < p0:
             self.lambda_ = p0 / self.p1
@@ -84,7 +84,7 @@ class ORB():
         if self.ma_window is None:
             self.ma = self.th
         else:
-            if kwargs['rate_driven'] and self.observed_weight >= kwargs['rd_max_wait']:
+            if kwargs['rd'] and self.observed_weight >= kwargs['rd_max_wait']:
                 self.observed_weight = 0
                 self.ma_window, _ = self.__predict(self.ma_instance_window)
             self.ma = self.ma_window.mean()
@@ -95,7 +95,7 @@ class ORB():
     def predict(self, df_test, **kwargs):
         if self.trained:
             predictions, probabilities = self.__predict(df_test)
-            if kwargs['rate_driven']:
+            if kwargs['rd']:
                 self.ma_instance_window = pd.concat(
                     [self.ma_instance_window, df_test])
             self.ma_window = predictions if self.ma_window is None else np.concatenate(

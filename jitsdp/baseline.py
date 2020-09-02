@@ -43,8 +43,8 @@ def main():
                         help='The number of hoeffding trees (default: 1).',  default=1)
     parser.add_argument('--cross-project',   type=int,
                         help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
-    parser.add_argument('--rate-driven',   type=int,
-                        help='Whether turn ORB rate-driven (default: 0).',
+    parser.add_argument('--rd',   type=int,
+                        help='Whether must turn ORB rate-driven (default: 0).',
                         default=0, choices=[0, 1])
     parser.add_argument('--rd-max-wait',   type=int,
                         help='The number of instances the model is trained before fully updating the moving average window (default: 300).',
@@ -128,14 +128,14 @@ def run(config):
             train_step = train_steps.pop(0)
             X_train, y_train = train_stream.next_sample(train_step)
             model.train(
-                X_train, y_train, rate_driven=config['rate_driven'], rd_max_wait=config['rd_max_wait'], track_orb=config['track_orb'])
+                X_train, y_train, rd=config['rd'], rd_max_wait=config['rd_max_wait'], track_orb=config['track_orb'])
         else:
             train_first = True
         # test
         df_batch_test = df_test[current_test:current_test + test_step]
         current_test += test_step
         target_prediction_test = model.predict(
-            df_batch_test, rate_driven=config['rate_driven'])
+            df_batch_test, rd=config['rd'])
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
 
