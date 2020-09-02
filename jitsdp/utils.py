@@ -1,4 +1,8 @@
 # coding=utf-8
+import mlflow
+import os
+
+
 def mkdir(dir):
     dir.mkdir(parents=True, exist_ok=True)
 
@@ -34,3 +38,11 @@ def create_config_template(args, names):
 
 def to_plural(names):
     return ['{}s'.format(name) for name in names]
+
+
+def set_experiment(args):
+    mlflow_exp_id = os.environ.pop('MLFLOW_EXPERIMENT_ID', None)
+    project_exp_id = args['experiment_name']
+    if mlflow_exp_id is None and project_exp_id is not None:
+        mlflow.set_experiment(project_exp_id)
+    del args['experiment_name']

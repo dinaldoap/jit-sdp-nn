@@ -4,7 +4,7 @@ from jitsdp.data import make_stream, save_results, load_results, DATASETS, FEATU
 from jitsdp.orb import ORB
 from jitsdp.pipeline import set_seed
 from jitsdp.plot import plot_recalls_gmean, plot_proportions
-from jitsdp.utils import mkdir, split_args, create_config_template, to_plural
+from jitsdp.utils import mkdir, split_args, create_config_template, to_plural, set_experiment
 
 import argparse
 from datetime import datetime
@@ -21,6 +21,8 @@ from skmultiflow.data import DataStream
 def main():
     parser = argparse.ArgumentParser(
         description='Baseline: experiment execution')
+    parser.add_argument('--experiment-name',   type=str,
+                        help='Experiment name (default: None). None means default behavior of MLflow', default=None)
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0).',    default=0)
     parser.add_argument('--end',   type=int,
@@ -73,7 +75,7 @@ def main():
                         filemode='w', level=logging.INFO)
     logging.info('Main config: {}'.format(args))
 
-    mlflow.set_experiment('baseline')
+    set_experiment(args)
     with mlflow.start_run():
         configs = create_configs(args, lists)
         for config in configs:
