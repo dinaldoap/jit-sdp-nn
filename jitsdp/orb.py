@@ -11,7 +11,7 @@ from skmultiflow.utils import get_dimensions
 
 class ORB():
 
-    def __init__(self, features):
+    def __init__(self, features, decay_factor, ma_window_size, th, l0, l1, m, n_estimators):
         self.features = features
         # parameters
         self.decay_factor = .99

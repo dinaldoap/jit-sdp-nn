@@ -24,7 +24,21 @@ def main():
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0).',    default=0)
     parser.add_argument('--end',   type=int,
-                        help='Last commit to be used for testing (default: None). None means all commits.',  default=None)
+                        help='Last commit to be used for testing (default: None). None means all commits.',  default=5000)
+    parser.add_argument('--orb-decay-factor',   type=float,
+                        help='Decay factor for calculating class proportions in training data (default: .99).',  default=.99)
+    parser.add_argument('--orb-ma-window-size',   type=int,
+                        help='The number of predictions or instances used for calculating moving average (default: 100).',  default=100)
+    parser.add_argument('--orb-th',   type=float,
+                        help='Expected value for the moving average of the model\'s output (default: .4).',  default=.99)
+    parser.add_argument('--orb-l0',   type=float,
+                        help='No description (default: 10.).',  default=10.)
+    parser.add_argument('--orb-l1',   type=float,
+                        help='No description (default: 12.).',  default=12.)
+    parser.add_argument('--orb-m',   type=float,
+                        help='No description (default: 1.5).',  default=1.5)
+    parser.add_argument('--hts-n-estimators',   type=int,
+                        help='The number of hoeffding trees (default: 1).',  default=1)
     parser.add_argument('--cross-project',   type=int,
                         help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--rate-driven',   type=int,
@@ -69,7 +83,7 @@ def main():
 
 
 def run(config):
-    config['model'] = 'orb'
+    config['model'] = 'hts'
     mlflow.log_params(config)
     set_seed(config)
     dataset = config['dataset']
@@ -94,7 +108,15 @@ def run(config):
     train_steps = train_steps.to_list()
 
     train_stream = DataStream(df_train[FEATURES], y=df_train[['target']])
-    model = ORB(features=FEATURES)
+    model = ORB(features=FEATURES,
+                decay_factor=config['orb_decay_factor'],
+                ma_window_size=config['orb_ma_window_size'],
+                th=config['orb_th'],
+                l0=config['orb_l0'],
+                l1=config['orb_l1'],
+                m=config['orb_m'],
+                n_estimators=config['hts_n_estimators'],
+                )
     target_prediction = None
     train_first = len(test_steps) < len(train_steps)
     current_test = 0
