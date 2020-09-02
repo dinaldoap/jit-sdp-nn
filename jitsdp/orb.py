@@ -94,7 +94,7 @@ class ORB():
 
     def predict(self, df_test, **kwargs):
         if self.trained:
-            predictions, probatilities = self.__predict(df_test)
+            predictions, probabilities = self.__predict(df_test)
             if kwargs['rate_driven']:
                 self.ma_instance_window = pd.concat(
                     [self.ma_instance_window, df_test])
@@ -102,10 +102,11 @@ class ORB():
                 [self.ma_window, predictions])
             self.ma_window = self.ma_window[-self.ma_window_size:]
         else:
-            predictions = np.zeros(len(df_test))
+            probabilities = np.zeros(len(df_test))
+            predictions = probabilities
         prediction = df_test.copy()
         prediction['prediction'] = predictions
-        prediction['probability'] = probatilities
+        prediction['probability'] = probabilities
         prediction = _track_rf(prediction, self)
         prediction = _track_time(prediction)
         return prediction
