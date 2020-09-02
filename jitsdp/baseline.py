@@ -1,8 +1,8 @@
 from jitsdp import metrics as met
-from jitsdp.data import make_stream, save_results, load_results, DATASETS, FEATURES
+from jitsdp.data import make_stream, save_results, DATASETS, FEATURES
 from jitsdp.orb import ORB
 from jitsdp.pipeline import set_seed
-from jitsdp.plot import plot_recalls_gmean, plot_proportions
+from jitsdp.report import report
 from jitsdp.utils import mkdir, split_args, create_configs, unique_dir, set_experiment
 
 import argparse
@@ -211,15 +211,3 @@ def calculate_steps(data, bins, right):
     steps = steps.value_counts(sort=False)
     steps = steps[steps > 0]
     return steps
-
-
-def report(config):
-    dir = unique_dir(config)
-    results = load_results(dir=dir)
-    plot_recalls_gmean(results, config=config, dir=dir)
-    plot_proportions(results, config=config, dir=dir)
-    metrics = ['r0', 'r1', 'r0-r1', 'gmean', 't1', 's1', 'p1']
-    metrics = {'avg_{}'.format(
-        metric): results[metric].mean() for metric in metrics}
-    mlflow.log_metrics(metrics)
-    mlflow.log_artifacts(local_dir=dir)
