@@ -54,7 +54,8 @@ class ORB():
         if kwargs.pop('track_orb', False) and self.trained:
             mlflow.log_metrics({'ma': self.ma,
                                 'target': target,
-                                'k': self.k,
+                                'lambda': self.lambda_,
+                                'obf': self.obf,
                                 'p1': self.p1,
                                 })
 
