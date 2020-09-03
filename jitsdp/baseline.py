@@ -33,7 +33,7 @@ def main():
     parser.add_argument('--orb-ma-window-size',   type=int,
                         help='The number of predictions or instances used for calculating moving average (default: 100).',  default=100)
     parser.add_argument('--orb-th',   type=float,
-                        help='Expected value for the moving average of the model\'s output (default: .4).',  default=.99)
+                        help='Expected value for the moving average of the model\'s output (default: .4).',  default=.4)
     parser.add_argument('--orb-l0',   type=float,
                         help='No description (default: 10.).',  default=10.)
     parser.add_argument('--orb-l1',   type=float,
