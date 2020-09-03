@@ -1,9 +1,8 @@
 # coding=utf-8
 from jitsdp import metrics as met
 from jitsdp.constants import DIR
-from jitsdp.data import make_stream, save_results, load_results, DATASETS
+from jitsdp.data import make_stream, make_stream_others, save_results
 from jitsdp.pipeline import create_pipeline, set_seed
-from jitsdp.plot import plot_recalls_gmean, plot_proportions
 from jitsdp.report import report
 from jitsdp.utils import unique_dir
 
@@ -42,10 +41,7 @@ def run(config):
         step = fold_size
 
     if config['cross_project']:
-        others = list(DATASETS)
-        others.remove(dataset)
-        df_others = [make_stream(dataset) for dataset in others]
-        df_others = pd.concat(df_others)
+        df_others = make_stream_others(dataset)
     else:
         # empty df with same schema
         df_others = df_prequential.head(0).copy()
