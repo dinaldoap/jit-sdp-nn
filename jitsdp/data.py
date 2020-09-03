@@ -86,6 +86,13 @@ def prequential(df_preprocess):
     return df_prequential
 
 
+def make_stream_others(dataset):
+    others = list(DATASETS)
+    others.remove(dataset)
+    df_others = [make_stream(dataset) for dataset in others]
+    return pd.concat(df_others)
+
+
 def save_results(results, dir=DIR):
     mkdir(dir)
     results.to_pickle(dir / 'results.pickle')

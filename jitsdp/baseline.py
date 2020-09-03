@@ -1,5 +1,5 @@
 from jitsdp import metrics as met
-from jitsdp.data import make_stream, save_results, DATASETS, FEATURES
+from jitsdp.data import make_stream, make_stream_others, save_results, DATASETS, FEATURES
 from jitsdp.orb import ORB
 from jitsdp.pipeline import set_seed
 from jitsdp.report import report
@@ -82,6 +82,8 @@ def run(config):
     df_test = df_test[config['start']:end]
     df_train = df_commit.copy()
     df_train = df_train[:end]
+    if config['cross_project']:
+        df_train = merge_others(df_train, dataset)
     df_train = extract_events(df_train)
     if not config['noise']:
         df_train = remove_noise(df_train)
@@ -198,3 +200,10 @@ def calculate_steps(data, bins, right):
     steps = steps.value_counts(sort=False)
     steps = steps[steps > 0]
     return steps
+
+
+def merge_others(data, dataset):
+    df_others = make_stream_others(dataset)
+    last_timestamp = data['timestamp'].max()
+    df_others = df_others[df_others['timestamp'] <= last_timestamp]
+    return pd.concat([data, df_others])
