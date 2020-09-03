@@ -1,7 +1,7 @@
 # coding=utf-8
 from jitsdp import plot
 
-from constants import DIR
+from jitsdp.constants import DIR
 
 import numpy as np
 import pandas as pd
