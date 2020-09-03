@@ -38,7 +38,7 @@ def set_seed(config):
 
 def create_pipeline(config):
     map_fn = {
-        'bht': create_bht_model,
+        'ihf': create_ihf_model,
         'mlp': create_mlp_model,
         'nb': create_nb_model,
         'rf': create_rf_model,
@@ -69,15 +69,15 @@ def create_pipeline(config):
     return classifier
 
 
-def create_bht_model(config):
+def create_ihf_model(config):
     hoeffding_tree = HoeffdingTreeClassifier(
-        split_confidence=config['bht_split_confidence'])
+        split_confidence=config['ihf_split_confidence'])
     base_estimator = MultiflowBaseEstimator(hoeffding_tree)
     classifier = BaggingClassifier(
         base_estimator=base_estimator, n_estimators=0, warm_start=True, bootstrap=False)
     return RandomForest(steps=[], classifier=classifier,
                         features=FEATURES, target='target', soft_target='soft_target',
-                        n_trees=config['bht_n_estimators'], fading_factor=1)
+                        n_trees=config['ihf_n_estimators'], fading_factor=1)
 
 
 def create_mlp_model(config):

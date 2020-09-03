@@ -42,10 +42,10 @@ def main():
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
     parser.add_argument('--models',   type=str,
-                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['bht', 'lr', 'mlp', 'nb', 'rf'], nargs='+')
-    parser.add_argument('--bht-n-estimators',   type=int,
+                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['ihf', 'lr', 'mlp', 'nb', 'rf'], nargs='+')
+    parser.add_argument('--ihf-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',    default=1)
-    parser.add_argument('--bht-split-confidence',   type=float,
+    parser.add_argument('--ihf-split-confidence',   type=float,
                         help='Allowed error in split decision, a value closer to 0 takes longer to decide (default: .1).',    default=.1)
     parser.add_argument('--lr-alpha',   type=float,
                         help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: .1).',  default=.1)
