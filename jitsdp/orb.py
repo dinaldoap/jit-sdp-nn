@@ -107,8 +107,10 @@ class ORB():
         prediction = df_test.copy()
         prediction['prediction'] = predictions
         prediction['probability'] = probabilities
-        prediction = _track_rf(prediction, self)
-        prediction = _track_time(prediction)
+        if kwargs['track_ihf']:
+            prediction = _track_rf(prediction, self)
+        if kwargs['track_time']:
+            prediction = _track_time(prediction)
         return prediction
 
     def __predict(self, df_test):
