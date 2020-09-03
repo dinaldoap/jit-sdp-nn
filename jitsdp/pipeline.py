@@ -61,7 +61,8 @@ def create_pipeline(config):
                           th=config['borb_th'],
                           l0=config['borb_l0'],
                           l1=config['borb_l1'],
-                          m=config['borb_m'])
+                          m=config['borb_m'],
+                          rate_driven=config['borb_rd'])
     return classifier
 
 
@@ -245,15 +246,25 @@ class RateFixedTrain(Threshold):
 
 
 class BORB(Classifier):
-    def __init__(self, classifier, max_sample_size, th, l0, l1, m):
+    def __init__(self, classifier, max_sample_size, th, l0, l1, m, rate_driven):
         self.classifier = classifier
         self.max_sample_size = max_sample_size
         self.th = th
         self.l0 = l0
         self.l1 = l1
         self.m = m
+        self.rate_driven = rate_driven
 
     def train(self, df_train, **kwargs):
+        lambda0 = 1
+        lambda1 = 1
+        if not self.rate_driven:
+            p1 = df_train['target'].mean()
+            p0 = 1 - p1
+            if p0 < p1 and p0 != 0:
+                lambda0 = p1 / p0
+            if p0 > p1 and p1 != 0:
+                lambda1 = p0 / p1
         df_ma = kwargs.pop('df_ma', None)
         ma = self.th
         for i in range(self.classifier.n_iterations):
@@ -266,11 +277,11 @@ class BORB(Classifier):
                 obf1 = (((self.m ** (self.th - ma) - 1) * self.l1) /
                         (self.m ** self.th - 1)) + 1
             new_kwargs = dict(kwargs)
-            new_kwargs['weights'] = [obf0, obf1]
+            new_kwargs['weights'] = [lambda0 * obf0, lambda1 * obf1]
             new_kwargs['n_iterations'] = 1
             new_kwargs['max_sample_size'] = self.max_sample_size
             for metrics in self.classifier.train(df_train, **new_kwargs):
-                yield _track_orb(metrics=metrics, ma=ma, obf0=obf0, obf1=obf1, **kwargs)
+                yield _track_orb(metrics=metrics, ma=ma, lambda0=lambda0, lambda1=lambda1, obf0=obf0, obf1=obf1, **kwargs)
             df_output = self.classifier.predict(df_ma)
             ma = df_output['prediction'].mean()
 
@@ -680,12 +691,14 @@ def _track_performance(metrics, classifier, df_train, **kwargs):
         return metrics
 
 
-def _track_orb(metrics, ma, obf0, obf1, **kwargs):
+def _track_orb(metrics, ma, lambda0, lambda1, obf0, obf1, **kwargs):
     df_val = kwargs.pop('df_val', None)
     if df_val is not None:
         metrics = _prepare_metrics(metrics)
         metrics.update({
             'ma': ma,
+            'lambda0': lambda0,
+            'lambda1': lambda1,
             'obf0': obf0,
             'obf1': obf1,
         })
