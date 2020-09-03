@@ -153,7 +153,7 @@ def extract_events(df_commit):
         verification_latency
     # events
     df_events = pd.concat([df_cleaned, df_bugged, df_bug_cleaned])
-    df_events = df_events.sort_values('timestamp_event')
+    df_events = df_events.sort_values('timestamp_event', kind='mergesort')
     df_events = df_events[['timestamp_event'] + FEATURES + ['target']]
     return df_events
 
