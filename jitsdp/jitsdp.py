@@ -1,22 +1,14 @@
 # coding=utf-8
-from jitsdp.evaluation import run, report
-from jitsdp.utils import mkdir, split_args, create_config_template, to_plural
+from jitsdp.evaluation import run
+from jitsdp.utils import setup_and_run, int_or_none
 
 import argparse
-from datetime import datetime
-from itertools import product
-import logging
-import mlflow
-from multiprocessing import Pool
-import pathlib
 import sys
 
 
 def main():
     parser = argparse.ArgumentParser(
         description='JIT-SDP: experiment execution')
-    parser.add_argument('command',   type=str, help='Which command should execute (default: run).',
-                        default='run', choices=['run', 'report'])
     parser.add_argument('--experiment-name',   type=str,
                         help='Experiment name (default: None). None means default behavior of MLflow', default=None)
     parser.add_argument('--pool-size',   type=int,
@@ -105,65 +97,7 @@ def main():
                         help='Whether must use decreasing uncertainty about normal commit labels inside verification latency (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--incremental',   type=int,
                         help='Whether must do incremental training along the stream (default: 0).', default=0, choices=[0, 1])
-    lists = ['seed', 'dataset', 'model']
-    sys.argv = split_args(sys.argv, lists)
-    args = parser.parse_args()
-    args = dict(vars(args))
-    logging.getLogger('').handlers = []
-    dir = pathlib.Path('logs')
-    mkdir(dir)
-    log = 'jitsdp-{}.log'.format(datetime.now())
-    log = log.replace(' ', '-')
-    log = dir / log
-    logging.basicConfig(filename=log,
-                        filemode='w', level=logging.INFO)
-    logging.info('Main config: {}'.format(args))
-
-    if args['experiment_name'] is not None:
-        mlflow.set_experiment(args['experiment_name'])
-    del args['experiment_name']
-
-    with mlflow.start_run():
-        configs = create_configs(args, lists)
-        with Pool(args['pool_size']) as pool:
-            codes = pool.map(safe_run, configs)
-        mlflow.log_artifact(log)
-        return sum(codes)
-
-
-def safe_run(config):
-    try:
-        run_nested(config)
-        return 0
-    except Exception:
-        logging.exception('Exception raised on config: {}'.format(config))
-        return 1
-
-
-def run_nested(config):
-    commands = {
-        'run': run,
-        'report': report,
-    }
-    command = commands[config['command']]
-    with mlflow.start_run(nested=True):
-        logging.info('Nested config: {}'.format(config))
-        command(config=config)
-
-
-def create_configs(args, lists):
-    config_template = create_config_template(args, lists)
-    plurals = to_plural(lists)
-    values_lists = [args[plural] for plural in plurals]
-    for values_tuple in product(*values_lists):
-        config = dict(config_template)
-        for i, name in enumerate(lists):
-            config[name] = values_tuple[i]
-        yield config
-
-
-def int_or_none(string):
-    return None if string == 'None' else int(string)
+    setup_and_run(parser, 'jitsdp', run)
 
 
 if __name__ == '__main__':
