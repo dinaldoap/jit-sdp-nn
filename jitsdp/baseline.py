@@ -39,16 +39,14 @@ def main():
                         help='No description (default: 12.).',  default=12.)
     parser.add_argument('--orb-m',   type=float,
                         help='No description (default: 1.5).',  default=1.5)
-    parser.add_argument('--hts-n-estimators',   type=int,
-                        help='The number of hoeffding trees (default: 1).',  default=1)
-    parser.add_argument('--cross-project',   type=int,
-                        help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--rd',   type=int,
                         help='Whether must turn ORB rate-driven (default: 0).',
                         default=0, choices=[0, 1])
     parser.add_argument('--rd-max-wait',   type=int,
                         help='The number of instances the model is trained before fully updating the moving average window (default: 300).',
                         default=300)
+    parser.add_argument('--cross-project',   type=int,
+                        help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--noise',   type=int,
                         help='Whether must keep noisy instances (default: 0).',
                         default=0, choices=[0, 1])
@@ -61,6 +59,8 @@ def main():
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
     parser.add_argument('--models',   type=str,
                         help='Which models must use in the ensemble (default: [\'hts\']).', default=['hts'], choices=['hts'], nargs='+')
+    parser.add_argument('--hts-n-estimators',   type=int,
+                        help='The number of hoeffding trees (default: 1).',  default=1)
     parser.add_argument('--track-orb',   type=int,
                         help='Whether must track ORB state (default: 0)',  default=0)
     setup_and_run(parser, 'baseline', run)
