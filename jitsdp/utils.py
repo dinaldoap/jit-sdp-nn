@@ -6,9 +6,12 @@ from itertools import product
 import logging
 import mlflow
 from multiprocessing import Pool
+import numpy as np
 import os
+import pandas as pd
 import pathlib
 import sys
+import time
 
 
 def mkdir(dir):
@@ -126,3 +129,38 @@ def set_experiment(args):
     if mlflow_exp_id is None and project_exp_id is not None:
         mlflow.set_experiment(project_exp_id)
     del args['experiment_name']
+
+
+def track_forest(prediction, forest):
+    properties = {
+        'depth': lambda tree: tree.get_depth() if forest.trained else 0,
+        'n_leaves': lambda tree: tree.get_n_leaves() if forest.trained else 0,
+    }
+    for name, func in properties.items():
+        values = _extract_property(forest, func)
+        prediction = _concat_property(prediction, name, values)
+    return prediction
+
+
+def _extract_property(forest, func):
+    if forest.trained:
+        return [func(estimator) for estimator in forest.estimators]
+    else:
+        return [0.]
+
+
+def _concat_property(prediction, name, values):
+    prop = pd.Series(values, dtype=np.float64)
+    prop = prop.describe()
+    prop = prop.to_frame()
+    prop = prop.transpose()
+    prop.columns = ['{}_{}'.format(name, column) for column in prop.columns]
+    template = [prop.head(0)]
+    prop = pd.concat(template + [prop] * len(prediction))
+    prop.index = prediction.index
+    return pd.concat([prediction, prop], axis='columns')
+
+
+def track_time(prediction):
+    prediction['timestamp_test'] = time.time()
+    return prediction
