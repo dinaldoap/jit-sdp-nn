@@ -71,9 +71,9 @@ def create_ihf_model(config):
     base_estimator = MultiflowBaseEstimator(hoeffding_tree)
     classifier = BaggingClassifier(
         base_estimator=base_estimator, n_estimators=0, warm_start=True, bootstrap=False)
-    return RandomForest(steps=[], classifier=classifier,
-                        features=FEATURES, target='target', soft_target='soft_target',
-                        n_trees=config['ihf_n_estimators'], fading_factor=1)
+    return IterativeForest(steps=[], classifier=classifier,
+                           features=FEATURES, target='target', soft_target='soft_target',
+                           n_trees=config['ihf_n_estimators'], fading_factor=1)
 
 
 def create_mlp_model(config):
@@ -101,9 +101,9 @@ def create_nb_model(config):
 def create_irf_model(config):
     classifier = RandomForestClassifier(
         n_estimators=0, criterion=config['irf_criterion'], max_depth=config['irf_max_depth'], min_samples_leaf=config['irf_min_samples_leaf'], max_features=config['irf_max_features'], min_impurity_decrease=config['irf_min_impurity_decrease'], warm_start=True, bootstrap=False)
-    return RandomForest(steps=[], classifier=classifier,
-                        features=FEATURES, target='target', soft_target='soft_target',
-                        n_trees=config['irf_n_estimators'], fading_factor=1)
+    return IterativeForest(steps=[], classifier=classifier,
+                           features=FEATURES, target='target', soft_target='soft_target',
+                           n_trees=config['irf_n_estimators'], fading_factor=1)
 
 
 def create_lr_model(config):
@@ -576,7 +576,7 @@ class NaiveBayes(Scikit):
             inputs, targets, classes=[0, 1])
 
 
-class RandomForest(Scikit):
+class IterativeForest(Scikit):
 
     def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_trees):
         super().__init__(steps=steps, classifier=classifier, features=features, target=target,
