@@ -14,12 +14,12 @@ class ORB():
     def __init__(self, features, decay_factor, ma_window_size, th, l0, l1, m, n_estimators):
         self.features = features
         # parameters
-        self.decay_factor = .99
-        self.ma_window_size = 100
-        self.th = .4
-        self.l0 = 10
-        self.l1 = 12
-        self.m = 1.5
+        self.decay_factor = decay_factor
+        self.ma_window_size = ma_window_size
+        self.th = th
+        self.l0 = l0
+        self.l1 = l1
+        self.m = m
         # state
         self.observed_classes = set()
         self.observed_instances = 0
@@ -28,7 +28,7 @@ class ORB():
         self.ma_instance_window = None
         self.p1 = .5
         self.oza_bag = OzaBaggingClassifier(
-            base_estimator=HoeffdingTreeClassifier(), n_estimators=20)
+            base_estimator=HoeffdingTreeClassifier(), n_estimators=n_estimators)
         self.estimators = [MultiflowBaseEstimator(
             estimator) for estimator in self.oza_bag.ensemble]
 
