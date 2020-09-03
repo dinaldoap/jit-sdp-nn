@@ -101,6 +101,7 @@ def create_config_template(args, names):
     plurals = to_plural(names)
     for plural_name in plurals:
         del new_args[plural_name]
+    del new_args['experiment_name']
     return new_args
 
 
@@ -124,11 +125,13 @@ def unique_dir(config):
 
 
 def set_experiment(args):
-    mlflow_exp_id = os.environ.pop('MLFLOW_EXPERIMENT_ID', None)
-    project_exp_id = args['experiment_name']
-    if mlflow_exp_id is None and project_exp_id is not None:
-        mlflow.set_experiment(project_exp_id)
-    del args['experiment_name']
+    experiment_name = args['experiment_name']
+    if experiment_name is not None:
+        mlflow_experiment_id = os.environ.pop('MLFLOW_EXPERIMENT_ID', None)
+        if mlflow_experiment_id is not None:
+            raise RuntimeError(
+                'Use \'mlflow run --experiment-name [name]...\' instead of \'mlflow run ... -Pexperiment-name=[name]\'')
+        os.environ['MLFLOW_EXPERIMENT_NAME'] = experiment_name
 
 
 def track_forest(prediction, forest):
