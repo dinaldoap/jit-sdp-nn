@@ -42,7 +42,7 @@ def main():
     parser.add_argument('--orb-rd',   type=int,
                         help='Whether must turn ORB rate-driven (default: 0).',
                         default=0, choices=[0, 1])
-    parser.add_argument('--orb-rd-max-wait',   type=int,
+    parser.add_argument('--orb-rd-grace-period',   type=int,
                         help='The number of instances the model is trained before fully updating the moving average window (default: 300).',
                         default=300)
     parser.add_argument('--cross-project',   type=int,
@@ -105,6 +105,8 @@ def run(config):
                 l1=config['orb_l1'],
                 m=config['orb_m'],
                 n_estimators=config['hts_n_estimators'],
+                rate_driven=config['orb_rd'],
+                rate_driven_grace_period=config['orb_rd_grace_period'],
                 )
     target_prediction = None
     train_first = len(test_steps) < len(train_steps)
@@ -115,7 +117,7 @@ def run(config):
             train_step = train_steps.pop(0)
             X_train, y_train = train_stream.next_sample(train_step)
             model.train(
-                X_train, y_train, rd=config['orb_rd'], rd_max_wait=config['orb_rd_max_wait'], track_orb=config['track_orb'])
+                X_train, y_train, track_orb=config['track_orb'])
         else:
             train_first = True
         # test

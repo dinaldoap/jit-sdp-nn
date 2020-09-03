@@ -11,7 +11,7 @@ from skmultiflow.utils import get_dimensions
 
 class ORB():
 
-    def __init__(self, features, decay_factor, ma_window_size, th, l0, l1, m, n_estimators):
+    def __init__(self, features, decay_factor, ma_window_size, th, l0, l1, m, n_estimators, rate_driven, rate_driven_grace_period):
         self.features = features
         # parameters
         self.decay_factor = decay_factor
@@ -20,6 +20,8 @@ class ORB():
         self.l0 = l0
         self.l1 = l1
         self.m = m
+        self.rate_driven = rate_driven
+        self.rate_driven_grace_period = rate_driven_grace_period
         # state
         self.observed_classes = set()
         self.observed_instances = 0
@@ -61,7 +63,7 @@ class ORB():
             (1 - self.decay_factor) * target
         p0 = 1 - self.p1
         self.lambda_ = 1
-        if not self.trained or kwargs['rd']:
+        if not self.trained or self.rate_driven:
             return
         if target == 1 and self.p1 < p0:
             self.lambda_ = p0 / self.p1
@@ -84,7 +86,7 @@ class ORB():
         if self.ma_window is None:
             self.ma = self.th
         else:
-            if kwargs['rd'] and self.observed_weight >= kwargs['rd_max_wait']:
+            if self.rate_driven and self.observed_weight >= self.rate_driven_grace_period:
                 self.observed_weight = 0
                 self.ma_window, _ = self.__predict(self.ma_instance_window)
             self.ma = self.ma_window.mean()
@@ -95,7 +97,7 @@ class ORB():
     def predict(self, df_test, **kwargs):
         if self.trained:
             predictions, probabilities = self.__predict(df_test)
-            if kwargs['rd']:
+            if self.rate_driven:
                 self.ma_instance_window = pd.concat(
                     [self.ma_instance_window, df_test])
             self.ma_window = predictions if self.ma_window is None else np.concatenate(
