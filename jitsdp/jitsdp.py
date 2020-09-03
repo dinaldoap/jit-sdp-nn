@@ -42,7 +42,7 @@ def main():
     parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
                         default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
     parser.add_argument('--models',   type=str,
-                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['ihf', 'lr', 'mlp', 'nb', 'rf'], nargs='+')
+                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['ihf', 'lr', 'mlp', 'nb', 'irf'], nargs='+')
     parser.add_argument('--ihf-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',    default=1)
     parser.add_argument('--ihf-split-confidence',   type=float,
@@ -71,17 +71,17 @@ def main():
                         help='Number of commits included in each batch (default: 256).',    default=256)
     parser.add_argument('--nb-n-updates',   type=int,
                         help='Number of updates performed by the training (default: 1).',    default=1)
-    parser.add_argument('--rf-n-estimators',   type=int,
+    parser.add_argument('--irf-n-estimators',   type=int,
                         help='The number of trees in the forest (default: 1).',    default=1)
-    parser.add_argument('--rf-criterion',   type=str,
+    parser.add_argument('--irf-criterion',   type=str,
                         help='The function to measure the quality of a split (default: \'entropy\').', default='entropy', choices=['entropy', 'gini'])
-    parser.add_argument('--rf-max-depth',   type=int,
+    parser.add_argument('--irf-max-depth',   type=int,
                         help='The maximum depth of the tree (default: unlimited).', default=None)
-    parser.add_argument('--rf-max-features',   type=int,
+    parser.add_argument('--irf-max-features',   type=int,
                         help='The number of features to consider when looking for the best split (default: 3).', default=3)
-    parser.add_argument('--rf-min-samples-leaf',   type=int,
+    parser.add_argument('--irf-min-samples-leaf',   type=int,
                         help='The minimum number of samples required to be at a leaf node (default: 200).', default=200)
-    parser.add_argument('--rf-min-impurity-decrease',   type=float,
+    parser.add_argument('--irf-min-impurity-decrease',   type=float,
                         help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .0).', default=.0)
     parser.add_argument('--track-time',   type=int,
                         help='Whether must track time. (default: 0).',  default=0)

@@ -41,7 +41,7 @@ def create_pipeline(config):
         'ihf': create_ihf_model,
         'mlp': create_mlp_model,
         'nb': create_nb_model,
-        'rf': create_rf_model,
+        'irf': create_irf_model,
         'lr': create_lr_model,
     }
     fn_create_model = map_fn[config['model']]
@@ -102,12 +102,12 @@ def create_nb_model(config):
                       n_updates=config['nb_n_updates'], fading_factor=1)
 
 
-def create_rf_model(config):
+def create_irf_model(config):
     classifier = RandomForestClassifier(
-        n_estimators=0, criterion=config['rf_criterion'], max_depth=config['rf_max_depth'], min_samples_leaf=config['rf_min_samples_leaf'], max_features=config['rf_max_features'], min_impurity_decrease=config['rf_min_impurity_decrease'], warm_start=True, bootstrap=False)
+        n_estimators=0, criterion=config['irf_criterion'], max_depth=config['irf_max_depth'], min_samples_leaf=config['irf_min_samples_leaf'], max_features=config['irf_max_features'], min_impurity_decrease=config['irf_min_impurity_decrease'], warm_start=True, bootstrap=False)
     return RandomForest(steps=[], classifier=classifier,
                         features=FEATURES, target='target', soft_target='soft_target',
-                        n_trees=config['rf_n_estimators'], fading_factor=1)
+                        n_trees=config['irf_n_estimators'], fading_factor=1)
 
 
 def create_lr_model(config):

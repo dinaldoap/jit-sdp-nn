@@ -27,21 +27,21 @@ def main():
         'nb_n_updates': [10, 30, 50],
     }
     nb.update(general)
-    rf = {
-        'models': ['rf'],
-        'rf_n_estimators': [50, 100, 150],
-        'rf_criterion': ['entropy', 'gini'],
-        'rf_max_depth': [3, 5, 7],
-        'rf_max_features': [3, 5, 7],
-        'rf_min_samples_leaf': [50, 100, 150],
-        'rf_min_impurity_decrease': [.01, .02, .03]
+    irf = {
+        'models': ['irf'],
+        'irf_n_estimators': [50, 100, 150],
+        'irf_criterion': ['entropy', 'gini'],
+        'irf_max_depth': [3, 5, 7],
+        'irf_max_features': [3, 5, 7],
+        'irf_min_samples_leaf': [50, 100, 150],
+        'irf_min_impurity_decrease': [.01, .02, .03]
     }
-    rf.update(general)
+    irf.update(general)
     grids = [
         lr,
         mlp,
         nb,
-        rf,
+        irf,
     ]
     with open('jitsdp/dist/grid.sh', mode='w') as out:
         for grid in grids:

@@ -7,7 +7,7 @@ test:
 	pytest tests
 
 run:
-	jitsdp --models ihf lr nb mlp rf --start 2000 --end 2050
+	jitsdp --models ihf lr nb mlp irf --start 2000 --end 2050
 	baseline --start 2000 --end 2050
 
 clean:
