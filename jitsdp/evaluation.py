@@ -71,7 +71,7 @@ def run(config):
         if config['incremental']:
             pipeline.save()
         target_prediction_test = pipeline.predict(
-            df_test, df_threshold=df_tail, df_proportion=df_train, track_irf=config['track_irf'], track_time=config['track_time'])
+            df_test, df_threshold=df_tail, df_proportion=df_train, track_forest=config['track_forest'], track_time=config['track_time'])
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
 

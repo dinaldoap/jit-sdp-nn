@@ -110,7 +110,7 @@ class ORB():
         prediction = df_test.copy()
         prediction['prediction'] = predictions
         prediction['probability'] = probabilities
-        if kwargs['track_ihf']:
+        if kwargs['track_forest']:
             prediction = track_forest(prediction, self)
         if kwargs['track_time']:
             prediction = track_time(prediction)

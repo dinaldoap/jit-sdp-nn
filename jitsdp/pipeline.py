@@ -611,7 +611,7 @@ class IterativeForest(Scikit):
 
     def predict_proba(self, df_features, **kwargs):
         prediction = super().predict_proba(df_features, **kwargs)
-        if kwargs.pop('track_irf', 0):
+        if kwargs.pop('track_forest', 0):
             prediction = track_forest(prediction, self)
         return prediction
 

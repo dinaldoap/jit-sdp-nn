@@ -63,8 +63,8 @@ def main():
                         help='The number of hoeffding trees (default: 1).',  default=1)
     parser.add_argument('--track-time',   type=int,
                         help='Whether must track time. (default: 0).',  default=0)
-    parser.add_argument('--track-ihf',   type=int,
-                        help='Whether must track iHF state (default: 0)',  default=0)
+    parser.add_argument('--track-forest',   type=int,
+                        help='Whether must track forest state (default: 0)',  default=0)
     parser.add_argument('--track-orb',   type=int,
                         help='Whether must track ORB state (default: 0)',  default=0)
     setup_and_run(parser, 'baseline', run)
@@ -124,7 +124,7 @@ def run(config):
         df_batch_test = df_test[current_test:current_test + test_step]
         current_test += test_step
         target_prediction_test = model.predict(
-            df_batch_test, rd=config['orb_rd'], track_time=config['track_time'], track_ihf=config['track_ihf'])
+            df_batch_test, rd=config['orb_rd'], track_time=config['track_time'], track_forest=config['track_forest'])
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
 
