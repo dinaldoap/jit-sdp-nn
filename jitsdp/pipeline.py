@@ -60,12 +60,12 @@ def create_pipeline(config):
     else:
         classifier = ScoreFixed(model=model)
     if config['borb']:
-        classifier = ORB(classifier=classifier,
-                         max_sample_size=config['borb_max_sample_size'],
-                         th=config['borb_th'],
-                         l0=config['borb_l0'],
-                         l1=config['borb_l1'],
-                         m=config['borb_m'])
+        classifier = BORB(classifier=classifier,
+                          max_sample_size=config['borb_max_sample_size'],
+                          th=config['borb_th'],
+                          l0=config['borb_l0'],
+                          l1=config['borb_l1'],
+                          m=config['borb_m'])
     return classifier
 
 
@@ -248,7 +248,7 @@ class RateFixedTrain(Threshold):
         return prediction
 
 
-class ORB(Classifier):
+class BORB(Classifier):
     def __init__(self, classifier, max_sample_size, th, l0, l1, m):
         self.classifier = classifier
         self.max_sample_size = max_sample_size
