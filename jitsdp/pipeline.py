@@ -2,7 +2,7 @@
 from jitsdp import metrics as met
 from jitsdp.mlp import MLP
 from jitsdp.data import FEATURES
-from jitsdp.utils import mkdir
+from jitsdp.utils import mkdir, track_forest, track_time
 
 from abc import ABCMeta, abstractmethod
 import joblib
@@ -169,7 +169,7 @@ class Threshold(Classifier):
     def predict_proba(self, df_features, **kwargs):
         prediction = self.model.predict_proba(df_features, **kwargs)
         if kwargs.pop('track_time', 0):
-            prediction = _track_time(prediction)
+            prediction = track_time(prediction)
         return prediction
 
     def save(self):
@@ -591,6 +591,10 @@ class RandomForest(Scikit):
     def n_iterations(self):
         return self.n_trees
 
+    @property
+    def estimators(self):
+        return self.classifier.estimators_
+
     def train_iteration(self, inputs, targets):
         if len(np.unique(targets)) != 2:
             return
@@ -600,8 +604,8 @@ class RandomForest(Scikit):
 
     def predict_proba(self, df_features, **kwargs):
         prediction = super().predict_proba(df_features, **kwargs)
-        if kwargs.pop('track_rf', 0):
-            prediction = _track_rf(prediction, self)
+        if kwargs.pop('track_irf', 0):
+            prediction = track_forest(prediction, self)
         return prediction
 
 
@@ -694,38 +698,3 @@ def _track_orb(metrics, ma, obf0, obf1, **kwargs):
 
 def _prepare_metrics(metrics):
     return {} if metrics is None else dict(metrics)
-
-
-def _track_rf(prediction, rf):
-    properties = {
-        'depth': lambda tree: tree.get_depth() if rf.trained else 0,
-        'n_leaves': lambda tree: tree.get_n_leaves() if rf.trained else 0,
-    }
-    for name, func in properties.items():
-        values = _extract_property(rf, func)
-        prediction = _concat_property(prediction, name, values)
-    return prediction
-
-
-def _extract_property(rf, func):
-    if rf.trained:
-        return [func(estimator) for estimator in rf.classifier.estimators_]
-    else:
-        return [0.]
-
-
-def _concat_property(prediction, name, values):
-    prop = pd.Series(values, dtype=np.float64)
-    prop = prop.describe()
-    prop = prop.to_frame()
-    prop = prop.transpose()
-    prop.columns = ['{}_{}'.format(name, column) for column in prop.columns]
-    template = [prop.head(0)]
-    prop = pd.concat(template + [prop] * len(prediction))
-    prop.index = prediction.index
-    return pd.concat([prediction, prop], axis='columns')
-
-
-def _track_time(prediction):
-    prediction['timestamp_test'] = time.time()
-    return prediction

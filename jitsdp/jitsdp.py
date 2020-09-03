@@ -85,8 +85,8 @@ def main():
                         help='A node will be split if this split induces a decrease of the impurity greater than or equal to this value (default: .0).', default=.0)
     parser.add_argument('--track-time',   type=int,
                         help='Whether must track time. (default: 0).',  default=0)
-    parser.add_argument('--track-rf',   type=int,
-                        help='Whether must track random forest complexity. (default: 0).',  default=0)
+    parser.add_argument('--track-irf',   type=int,
+                        help='Whether must track iRF state. (default: 0).',  default=0)
     parser.add_argument('--f-val',   type=float,
                         help='Fraction of labeled data to be used for validation. (default: .0).',  default=.0)
     parser.add_argument('--ensemble-size',   type=int,
