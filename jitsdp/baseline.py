@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 import sys
 from skmultiflow.data import DataStream
+from skmultiflow.trees import HoeffdingTreeClassifier
 
 
 def main():
@@ -61,6 +62,22 @@ def main():
                         help='Which models must use in the ensemble (default: [\'hts\']).', default=['hts'], choices=['hts'], nargs='+')
     parser.add_argument('--hts-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',  default=1)
+    parser.add_argument('--hts-grace-period',   type=int,
+                        help='Number of instances a leaf should observe between split attempts (default: 200).',  default=200)
+    parser.add_argument('--hts-split-criterion',   type=str, help='Split criterion to use (default: info_gain).',
+                        default='info_gain', choices=['gini', 'info_gain', 'hellinger'])
+    parser.add_argument('--hts-split-confidence',   type=float,
+                        help='Allowed error in split decision, a value closer to 0 takes longer to decid (default: .0000001).',  default=.0000001)
+    parser.add_argument('--hts-tie-threshold',   type=float,
+                        help='Threshold below which a split will be forced to break ties (default: .05).',  default=.05)
+    parser.add_argument('--hts-remove-poor-atts',   type=int,
+                        help='Whether must disable poor attributes (default: 0).',
+                        default=0, choices=[0, 1])
+    parser.add_argument('--hts-no-preprune',   type=int,
+                        help='Whether must disable pre-pruning (default: 0).',
+                        default=0, choices=[0, 1])
+    parser.add_argument('--hts-leaf-prediction',   type=str, help='Prediction mechanism used at leafs. (default: nba).',
+                        default='nba', choices=['mc’, ‘nb’, ‘nba'])
     parser.add_argument('--track-time',   type=int,
                         help='Whether must track time. (default: 0).',  default=0)
     parser.add_argument('--track-forest',   type=int,
@@ -97,6 +114,14 @@ def run(config):
     train_steps = train_steps.to_list()
 
     train_stream = DataStream(df_train[FEATURES], y=df_train[['target']])
+    base_estimator = HoeffdingTreeClassifier(
+        grace_period=config['hts_grace_period'],
+        split_criterion=config['hts_split_criterion'],
+        split_confidence=config['hts_split_confidence'],
+        tie_threshold=config['hts_tie_threshold'],
+        remove_poor_atts=config['hts_remove_poor_atts'],
+        no_preprune=config['hts_no_preprune'],
+        leaf_prediction=config['hts_leaf_prediction'])
     model = ORB(features=FEATURES,
                 decay_factor=config['orb_decay_factor'],
                 ma_window_size=config['orb_ma_window_size'],
@@ -104,6 +129,7 @@ def run(config):
                 l0=config['orb_l0'],
                 l1=config['orb_l1'],
                 m=config['orb_m'],
+                base_estimator=base_estimator,
                 n_estimators=config['hts_n_estimators'],
                 rate_driven=config['orb_rd'],
                 rate_driven_grace_period=config['orb_rd_grace_period'],

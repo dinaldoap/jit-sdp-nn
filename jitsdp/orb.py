@@ -5,13 +5,12 @@ import mlflow
 import numpy as np
 import pandas as pd
 from skmultiflow.meta import OzaBaggingClassifier
-from skmultiflow.trees import HoeffdingTreeClassifier
 from skmultiflow.utils import get_dimensions
 
 
 class ORB():
 
-    def __init__(self, features, decay_factor, ma_window_size, th, l0, l1, m, n_estimators, rate_driven, rate_driven_grace_period):
+    def __init__(self, features, decay_factor, ma_window_size, th, l0, l1, m, base_estimator, n_estimators, rate_driven, rate_driven_grace_period):
         self.features = features
         # parameters
         self.decay_factor = decay_factor
@@ -30,7 +29,7 @@ class ORB():
         self.ma_instance_window = None
         self.p1 = .5
         self.oza_bag = OzaBaggingClassifier(
-            base_estimator=HoeffdingTreeClassifier(), n_estimators=n_estimators)
+            base_estimator=base_estimator, n_estimators=n_estimators)
         self.estimators = [MultiflowBaseEstimator(
             estimator) for estimator in self.oza_bag.ensemble]
 
