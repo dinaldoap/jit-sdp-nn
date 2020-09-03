@@ -1,13 +1,75 @@
 # coding=utf-8
 from jitsdp.constants import DIR
 
+from datetime import datetime
 from itertools import product
+import logging
 import mlflow
+from multiprocessing import Pool
 import os
+import pathlib
+import sys
 
 
 def mkdir(dir):
     dir.mkdir(parents=True, exist_ok=True)
+
+
+def setup_and_run(parser, logname, frun):
+    lists = ['seed', 'dataset', 'model']
+    sys.argv = split_args(sys.argv, lists)
+    args = parser.parse_args()
+    args = dict(vars(args))
+    logging.getLogger('').handlers = []
+    dir = pathlib.Path('logs')
+    mkdir(dir)
+    log = '{}-{}.log'.format(logname, datetime.now())
+    log = log.replace(' ', '-')
+    log = dir / log
+    logging.basicConfig(filename=log,
+                        filemode='w', level=logging.INFO)
+    logging.info('Main config: {}'.format(args))
+
+    set_experiment(args)
+    args['frun'] = frun
+    with mlflow.start_run():
+        configs = create_configs(args, lists)
+        with Pool(args['pool_size']) as pool:
+            codes = pool.map(safe_run, configs)
+        mlflow.log_artifact(log)
+        return sum(codes)
+
+
+def safe_run(config):
+    try:
+        run_nested(config)
+        return 0
+    except Exception:
+        logging.exception('Exception raised on config: {}'.format(config))
+        return 1
+
+
+def run_nested(config):
+    frun = config['frun']
+    del config['frun']
+    with mlflow.start_run(nested=True):
+        logging.info('Nested config: {}'.format(config))
+        frun(config=config)
+
+
+def create_configs(args, lists):
+    config_template = create_config_template(args, lists)
+    plurals = to_plural(lists)
+    values_lists = [args[plural] for plural in plurals]
+    for values_tuple in product(*values_lists):
+        config = dict(config_template)
+        for i, name in enumerate(lists):
+            config[name] = values_tuple[i]
+        yield config
+
+
+def int_or_none(string):
+    return None if string == 'None' else int(string)
 
 
 def split_args(argv, names):

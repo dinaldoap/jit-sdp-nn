@@ -3,7 +3,7 @@ from jitsdp.data import make_stream, save_results, DATASETS, FEATURES
 from jitsdp.orb import ORB
 from jitsdp.pipeline import set_seed
 from jitsdp.report import report
-from jitsdp.utils import mkdir, split_args, create_configs, unique_dir, set_experiment
+from jitsdp.utils import int_or_none, unique_dir, setup_and_run
 
 import argparse
 from datetime import datetime
@@ -23,8 +23,10 @@ def main():
                         help='Experiment name (default: None). None means default behavior of MLflow', default=None)
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0).',    default=0)
-    parser.add_argument('--end',   type=int,
+    parser.add_argument('--end',   type=int_or_none,
                         help='Last commit to be used for testing (default: None). None means all commits.',  default=5000)
+    parser.add_argument('--pool-size',   type=int,
+                        help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--orb-decay-factor',   type=float,
                         help='Decay factor for calculating class proportions in training data (default: .99).',  default=.99)
     parser.add_argument('--orb-ma-window-size',   type=int,
@@ -61,27 +63,7 @@ def main():
                         help='Which models must use in the ensemble (default: [\'hts\']).', default=['hts'], choices=['hts'], nargs='+')
     parser.add_argument('--track-orb',   type=int,
                         help='Whether must track ORB state (default: 0)',  default=0)
-    lists = ['seed', 'dataset', 'model']
-    sys.argv = split_args(sys.argv, lists)
-    args = parser.parse_args()
-    args = dict(vars(args))
-    logging.getLogger('').handlers = []
-    dir = pathlib.Path('logs')
-    mkdir(dir)
-    log = 'baseline-{}.log'.format(datetime.now())
-    log = log.replace(' ', '-')
-    log = dir / log
-    logging.basicConfig(filename=log,
-                        filemode='w', level=logging.INFO)
-    logging.info('Main config: {}'.format(args))
-
-    set_experiment(args)
-    with mlflow.start_run():
-        configs = create_configs(args, lists)
-        for config in configs:
-            with mlflow.start_run(nested=True):
-                run(config)
-        mlflow.log_artifact(log)
+    setup_and_run(parser, 'baseline', run)
 
 
 def run(config):
