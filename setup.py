@@ -15,7 +15,7 @@ setup(name='jitsdp',
       packages=find_packages(),
       entry_points={
           'console_scripts': [
-              'jitsdp = jitsdp.__main__:main',
+              'jitsdp = jitsdp.jitsdp:main',
               'baseline = jitsdp.baseline:main',
           ]
       },
