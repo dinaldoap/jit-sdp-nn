@@ -4,6 +4,8 @@ from jitsdp.constants import DIR
 from jitsdp.data import make_stream, save_results, load_results, DATASETS
 from jitsdp.pipeline import create_pipeline, set_seed
 from jitsdp.plot import plot_recalls_gmean, plot_proportions
+from jitsdp.report import report
+from jitsdp.utils import unique_dir
 
 import math
 import mlflow
@@ -79,24 +81,8 @@ def run(config):
 
     target_prediction = target_prediction.reset_index(drop=True)
     results = met.prequential_metrics(target_prediction, .99)
-    save_results(results=results, dir=__unique_dir(config))
+    save_results(results=results, dir=unique_dir(config))
     report(config)
-
-
-def report(config):
-    dir = __unique_dir(config)
-    results = load_results(dir=dir)
-    plot_recalls_gmean(results, config=config, dir=dir)
-    plot_proportions(results, config=config, dir=dir)
-    metrics = ['r0', 'r1', 'r0-r1', 'gmean', 't1', 's1', 'p1']
-    metrics = {'avg_{}'.format(
-        metric): results[metric].mean() for metric in metrics}
-    mlflow.log_metrics(metrics)
-    mlflow.log_artifacts(local_dir=dir)
-
-
-def __unique_dir(config):
-    return DIR / '{}_{}_{}'.format(config['seed'], config['dataset'], config['model'])
 
 
 def __verification_latency_label(train_timestamp, commit_timestamp, verification_latency):
