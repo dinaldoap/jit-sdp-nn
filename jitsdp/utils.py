@@ -124,7 +124,9 @@ def create_configs(args, lists):
 
 
 def unique_dir(config):
-    return DIR / '{}_{}_{}'.format(config['seed'], config['dataset'], config['model'])
+    meta_model = config['meta_model']
+    rate_driven = config['{}_rd'.format(meta_model)]
+    return DIR / '{}_{}_{}_{}_{}_{}'.format(rate_driven, meta_model, config['model'], config['cross_project'], config['dataset'], config['seed'])
 
 
 def set_experiment(args):
