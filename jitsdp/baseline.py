@@ -17,9 +17,7 @@ from skmultiflow.data import DataStream
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description='Baseline: experiment execution')
+def add_arguments(parser):
     parser.add_argument('--experiment-name',   type=str,
                         help='Experiment name (default: None). None means default behavior of MLflow', default=None)
     parser.add_argument('--start',   type=int,
@@ -84,7 +82,6 @@ def main():
                         help='Whether must track forest state (default: 0)',  default=0)
     parser.add_argument('--track-orb',   type=int,
                         help='Whether must track ORB state (default: 0)',  default=0)
-    setup_and_run(parser, 'baseline', run)
 
 
 def run(config):

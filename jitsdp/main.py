@@ -1,6 +1,7 @@
 # coding=utf-8
 from jitsdp.evaluation import run
 from jitsdp.utils import setup_and_run, int_or_none
+from jitsdp import baseline
 
 import argparse
 import sys
@@ -9,6 +10,20 @@ import sys
 def main():
     parser = argparse.ArgumentParser(
         description='JIT-SDP: experiment execution')
+    subparsers = parser.add_subparsers(title='meta-model', dest='meta_model')
+    add_arguments(subparsers.add_parser(
+        name='borb', help='Batch Oversampling Rate Boosting'))
+    baseline.add_arguments(subparsers.add_parser(
+        name='orb', help='Oversampling Rate Boosting'))
+
+    fruns = {
+        'borb': run,
+        'orb': baseline.run,
+    }
+    setup_and_run(parser, fruns)
+
+
+def add_arguments(parser):
     parser.add_argument('--experiment-name',   type=str,
                         help='Experiment name (default: None). None means default behavior of MLflow', default=None)
     parser.add_argument('--pool-size',   type=int,
@@ -99,7 +114,6 @@ def main():
                         help='Whether must use decreasing uncertainty about normal commit labels inside verification latency (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--incremental',   type=int,
                         help='Whether must do incremental training along the stream (default: 0).', default=0, choices=[0, 1])
-    setup_and_run(parser, 'jitsdp', run)
 
 
 if __name__ == '__main__':
