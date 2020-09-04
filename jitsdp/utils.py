@@ -19,6 +19,7 @@ def mkdir(dir):
 
 
 def setup_and_run(parser, logname, frun):
+    run_command = ' '.join(sys.argv)    
     lists = ['seed', 'dataset', 'model']
     sys.argv = split_args(sys.argv, lists)
     args = parser.parse_args()
@@ -36,6 +37,7 @@ def setup_and_run(parser, logname, frun):
     set_experiment(args)
     args['frun'] = frun
     with mlflow.start_run():
+        mlflow.set_tag('run.command', run_command)
         configs = create_configs(args, lists)
         with Pool(args['pool_size']) as pool:
             codes = pool.map(safe_run, configs)
