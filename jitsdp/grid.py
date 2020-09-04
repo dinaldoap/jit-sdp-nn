@@ -32,26 +32,16 @@ class Experiment():
                 config.update(seed_dataset_config)
                 config.update(models_config)
                 config = self.fix_rate_driven(config)
-                config, entrypoint = self.fix_meta_model(config)
                 params = ['--{} {}'.format(key, value)
                           for key, value in config.items()]
                 params = ' '.join(params)
                 out.write(
-                    './{} {}\n'.format(entrypoint, params))
+                    './jitsdp {} {}\n'.format(self.meta_model, params))
 
     def fix_rate_driven(self, config):
         config = dict(config)
         config['{}-rd'.format(self.meta_model)] = self.rate_driven
         return config
-
-    def fix_meta_model(self, config):
-        config = dict(config)
-        meta_model_to_entrypoint = {
-            'orb': 'baseline',
-            'borb': 'jitsdp',
-        }
-        return config, meta_model_to_entrypoint[self.meta_model]
-
 
 def main():
     # experiments
