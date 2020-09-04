@@ -10,18 +10,18 @@ class Experiment():
         self.models_configs = models_configs
 
     def fix_experimnt_config(self, experiment_config):
-        self.rate_driven = experiment_config['rate_driven']
-        self.meta_model = experiment_config['meta_model']
+        self.rate_driven = experiment_config['rate-driven']
+        self.meta_model = experiment_config['meta-model']
         new_experiment_config = dict(experiment_config)
-        del new_experiment_config['rate_driven']
-        del new_experiment_config['meta_model']
+        del new_experiment_config['rate-driven']
+        del new_experiment_config['meta-model']
         return new_experiment_config
 
     @property
     def name(self):
         rate_driven = 'r' if self.rate_driven else ''
         model = self.experiment_config['model']
-        train_data = 'cp' if self.experiment_config['cross_project'] else 'wp'
+        train_data = 'cp' if self.experiment_config['cross-project'] else 'wp'
         return '{}{}-{}-{}'.format(rate_driven, self.meta_model, model, train_data)
 
     def to_shell(self, out):
@@ -46,21 +46,21 @@ class Experiment():
 def main():
     # experiments
     orb_rorb_grid = {
-        'meta_model': ['orb'],
-        'cross_project': [0, 1],
-        'rate_driven': [0, 1],
+        'meta-model': ['orb'],
+        'cross-project': [0, 1],
+        'rate-driven': [0, 1],
         'model': ['hts'],
     }
     borb_rborb_grid = {
-        'meta_model': ['borb'],
-        'cross_project': [0, 1],
-        'rate_driven': [0, 1],
+        'meta-model': ['borb'],
+        'cross-project': [0, 1],
+        'rate-driven': [0, 1],
         'model': ['ihf'],
     }
     rborb_grid = {
-        'meta_model': ['borb'],
-        'cross_project': [0, 1],
-        'rate_driven': [1],
+        'meta-model': ['borb'],
+        'cross-project': [0, 1],
+        'rate-driven': [1],
         'model': ['lr', 'mlp', 'nb', 'irf'],
     }
     experiment_configs = [
