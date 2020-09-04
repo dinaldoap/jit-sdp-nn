@@ -20,7 +20,7 @@ class Experiment():
     @property
     def name(self):
         rate_driven = 'r' if self.rate_driven else ''
-        model = self.experiment_config['model']
+        model = self.experiment_config['models']
         train_data = 'cp' if self.experiment_config['cross-project'] else 'wp'
         return '{}{}-{}-{}'.format(rate_driven, self.meta_model, model, train_data)
 
@@ -32,6 +32,7 @@ class Experiment():
                 config.update(seed_dataset_config)
                 config.update(models_config)
                 config = self.fix_rate_driven(config)
+                config = self.add_start(config)
                 params = ['--{} {}'.format(key, value)
                           for key, value in config.items()]
                 params = ' '.join(params)
@@ -43,25 +44,30 @@ class Experiment():
         config['{}-rd'.format(self.meta_model)] = self.rate_driven
         return config
 
+    def add_start(self, config):
+        config = dict(config)
+        config['end'] = 1000 if config['cross-project'] else 5000
+        return config
+
 def main():
     # experiments
     orb_rorb_grid = {
         'meta-model': ['orb'],
         'cross-project': [0, 1],
         'rate-driven': [0, 1],
-        'model': ['hts'],
+        'models': ['hts'],
     }
     borb_rborb_grid = {
         'meta-model': ['borb'],
         'cross-project': [0, 1],
         'rate-driven': [0, 1],
-        'model': ['ihf'],
+        'models': ['ihf'],
     }
     rborb_grid = {
         'meta-model': ['borb'],
         'cross-project': [0, 1],
         'rate-driven': [1],
-        'model': ['lr', 'mlp', 'nb', 'irf'],
+        'models': ['lr', 'mlp', 'nb', 'irf'],
     }
     experiment_configs = [
         orb_rorb_grid,
@@ -93,7 +99,7 @@ def main():
 
 def configs_to_experiments(experiment_configs, seed_dataset_configs, models_configs):
     for experiment_config in experiment_configs:
-        model = experiment_config['model']
+        model = experiment_config['models']
         experiment = Experiment(experiment_config=experiment_config,
                                 seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[model])
         yield experiment
