@@ -10,7 +10,8 @@ import sys
 def main():
     parser = argparse.ArgumentParser(
         description='JIT-SDP: experiment execution')
-    subparsers = parser.add_subparsers(title='meta-model', dest='meta_model')
+    subparsers = parser.add_subparsers(
+        title='meta-model', dest='meta_model', required=True)
     add_arguments(subparsers.add_parser(
         name='borb', help='Batch Oversampling Rate Boosting'))
     baseline.add_arguments(subparsers.add_parser(
