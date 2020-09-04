@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cd jitsdp
-pyinstaller jitsdp.py  --onefile --name jitsdp \
+pyinstaller main.py  --onefile --name jitsdp \
                                     --hidden-import='pkg_resources.py2_warn' \
                                     --hidden-import='sklearn.utils._cython_blas' \
                                     --hidden-import='sklearn.neighbors._typedefs' \
