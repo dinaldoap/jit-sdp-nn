@@ -33,7 +33,6 @@ class Experiment():
                 config.update(models_config)
                 config = self.fix_rate_driven(config)
                 config, entrypoint = self.fix_meta_model(config)
-                config = self.add_experiment_name(config)
                 params = ['--{} {}'.format(key, value)
                           for key, value in config.items()]
                 params = ' '.join(params)
@@ -52,11 +51,6 @@ class Experiment():
             'borb': 'jitsdp',
         }
         return config, meta_model_to_entrypoint[self.meta_model]
-
-    def add_experiment_name(self, config):
-        config = dict(config)
-        config['experiment-name'] = self.name
-        return config
 
 
 def main():
