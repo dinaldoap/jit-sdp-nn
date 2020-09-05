@@ -14,12 +14,12 @@ entry_points:
         mlp-n-epochs: {default: 50}
         nb-n-updates: {default: 50}
         irf-n-estimators: {default: 100}
-    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp --end {end} --seeds {seeds} --datasets {datasets} --models {models} --ihf-n-estimators {ihf-n-estimators} --lr-n-epochs {lr-n-epochs} --mlp-n-epochs {mlp-n-epochs} --nb-n-updates {nb-n-updates} --irf-n-estimators {irf-n-estimators}'
+    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp borb --end {end} --seeds {seeds} --datasets {datasets} --models {models} --ihf-n-estimators {ihf-n-estimators} --lr-n-epochs {lr-n-epochs} --mlp-n-epochs {mlp-n-epochs} --nb-n-updates {nb-n-updates} --irf-n-estimators {irf-n-estimators}'
 
-  baseline:
+  orb:
     parameters:
         end: {default: None}
         seeds: {default: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29}        
         datasets: {default: brackets camel fabric8 jgroups neutron tomcat broadleaf nova npm spring-integration}
         hts-n-estimators: {default: 20}
-    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && baseline --end {end} --seeds {seeds} --datasets {datasets} --hts-n-estimators {hts-n-estimators}'
+    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp orb --end {end} --seeds {seeds} --datasets {datasets} --hts-n-estimators {hts-n-estimators}'
