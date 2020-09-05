@@ -150,9 +150,9 @@ def run(config):
             [target_prediction, target_prediction_test])
 
     target_prediction = target_prediction.reset_index(drop=True)
-    target_prediction = target_prediction[config['start']:end]
 
     results = met.prequential_metrics(target_prediction, .99)
+    results = results[config['start']:end]
     save_results(results=results, dir=unique_dir(config))
     report(config)
 
