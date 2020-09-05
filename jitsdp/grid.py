@@ -1,5 +1,8 @@
 # coding=utf-8
 import itertools
+import numpy as np
+from hyperopt import hp
+import hyperopt.pyll.stochastic as config_space_sampler
 
 
 class Experiment():
@@ -49,6 +52,7 @@ class Experiment():
         config['end'] = 1000 if config['cross-project'] else 5000
         return config
 
+
 def main():
     # experiments
     orb_rorb_grid = {
@@ -83,14 +87,7 @@ def main():
     }
     seed_dataset_configs = grid_to_configs(seed_dataset_configs)
     # meta-models and models
-    models_configs = {
-        'hts': [{'hts-n-estimators': 1}],
-        'ihf': [{'ihf-n-estimators': 1}],
-        'lr': [],
-        'mlp': [],
-        'nb': [],
-        'irf': [],
-    }
+    models_configs = create_models_configs()
 
     with open('jitsdp/dist/tuning.sh', mode='w') as out:
         for experiment in configs_to_experiments(experiment_configs, seed_dataset_configs, models_configs):
@@ -110,6 +107,54 @@ def grid_to_configs(grid):
     values_lists = grid.values()
     values_tuples = itertools.product(*values_lists)
     return list(map(lambda values_tuple: dict(zip(keys, list(values_tuple))), values_tuples))
+
+
+def create_models_configs():
+    orb = {}
+    orb.update([loguniform('orb-decay-factor', .9, .999),
+                uniform('orb-n', 3, 7, 2),
+                uniform('orb-waiting-time', 90, 180, 30),
+                uniform('orb-ma-window-size', 50, 200, 50),
+                uniform('orb-th', .3, .5, .05),
+                loguniform('orb-l0', 1, 20),
+                loguniform('orb-l1', 1, 20),
+                uniform('orb-m', 1.1, np.e, .2),
+                uniform('orb-rd-grace-period', 100, 500, 100),
+                ])
+
+    hts = {}
+    hts.update(orb)
+
+    models_configs = {'hts': config_space_to_configs(hts, start=0, end=10),
+                      'ihf': [],
+                      'lr': [],
+                      'mlp': [],
+                      'nb': [],
+                      'irf': [],
+                      }
+
+    return models_configs
+
+
+def uniform(name, start, end, step=None):
+    if step is None:
+        return (name, hp.uniform(name, start, end))
+    else:
+        return (name, start + hp.quniform(name, 0, end - start, step))
+
+
+def loguniform(name, start, end, step=None):
+    if step is None:
+        return (name, hp.loguniform(name, np.log(start), np.log(end)))
+    else:
+        return (name, start + hp.qloguniform(name, 0, np.log(end) - np.log(start), step))
+
+
+def config_space_to_configs(config_space, start=0, end=10):
+    rng = np.random.RandomState(seed=0)
+    configs = [config_space_sampler.sample(
+        config_space, rng=rng) for i in range(end - start)]
+    return configs[start:end]
 
 
 if __name__ == '__main__':
