@@ -7,7 +7,8 @@ pyinstaller main.py  --onefile --name jitsdp \
                                     --hidden-import='sklearn.neighbors._typedefs' \
                                     --hidden-import='sklearn.neighbors._quad_tree' \
                                     --hidden-import='sklearn.tree._utils' \
-                                    --hidden-import='scipy.special.cython_special'
+                                    --hidden-import='scipy.special.cython_special' \
+                                    --hidden-import='skmultiflow.metrics._confusion_matrix'
 
 echo '# -*- mode: python ; coding: utf-8 -*-' > jitsdp_fixed.spec
 echo 'import sys' >> jitsdp_fixed.spec
