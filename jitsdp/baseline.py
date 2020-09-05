@@ -91,11 +91,9 @@ def run(config):
     # stream with commit order
     df_commit = make_stream(dataset)
     # stream with labeling order
-    df_test = df_commit.copy()
-    end = len(df_test) if config['end'] is None else config['end']
-    df_test = df_test[config['start']:end]
-    df_train = df_commit.copy()
-    df_train = df_train[:end]
+    end = len(df_commit) if config['end'] is None else config['end']
+    df_test = df_commit[:end].copy()
+    df_train = df_commit[:end].copy()
     if config['cross_project']:
         df_train = merge_others(df_train, dataset)
     df_train = extract_events(df_train)
@@ -152,6 +150,7 @@ def run(config):
             [target_prediction, target_prediction_test])
 
     target_prediction = target_prediction.reset_index(drop=True)
+    target_prediction = target_prediction[config['start']:end]
 
     results = met.prequential_metrics(target_prediction, .99)
     save_results(results=results, dir=unique_dir(config))
