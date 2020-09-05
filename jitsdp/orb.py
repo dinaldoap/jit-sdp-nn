@@ -23,7 +23,6 @@ class ORB():
         self.rate_driven_grace_period = rate_driven_grace_period
         # state
         self.observed_classes = set()
-        self.observed_instances = 0
         self.observed_weight_window = None
         self.ma_window = None
         self.ma_instance_window = None
@@ -43,7 +42,6 @@ class ORB():
             self.oza_bag.partial_fit([features], [target], classes=[
                                      0, 1], sample_weight=[self.k])
             self.observed_classes.update(y)
-            self.observed_instances += 1
             self.observed_weight_window = None if self.observed_weight_window is None else self.observed_weight_window + self.k
 
     def update_state(self, target, **kwargs):
