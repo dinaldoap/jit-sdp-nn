@@ -24,7 +24,7 @@ class ORB():
         # state
         self.observed_classes = set()
         self.observed_instances = 0
-        self.observed_weight = 0
+        self.observed_weight_window = None
         self.ma_window = None
         self.ma_instance_window = None
         self.p1 = .5
@@ -44,7 +44,7 @@ class ORB():
                                      0, 1], sample_weight=[self.k])
             self.observed_classes.update(y)
             self.observed_instances += 1
-            self.observed_weight += self.k
+            self.observed_weight_window = None if self.observed_weight_window is None else self.observed_weight_window + self.k
 
     def update_state(self, target, **kwargs):
         self.update_lambda(target, **kwargs)
@@ -86,9 +86,9 @@ class ORB():
         if self.ma_window is None:
             self.ma = self.th
         else:
-            if self.rate_driven and self.observed_weight >= self.rate_driven_grace_period:
-                self.observed_weight = 0
+            if self.rate_driven and self.observed_weight_window.mean() >= self.rate_driven_grace_period:
                 self.ma_window, _ = self.__predict(self.ma_instance_window)
+                self.observed_weight_window[:] = 0
             self.ma = self.ma_window.mean()
 
     def update_k(self, **kwargs):
@@ -98,11 +98,12 @@ class ORB():
         if self.trained:
             predictions, probabilities = self.__predict(df_test)
             if self.rate_driven:
-                self.ma_instance_window = pd.concat(
-                    [self.ma_instance_window, df_test])
-            self.ma_window = predictions if self.ma_window is None else np.concatenate(
-                [self.ma_window, predictions])
-            self.ma_window = self.ma_window[-self.ma_window_size:]
+                self.ma_instance_window = self.__update_window(
+                    self.ma_instance_window, df_test, pd.concat)
+                self.observed_weight_window = self.__update_window(
+                    self.observed_weight_window, np.zeros(len(predictions)), np.concatenate)
+            self.ma_window = self.__update_window(
+                self.ma_window, predictions, np.concatenate)
         else:
             probabilities = np.zeros(len(df_test))
             predictions = probabilities
@@ -114,6 +115,16 @@ class ORB():
         if kwargs['track_time']:
             prediction = track_time(prediction)
         return prediction
+
+    def __update_window(self, window, input_, fconcat):
+        window_size = 0 if window is None else len(window)
+        input_limited_size = min(len(input_), self.ma_window_size)
+
+        if window_size == 0 or input_limited_size == self.ma_window_size:
+            return input_[-input_limited_size:]
+        else:
+            concat_window = fconcat([window, input_])
+            return concat_window[-self.ma_window_size:]
 
     def __predict(self, df_test):
         probabilities = self.oza_bag.predict_proba(
