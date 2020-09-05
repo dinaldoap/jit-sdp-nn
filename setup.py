@@ -25,7 +25,7 @@ setup(name='jitsdp',
                         'scikit-multiflow==0.5.3',
                         'matplotlib==3.1.2',
                         'seaborn==0.9.0',
-                        'mlflow==1.9.1',
+                        'mlflow==1.11.0',
                         ],
       python_requires='>=3.7',
       zip_safe=True)
