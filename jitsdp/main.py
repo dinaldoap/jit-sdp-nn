@@ -21,7 +21,7 @@ def main():
         'borb': run,
         'orb': baseline.run,
     }
-    setup_and_run(parser, fruns)
+    return setup_and_run(parser, fruns)
 
 
 def add_arguments(parser):
