@@ -153,13 +153,19 @@ def create_models_configs():
         loguniform('mlp_batch_size',  128, 512, 128),
     ])
 
+    nb = {}
+    nb.update(borb)
+    nb.update([
+        uniform('nb_n_updates', 10, 80, 10),
+    ])
+
     start = 0
     end = 10
     models_configs = {'hts': config_space_to_configs(hts, start, end),
                       'ihf': config_space_to_configs(ihf, start, end),
                       'lr': config_space_to_configs(lr, start, end),
                       'mlp': config_space_to_configs(mlp, start, end),
-                      'nb': [],
+                      'nb': config_space_to_configs(nb, start, end),
                       'irf': [],
                       }
 
