@@ -27,8 +27,6 @@ def main():
 def add_arguments(parser):
     parser.add_argument('--experiment-name',   type=str,
                         help='Experiment name (default: None). None means default behavior of MLflow', default=None)
-    parser.add_argument('--pool-size',   type=int,
-                        help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--start',   type=int,
                         help='First commit to be used for testing (default: 0).',    default=0)
     parser.add_argument('--end',   type=int_or_none,
@@ -55,12 +53,12 @@ def add_arguments(parser):
                         help='Whether must turn BORB rate-driven (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--cross-project',   type=int,
                         help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
-    parser.add_argument('--seeds',   type=int,
-                        help='Seeds of random state (default: [0]).',    default=[0], nargs='+')
-    parser.add_argument('--datasets',   type=str, help='Datasets to run the experiment. (default: [\'brackets\']).',
-                        default=['brackets'], choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'], nargs='+')
-    parser.add_argument('--models',   type=str,
-                        help='Which models must use in the ensemble (default: [\'mlp\']).', default=['mlp'], choices=['ihf', 'lr', 'mlp', 'nb', 'irf'], nargs='+')
+    parser.add_argument('--seed',   type=int,
+                        help='Seed of random state (default: 0).',    default=0)
+    parser.add_argument('--dataset',   type=str, help='Dataset to run the experiment. (default: brackets).',
+                        default='brackets', choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'])
+    parser.add_argument('--model',   type=str,
+                        help='Which model must use as the base learner (default: irf).', default='mlp', choices=['ihf', 'lr', 'mlp', 'nb', 'irf'])
     parser.add_argument('--ihf-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',    default=1)
     parser.add_argument('--ihf-split-confidence',   type=float,

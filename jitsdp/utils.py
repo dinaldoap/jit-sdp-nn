@@ -20,11 +20,9 @@ def mkdir(dir):
 
 def setup_and_run(parser, fruns):
     run_command = ' '.join(sys.argv)
-    lists = ['seed', 'dataset', 'model']
-    sys.argv = split_args(sys.argv, lists)
     args = parser.parse_args()
-    args = dict(vars(args))
-    meta_model = args['meta_model']
+    config = dict(vars(args))
+    meta_model = config['meta_model']
     logging.getLogger('').handlers = []
     dir = pathlib.Path('logs')
     mkdir(dir)
@@ -33,94 +31,18 @@ def setup_and_run(parser, fruns):
     log = dir / log
     logging.basicConfig(filename=log,
                         filemode='w', level=logging.INFO)
-    logging.info('Main config: {}'.format(args))
+    logging.info('Config: {}'.format(config))
 
-    set_experiment(args)
-    args['frun'] = fruns[meta_model]
+    set_experiment(config)
+    frun = fruns[meta_model]
     with mlflow.start_run():
         mlflow.set_tag('run.command', run_command)
-        configs = create_configs(args, lists)
-        with Pool(args['pool_size']) as pool:
-            codes = pool.map(safe_run, configs)
-        mlflow.log_artifact(log)
-        return sum(codes)
-
-
-def safe_run(config):
-    try:
-        run_nested(config)
-        return 0
-    except Exception:
-        logging.exception('Exception raised on config: {}'.format(config))
-        return 1
-
-
-def run_nested(config):
-    frun = config['frun']
-    del config['frun']
-    with mlflow.start_run(nested=True):
-        logging.info('Nested config: {}'.format(config))
         frun(config=config)
-
-
-def create_configs(args, lists):
-    config_template = create_config_template(args, lists)
-    plurals = to_plural(lists)
-    values_lists = [args[plural] for plural in plurals]
-    for values_tuple in product(*values_lists):
-        config = dict(config_template)
-        for i, name in enumerate(lists):
-            config[name] = values_tuple[i]
-        yield config
+        mlflow.log_artifact(log)
 
 
 def int_or_none(string):
     return None if string == 'None' else int(string)
-
-
-def split_args(argv, names):
-    cli_tokens = to_cli_tokens(names)
-    new_argv = argv
-    for cli_token in cli_tokens:
-        new_argv = split_arg(new_argv, cli_token)
-    return new_argv
-
-
-def to_cli_tokens(names):
-    return ['--{}s'.format(name) for name in names]
-
-
-def split_arg(argv, name):
-    try:
-        value_index = argv.index(name) + 1
-    except ValueError:  # argument not in list
-        return argv
-    value = argv[value_index]
-    return argv[:value_index] + value.split() + argv[value_index + 1:]
-
-
-def create_config_template(args, names):
-    new_args = dict(args)
-    plurals = to_plural(names)
-    for plural_name in plurals:
-        del new_args[plural_name]
-    del new_args['experiment_name']
-    return new_args
-
-
-def to_plural(names):
-    return ['{}s'.format(name) for name in names]
-
-
-def create_configs(args, lists):
-    config_template = create_config_template(args, lists)
-    plurals = to_plural(lists)
-    values_lists = [args[plural] for plural in plurals]
-    for values_tuple in product(*values_lists):
-        config = dict(config_template)
-        for i, name in enumerate(lists):
-            config[name] = values_tuple[i]
-        yield config
 
 
 def unique_dir(config):
@@ -129,8 +51,8 @@ def unique_dir(config):
     return DIR / '{}_{}_{}_{}_{}_{}'.format(rate_driven, meta_model, config['model'], config['cross_project'], config['dataset'], config['seed'])
 
 
-def set_experiment(args):
-    experiment_name = args['experiment_name']
+def set_experiment(config):
+    experiment_name = config['experiment_name']
     if experiment_name is not None:
         mlflow_experiment_id = os.environ.pop('MLFLOW_EXPERIMENT_ID', None)
         if mlflow_experiment_id is not None:

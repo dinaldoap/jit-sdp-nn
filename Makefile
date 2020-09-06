@@ -7,7 +7,11 @@ test:
 	pytest tests
 
 run:
-	jitsdp borb --models ihf lr nb mlp irf --start 2000 --end 2050
+	jitsdp borb --model ihf --start 2000 --end 2050
+	jitsdp borb --model lr --start 2000 --end 2050
+	jitsdp borb --model nb --start 2000 --end 2050
+	jitsdp borb --model mlp --start 2000 --end 2050
+	jitsdp borb --model irf --start 2000 --end 2050
 	jitsdp orb --start 2000 --end 2050
 
 clean:
