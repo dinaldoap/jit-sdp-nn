@@ -129,10 +129,14 @@ def create_models_configs():
                  loguniform('borb-max-sample-size', 1000, 8000, 1000),
                  ])
 
+    ihf = {}
+    ihf.update(borb)
+    ihf.update(hoeffding_shared['ihf'])
+
     start = 0
     end = 10
     models_configs = {'hts': config_space_to_configs(hts, start, end),
-                      'ihf': [],
+                      'ihf': config_space_to_configs(ihf, start, end),
                       'lr': [],
                       'mlp': [],
                       'nb': [],
