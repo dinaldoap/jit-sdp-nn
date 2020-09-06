@@ -75,7 +75,7 @@ def add_arguments(parser):
                         help='Whether must disable pre-pruning (default: 0).',
                         default=0, choices=[0, 1])
     parser.add_argument('--hts-leaf-prediction',   type=str, help='Prediction mechanism used at leafs. (default: nba).',
-                        default='nba', choices=['mc’, ‘nb’, ‘nba'])
+                        default='nba', choices=['mc', 'nb', 'nba'])
     parser.add_argument('--track-time',   type=int,
                         help='Whether must track time. (default: 0).',  default=0)
     parser.add_argument('--track-forest',   type=int,
