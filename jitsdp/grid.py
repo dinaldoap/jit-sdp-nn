@@ -141,12 +141,24 @@ def create_models_configs():
         loguniform('lr_nbatch_size', 128, 512, 128),
     ])
 
+    mlp = {}
+    mlp.update(borb)
+    mlp.update([
+        loguniform('mlp_learning_rate', .0001, .01),
+        uniform('mlp_n_epochs', 10, 80, 10),
+        uniform('mlp_n_hidden_layers', 1, 3, 1),
+        uniform('mlp_hidden_layers_size', 5, 15, 2),
+        uniform('mlp_dropout_input_layer', .1, .3, .1),
+        uniform('mlp_dropout_hidden_layer', .3, .5, .1),
+        loguniform('mlp_batch_size',  128, 512, 128),
+    ])
+
     start = 0
     end = 10
     models_configs = {'hts': config_space_to_configs(hts, start, end),
                       'ihf': config_space_to_configs(ihf, start, end),
                       'lr': config_space_to_configs(lr, start, end),
-                      'mlp': [],
+                      'mlp': config_space_to_configs(mlp, start, end),
                       'nb': [],
                       'irf': [],
                       }
