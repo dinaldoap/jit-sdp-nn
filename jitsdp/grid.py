@@ -159,6 +159,15 @@ def create_models_configs():
         uniform('nb_n_updates', 10, 80, 10),
     ])
 
+    irf = {}
+    irf.update(borb)
+    irf.update([
+        uniform('irf_n_estimators', 20, 100, 20),
+        choiceuniform('irf_criterion', ['gini', 'entropy']),
+        uniform('irf_min_samples_leaf', 100, 300,  100),
+        uniform('irf_max_features', 3, 7, 2),
+    ])
+
     start = 0
     end = 10
     models_configs = {'hts': config_space_to_configs(hts, start, end),
@@ -166,7 +175,7 @@ def create_models_configs():
                       'lr': config_space_to_configs(lr, start, end),
                       'mlp': config_space_to_configs(mlp, start, end),
                       'nb': config_space_to_configs(nb, start, end),
-                      'irf': [],
+                      'irf': config_space_to_configs(irf, start, end),
                       }
 
     return models_configs
