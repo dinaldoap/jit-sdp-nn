@@ -118,18 +118,10 @@ def create_models_configs():
                 uniform('orb-rd-grace-period', 100, 500, 100),
                 ])
 
+    hoeffding_shared = hoeffding_shared_config_space()
     hts = {}
     hts.update(orb)
-    hts.update([uniform('hts-n-estimators', 20, 100, 20),
-                uniform('hts-grace-period', 100, 500, 100),
-                choiceuniform('hts-split-criterion',
-                              ['gini', 'info_gain', 'hellinger']),
-                loguniform('hts-split-confidence', 0.0000001, 0.5),
-                uniform('hts-tie-threshold', 0.05, 0.5),
-                choiceuniform('hts-remove-poor-atts', [1, 0]),
-                choiceuniform('hts-no-preprune', [1, 0]),
-                choiceuniform('hts-leaf-prediction', ['mc', 'nb', 'nba']),
-                ])
+    hts.update(hoeffding_shared['hts'])
 
     borb = {}
     borb.update(meta_model_shared['borb'])
@@ -179,6 +171,25 @@ def meta_model_shared_config_space():
             loguniform('{}-l0'.format(meta_model), 1, 20),
             loguniform('{}-l1'.format(meta_model), 1, 20),
             uniform('{}-m'.format(meta_model), 1.1, np.e, .2),
+        ]
+    return config_spaces
+
+
+def hoeffding_shared_config_space():
+    config_spaces = {}
+    models = ['hts', 'ihf']
+    for model in models:
+        config_spaces[model] = [
+            uniform('{}-n-estimators'.format(model), 20, 100, 20),
+            uniform('{}-grace-period'.format(model), 100, 500, 100),
+            choiceuniform('{}-split-criterion'.format(model),
+                          ['gini', 'info_gain', 'hellinger']),
+            loguniform('{}-split-confidence'.format(model), 0.0000001, 0.5),
+            uniform('{}-tie-threshold'.format(model), 0.05, 0.5),
+            choiceuniform('{}-remove-poor-atts'.format(model), [1, 0]),
+            choiceuniform('{}-no-preprune'.format(model), [1, 0]),
+            choiceuniform('{}-leaf-prediction'.format(model),
+                          ['mc', 'nb', 'nba']),
         ]
     return config_spaces
 
