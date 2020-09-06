@@ -124,6 +124,15 @@ def create_models_configs():
 
     hts = {}
     hts.update(orb)
+    hts.update([uniform('hts-n-estimators', 20, 100, 20),
+                uniform('hts-grace-period', 100, 500, 100),
+                choiceuniform('hts-split-criterion', ['gini', 'info_gain', 'hellinger']),
+                loguniform('hts-split-confidence', 0.0000001, 0.5),
+                uniform('hts-tie-threshold', 0.05, 0.5),
+                choiceuniform('hts-remove-poor-atts', [1, 0]),
+                choiceuniform('hts-no-preprune', [1, 0]),
+                choiceuniform('hts-leaf-prediction', ['mc', 'nb', 'nba']),
+                ])
 
     models_configs = {'hts': config_space_to_configs(hts, start=0, end=10),
                       'ihf': [],
@@ -150,9 +159,12 @@ def loguniform(name, start, end, step=None):
         return (name, start + hp.qloguniform(name, 0, np.log(end) - np.log(start), step))
 
 
+def choiceuniform(name, options):
+    return (name, hp.choice(name, options))
+
 def config_space_to_configs(config_space, start=0, end=10):
-    rng = np.random.RandomState(seed=0)
-    configs = [config_space_sampler.sample(
+    rng=np.random.RandomState(seed=0)
+    configs=[config_space_sampler.sample(
         config_space, rng=rng) for i in range(end - start)]
     return configs[start:end]
 
