@@ -84,9 +84,12 @@ class ORB():
         if self.ma_window is None:
             self.ma = self.th
         else:
-            if self.rate_driven and self.observed_weight_window.mean() >= self.rate_driven_grace_period:
-                self.ma_window, _ = self.__predict(self.ma_instance_window)
-                self.observed_weight_window[:] = 0
+            if self.rate_driven:
+                outdated_predictions = self.observed_weight_window >= self.rate_driven_grace_period
+                if np.any(outdated_predictions):
+                    self.ma_window[outdated_predictions], _ = self.__predict(
+                        self.ma_instance_window[outdated_predictions])
+                    self.observed_weight_window[outdated_predictions] = 0
             self.ma = self.ma_window.mean()
 
     def update_k(self, **kwargs):
