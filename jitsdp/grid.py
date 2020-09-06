@@ -2,6 +2,7 @@
 import itertools
 import numpy as np
 from hyperopt import hp
+from hyperopt.pyll.base import scope
 import hyperopt.pyll.stochastic as config_space_sampler
 
 
@@ -183,16 +184,23 @@ def create_models_configs():
 
 def uniform(name, start, end, step=None):
     if step is None:
-        return (name, hp.uniform(name, start, end))
+        return (name, converter(start, hp.uniform(name, start, end)))
     else:
-        return (name, start + hp.quniform(name, 0, end - start, step))
+        return (name, converter(start, start + hp.quniform(name, 0, end - start, step)))
 
 
 def loguniform(name, start, end, step=None):
     if step is None:
-        return (name, hp.loguniform(name, np.log(start), np.log(end)))
+        return (name, converter(start, hp.loguniform(name, np.log(start), np.log(end))))
     else:
-        return (name, start + hp.qloguniform(name, 0, np.log(end) - np.log(start), step))
+        return (name, converter(start, start + hp.qloguniform(name, 0, np.log(end) - np.log(start), step)))
+
+
+def converter(sample, apply):
+    if int == type(sample):
+        return scope.int(apply)
+    else:
+        return apply
 
 
 def choiceuniform(name, options):
