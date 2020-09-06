@@ -28,6 +28,8 @@ def add_arguments(parser):
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
     parser.add_argument('--orb-decay-factor',   type=float,
                         help='Decay factor for calculating class proportions in training data (default: .99).',  default=.99)
+    parser.add_argument('--orb-waiting-time',   type=int,
+                        help='Number of days to wait before labeling the commit as clean (default: 90).',    default=90)
     parser.add_argument('--orb-ma-window-size',   type=int,
                         help='The number of predictions or instances used for calculating moving average (default: 100).',  default=100)
     parser.add_argument('--orb-th',   type=float,
@@ -98,7 +100,7 @@ def run(config):
     df_train = df_commit[:end].copy()
     if config['cross_project']:
         df_train = merge_others(df_train, dataset)
-    df_train = extract_events(df_train)
+    df_train = extract_events(df_train, config['orb_waiting_time'])
     if not config['noise']:
         df_train = remove_noise(df_train, config['orb_n'])
     if not config['order']:
@@ -159,10 +161,10 @@ def run(config):
     report(config)
 
 
-def extract_events(df_commit):
+def extract_events(df_commit, waiting_time):
     seconds_by_day = 24 * 60 * 60
     # seconds
-    verification_latency = 90 * seconds_by_day
+    verification_latency = waiting_time * seconds_by_day
     # cleaned
     df_clean = df_commit[df_commit['target'] == 0]
     df_cleaned = df_clean.copy()
