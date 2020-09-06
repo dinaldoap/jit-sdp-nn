@@ -137,7 +137,9 @@ def create_models_configs():
                  loguniform('borb-max-sample-size', 1000, 8000, 1000),
                  ])
 
-    models_configs = {'hts': config_space_to_configs(hts, start=0, end=10),
+    start = 0
+    end = 10
+    models_configs = {'hts': config_space_to_configs(hts, start, end),
                       'ihf': [],
                       'lr': [],
                       'mlp': [],
