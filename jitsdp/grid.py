@@ -1,4 +1,5 @@
 # coding=utf-8
+import argparse
 import itertools
 import numpy as np
 from hyperopt import hp
@@ -24,7 +25,7 @@ class Experiment():
     @property
     def name(self):
         rate_driven = 'r' if self.rate_driven else ''
-        model = self.experiment_config['models']
+        model = self.experiment_config['model']
         train_data = 'cp' if self.experiment_config['cross-project'] else 'wp'
         return '{}{}-{}-{}'.format(rate_driven, self.meta_model, model, train_data)
 
@@ -55,24 +56,36 @@ class Experiment():
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description='JIT-SDP: hyperparameter tuning')
+    parser.add_argument('--start',   type=int,
+                        help='First configuration of each model (default: 0).',    default=0)
+    parser.add_argument('--end',   type=int,
+                        help='Last configuration of each model  (default: 1).',  default=1)
+    args = parser.parse_args()
+    config = dict(vars(args))
+    create_commands(config)
+
+
+def create_commands(config):
     # experiments
     orb_rorb_grid = {
         'meta-model': ['orb'],
         'cross-project': [0, 1],
         'rate-driven': [0, 1],
-        'models': ['hts'],
+        'model': ['hts'],
     }
     borb_rborb_grid = {
         'meta-model': ['borb'],
         'cross-project': [0, 1],
         'rate-driven': [0, 1],
-        'models': ['ihf'],
+        'model': ['ihf'],
     }
     rborb_grid = {
         'meta-model': ['borb'],
         'cross-project': [0, 1],
         'rate-driven': [1],
-        'models': ['lr', 'mlp', 'nb', 'irf'],
+        'model': ['lr', 'mlp', 'nb', 'irf'],
     }
     experiment_configs = [
         orb_rorb_grid,
@@ -83,12 +96,12 @@ def main():
     experiment_configs = map(grid_to_configs, experiment_configs)
     experiment_configs = itertools.chain.from_iterable(experiment_configs)
     seed_dataset_configs = {
-        'seeds': [0, 1, 2, 3, 4],
-        'datasets': ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'],
+        'seed': [0, 1, 2, 3, 4],
+        'dataset': ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'],
     }
     seed_dataset_configs = grid_to_configs(seed_dataset_configs)
     # meta-models and models
-    models_configs = create_models_configs()
+    models_configs = create_models_configs(config)
 
     with open('jitsdp/dist/tuning.sh', mode='w') as out:
         for experiment in configs_to_experiments(experiment_configs, seed_dataset_configs, models_configs):
@@ -97,7 +110,7 @@ def main():
 
 def configs_to_experiments(experiment_configs, seed_dataset_configs, models_configs):
     for experiment_config in experiment_configs:
-        model = experiment_config['models']
+        model = experiment_config['model']
         experiment = Experiment(experiment_config=experiment_config,
                                 seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[model])
         yield experiment
@@ -110,7 +123,7 @@ def grid_to_configs(grid):
     return list(map(lambda values_tuple: dict(zip(keys, list(values_tuple))), values_tuples))
 
 
-def create_models_configs():
+def create_models_configs(config):
     meta_model_shared = meta_model_shared_config_space()
     orb = {}
     orb.update(meta_model_shared['orb'])
@@ -169,8 +182,8 @@ def create_models_configs():
         uniform('irf_max_features', 3, 7, 2),
     ])
 
-    start = 0
-    end = 10
+    start = config['start']
+    end = config['end']
     models_configs = {'hts': config_space_to_configs(hts, start, end),
                       'ihf': config_space_to_configs(ihf, start, end),
                       'lr': config_space_to_configs(lr, start, end),
