@@ -138,7 +138,7 @@ def create_models_configs():
     lr.update([
         loguniform('lr_alpha', .01, 1.),
         uniform('lr_n_epochs',  10, 80, 10),
-        loguniform('lr_nbatch_size', 128, 512, 128),
+        loguniform('lr_batch_size', 128, 512, 128),
     ])
 
     mlp = {}
