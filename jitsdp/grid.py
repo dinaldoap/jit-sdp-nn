@@ -233,7 +233,7 @@ def hoeffding_shared_config_space():
     return config_spaces
 
 
-def config_space_to_configs(config_space, start=0, end=10):
+def config_space_to_configs(config_space, start, end):
     rng = np.random.RandomState(seed=0)
     configs = [config_space_sampler.sample(
         config_space, rng=rng) for i in range(end - start)]
