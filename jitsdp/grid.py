@@ -110,23 +110,20 @@ def grid_to_configs(grid):
 
 
 def create_models_configs():
+    shared_config_spaces = meta_model_shared_config_space()
     orb = {}
+    orb.update(shared_config_spaces['orb'])
     orb.update([loguniform('orb-decay-factor', .9, .999),
                 uniform('orb-n', 3, 7, 2),
-                uniform('orb-waiting-time', 90, 180, 30),
-                uniform('orb-ma-window-size', 50, 200, 50),
-                uniform('orb-th', .3, .5, .05),
-                loguniform('orb-l0', 1, 20),
-                loguniform('orb-l1', 1, 20),
-                uniform('orb-m', 1.1, np.e, .2),
-                uniform('orb-rd-grace-period', 100, 500, 100),
+                uniform('orb-rd-grace-period', 100, 500, 100),                
                 ])
 
     hts = {}
     hts.update(orb)
     hts.update([uniform('hts-n-estimators', 20, 100, 20),
                 uniform('hts-grace-period', 100, 500, 100),
-                choiceuniform('hts-split-criterion', ['gini', 'info_gain', 'hellinger']),
+                choiceuniform('hts-split-criterion',
+                              ['gini', 'info_gain', 'hellinger']),
                 loguniform('hts-split-confidence', 0.0000001, 0.5),
                 uniform('hts-tie-threshold', 0.05, 0.5),
                 choiceuniform('hts-remove-poor-atts', [1, 0]),
@@ -162,9 +159,24 @@ def loguniform(name, start, end, step=None):
 def choiceuniform(name, options):
     return (name, hp.choice(name, options))
 
+def meta_model_shared_config_space():    
+    config_spaces = {}
+    meta_models = ['orb', 'borb']
+    for meta_model in meta_models:
+        config_spaces[meta_model] = [
+        uniform('{}-waiting-time'.format(meta_model), 90, 180, 30),
+                       uniform('{}-ma-window-size'.format(meta_model), 50, 200, 50),
+                       uniform('{}-th'.format(meta_model), .3, .5, .05),
+                       loguniform('{}-l0'.format(meta_model), 1, 20),
+                       loguniform('{}-l1'.format(meta_model), 1, 20),
+                       uniform('{}-m'.format(meta_model), 1.1, np.e, .2),
+                       ]
+    return config_spaces
+        
+
 def config_space_to_configs(config_space, start=0, end=10):
-    rng=np.random.RandomState(seed=0)
-    configs=[config_space_sampler.sample(
+    rng = np.random.RandomState(seed=0)
+    configs = [config_space_sampler.sample(
         config_space, rng=rng) for i in range(end - start)]
     return configs[start:end]
 
