@@ -38,6 +38,8 @@ def add_arguments(parser):
                         help='No description (default: 12.).',  default=12.)
     parser.add_argument('--orb-m',   type=float,
                         help='No description (default: 1.5).',  default=1.5)
+    parser.add_argument('--orb-n',   type=int,
+                        help='The number of clean commits that activate the noise filter (default: 3).',  default=3)
     parser.add_argument('--orb-rd',   type=int,
                         help='Whether must turn ORB rate-driven (default: 0).',
                         default=0, choices=[0, 1])
@@ -98,7 +100,7 @@ def run(config):
         df_train = merge_others(df_train, dataset)
     df_train = extract_events(df_train)
     if not config['noise']:
-        df_train = remove_noise(df_train)
+        df_train = remove_noise(df_train, config['orb_n'])
     if not config['order']:
         df_train = balance_events(df_train)
 
@@ -184,12 +186,11 @@ def extract_events(df_commit):
     return df_events
 
 
-def remove_noise(df_events):
+def remove_noise(df_events, orb_n):
     grouped_target = df_events.groupby(FEATURES)['target']
     cumsum = grouped_target.cumsum()
     cumcount = grouped_target.cumcount()
-    previous_clean = 3
-    noise = cumcount - cumsum >= previous_clean
+    noise = cumcount - cumsum >= orb_n
     noise = noise & (df_events['target'] == 1)
     return df_events[~noise]
 
