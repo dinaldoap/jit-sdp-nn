@@ -133,11 +133,19 @@ def create_models_configs():
     ihf.update(borb)
     ihf.update(hoeffding_shared['ihf'])
 
+    lr = {}
+    lr.update(borb)
+    lr.update([
+        loguniform('lr_alpha', .01, 1.),
+        uniform('lr_n_epochs',  10, 80, 10),
+        loguniform('lr_nbatch_size', 128, 512, 128),
+    ])
+
     start = 0
     end = 10
     models_configs = {'hts': config_space_to_configs(hts, start, end),
                       'ihf': config_space_to_configs(ihf, start, end),
-                      'lr': [],
+                      'lr': config_space_to_configs(lr, start, end),
                       'mlp': [],
                       'nb': [],
                       'irf': [],
