@@ -26,8 +26,6 @@ def add_arguments(parser):
                         help='Last commit to be used for testing (default: None). None means all commits.',  default=5000)
     parser.add_argument('--pool-size',   type=int,
                         help='Number of processes used to run the experiment in parallel (default: 1).', default=1)
-    parser.add_argument('--orb-decay-factor',   type=float,
-                        help='Decay factor for calculating class proportions in training data (default: .99).',  default=.99)
     parser.add_argument('--orb-waiting-time',   type=int,
                         help='Number of days to wait before labeling the commit as clean (default: 90).',    default=90)
     parser.add_argument('--orb-ma-window-size',   type=int,
@@ -40,6 +38,8 @@ def add_arguments(parser):
                         help='No description (default: 12.).',  default=12.)
     parser.add_argument('--orb-m',   type=float,
                         help='No description (default: 1.5).',  default=1.5)
+    parser.add_argument('--orb-decay-factor',   type=float,
+                        help='Decay factor for calculating class proportions in training data (default: .99).',  default=.99)
     parser.add_argument('--orb-n',   type=int,
                         help='The number of clean commits that activate the noise filter (default: 3).',  default=3)
     parser.add_argument('--orb-rd',   type=int,
