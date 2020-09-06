@@ -110,9 +110,9 @@ def grid_to_configs(grid):
 
 
 def create_models_configs():
-    shared_config_spaces = meta_model_shared_config_space()
+    meta_model_shared = meta_model_shared_config_space()
     orb = {}
-    orb.update(shared_config_spaces['orb'])
+    orb.update(meta_model_shared['orb'])
     orb.update([loguniform('orb-decay-factor', .9, .999),
                 uniform('orb-n', 3, 7, 2),
                 uniform('orb-rd-grace-period', 100, 500, 100),
@@ -132,7 +132,7 @@ def create_models_configs():
                 ])
 
     borb = {}
-    borb.update(shared_config_spaces['borb'])
+    borb.update(meta_model_shared['borb'])
     borb.update([uniform('borb-pull-request-size', 50, 200, 50),
                  loguniform('borb-max-sample-size', 1000, 8000, 1000),
                  ])
