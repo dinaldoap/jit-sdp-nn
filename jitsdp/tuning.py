@@ -150,36 +150,36 @@ def create_models_configs(config):
     lr = {}
     lr.update(borb)
     lr.update([
-        loguniform('lr_alpha', .01, 1.),
-        uniform('lr_n_epochs',  10, 80, 10),
-        loguniform('lr_batch_size', 128, 512, 128),
+        loguniform('lr-alpha', .01, 1.),
+        uniform('lr-n-epochs',  10, 80, 10),
+        loguniform('lr-batch-size', 128, 512, 128),
     ])
 
     mlp = {}
     mlp.update(borb)
     mlp.update([
-        loguniform('mlp_learning_rate', .0001, .01),
-        uniform('mlp_n_epochs', 10, 80, 10),
-        uniform('mlp_n_hidden_layers', 1, 3, 1),
-        uniform('mlp_hidden_layers_size', 5, 15, 2),
-        uniform('mlp_dropout_input_layer', .1, .3, .1),
-        uniform('mlp_dropout_hidden_layer', .3, .5, .1),
-        loguniform('mlp_batch_size',  128, 512, 128),
+        loguniform('mlp-learning-rate', .0001, .01),
+        uniform('mlp-n-epochs', 10, 80, 10),
+        uniform('mlp-n-hidden-layers', 1, 3, 1),
+        uniform('mlp-hidden-layers-size', 5, 15, 2),
+        uniform('mlp-dropout-input-layer', .1, .3, .1),
+        uniform('mlp-dropout-hidden-layer', .3, .5, .1),
+        loguniform('mlp-batch-size',  128, 512, 128),
     ])
 
     nb = {}
     nb.update(borb)
     nb.update([
-        uniform('nb_n_updates', 10, 80, 10),
+        uniform('nb-n-updates', 10, 80, 10),
     ])
 
     irf = {}
     irf.update(borb)
     irf.update([
-        uniform('irf_n_estimators', 20, 100, 20),
-        choiceuniform('irf_criterion', ['gini', 'entropy']),
-        uniform('irf_min_samples_leaf', 100, 300,  100),
-        uniform('irf_max_features', 3, 7, 2),
+        uniform('irf-n-estimators', 20, 100, 20),
+        choiceuniform('irf-criterion', ['gini', 'entropy']),
+        uniform('irf-min-samples-leaf', 100, 300,  100),
+        uniform('irf-max-features', 3, 7, 2),
     ])
 
     start = config['start']
