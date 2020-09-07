@@ -240,7 +240,7 @@ def hoeffding_shared_config_space():
     models = ['hts', 'ihf']
     for model in models:
         config_spaces[model] = [
-            uniform('{}-n-estimators'.format(model), 20, 100, 20),
+            uniform('{}-n-estimators'.format(model), 10, 40, 10),
             uniform('{}-grace-period'.format(model), 100, 500, 100),
             choiceuniform('{}-split-criterion'.format(model),
                           ['gini', 'info_gain', 'hellinger']),
