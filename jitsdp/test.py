@@ -12,7 +12,7 @@ def best_configs():
         'metrics.avg_gmean': ['mean', 'std'], 'tags.run.command': 'first'})
     df_best_configs.columns = remove_columns_prefix(df_best_configs.columns)
     df_best_configs = df_best_configs.sort_values(
-        by='avg_gmean.mean', ascending=False)
+        by='avg_gmean.mean', ascending=False, kind='mergesort')
     df_best_configs = df_best_configs.drop_duplicates(
         subset=['meta_model', 'model', 'dataset'])
     print(len(df_best_configs))
