@@ -60,9 +60,23 @@ def add_arguments(parser):
     parser.add_argument('--model',   type=str,
                         help='Which model must use as the base learner (default: irf).', default='mlp', choices=['ihf', 'lr', 'mlp', 'nb', 'irf'])
     parser.add_argument('--ihf-n-estimators',   type=int,
-                        help='The number of hoeffding trees (default: 1).',    default=1)
+                        help='The number of hoeffding trees (default: 1).',  default=1)
+    parser.add_argument('--ihf-grace-period',   type=int,
+                        help='Number of instances a leaf should observe between split attempts (default: 200).',  default=200)
+    parser.add_argument('--ihf-split-criterion',   type=str, help='Split criterion to use (default: info_gain).',
+                        default='info_gain', choices=['gini', 'info_gain', 'hellinger'])
     parser.add_argument('--ihf-split-confidence',   type=float,
-                        help='Allowed error in split decision, a value closer to 0 takes longer to decide (default: .1).',    default=.1)
+                        help='Allowed error in split decision, a value closer to 0 takes longer to decid (default: .0000001).',  default=.0000001)
+    parser.add_argument('--ihf-tie-threshold',   type=float,
+                        help='Threshold below which a split will be forced to break ties (default: .05).',  default=.05)
+    parser.add_argument('--ihf-remove-poor-atts',   type=int,
+                        help='Whether must disable poor attributes (default: 0).',
+                        default=0, choices=[0, 1])
+    parser.add_argument('--ihf-no-preprune',   type=int,
+                        help='Whether must disable pre-pruning (default: 0).',
+                        default=0, choices=[0, 1])
+    parser.add_argument('--ihf-leaf-prediction',   type=str, help='Prediction mechanism used at leafs. (default: nba).',
+                        default='nba', choices=['mc', 'nb', 'nba'])
     parser.add_argument('--lr-alpha',   type=float,
                         help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: .1).',  default=.1)
     parser.add_argument('--lr-l1-ratio',   type=float,

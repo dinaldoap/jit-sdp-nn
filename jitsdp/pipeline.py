@@ -68,7 +68,13 @@ def create_pipeline(config):
 
 def create_ihf_model(config):
     hoeffding_tree = HoeffdingTreeClassifier(
-        split_confidence=config['ihf_split_confidence'])
+        grace_period=config['ihf_grace_period'],
+        split_criterion=config['ihf_split_criterion'],
+        split_confidence=config['ihf_split_confidence'],
+        tie_threshold=config['ihf_tie_threshold'],
+        remove_poor_atts=config['ihf_remove_poor_atts'],
+        no_preprune=config['ihf_no_preprune'],
+        leaf_prediction=config['ihf_leaf_prediction'])
     base_estimator = MultiflowBaseEstimator(hoeffding_tree)
     classifier = BaggingClassifier(
         base_estimator=base_estimator, n_estimators=0, warm_start=True, bootstrap=False)
