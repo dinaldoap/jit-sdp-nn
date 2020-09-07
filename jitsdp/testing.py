@@ -5,7 +5,7 @@ import re
 
 def best_configs():
     df_tuning = pd.read_csv('data/tuning.csv')
-    #print_data(df_tuning)
+    # print_data(df_tuning)
     n_datasets, n_cross_projects, n_models, n_configs, n_seeds = 10, 2, 6, 2, 5
     assert n_models * n_datasets * n_seeds * n_configs == len(df_tuning)
     assert np.all(df_tuning[df_tuning['status'] == 'FINISHED'])
@@ -17,22 +17,25 @@ def best_configs():
         by='avg_gmean.mean', ascending=False, kind='mergesort')
     df_best_configs = df_best_configs.drop_duplicates(
         subset=['meta_model', 'model', 'dataset'])
-    #print_data(df_best_configs)
+    # print_data(df_best_configs)
     commands = tuning_to_testing(df_best_configs['run.command.first'])
 
     with open('jitsdp/dist/testing.sh', mode='w') as out:
         for command in commands:
             out.write(command)
             out.write('\n')
-        
+
+
 def tuning_to_testing(commands):
     seeds = range(30)
     for command in commands:
         for seed in seeds:
             new_command = command.replace('end', 'start')
-            new_command = re.sub('seed \d+', 'seed {}'.format(seed), new_command)
+            new_command = re.sub(
+                'seed \d+', 'seed {}'.format(seed), new_command)
             new_command = new_command + ' --experiment-name testing'
             yield new_command
+
 
 def config_columns(cols):
     return [col for col in cols if col.startswith('params') and not col.endswith('seed')]
@@ -51,11 +54,12 @@ def remove_columns_prefix(cols):
         new_cols.append(new_col)
     return new_cols
 
+
 def print_data(df):
     print(len(df))
     print(df.columns)
     print(df.head(1))
-    
+
 
 if __name__ == '__main__':
     best_configs()
