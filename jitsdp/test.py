@@ -1,24 +1,29 @@
+import numpy as np
 import pandas as pd
 
 
 def best_configs():
     df_tuning = pd.read_csv('data/tuning.csv')
-    df_tuning = df_tuning.dropna(subset=['params.dataset'])
-    print(len(df_tuning))
+    #assert np.all(df_tuning[df_tuning['status'] == 'FINISHED'])
     print(df_tuning.columns)
-    print(df_tuning.head())
-    '''
-    df_groups = df_runs.groupby(by=['params.dataset', 'params.model']).agg({
-        'metrics.avg_gmean': ['mean', 'std'], 'metrics.avg_r0-r1': ['mean', 'std']})
-    print(df_groups)
+    print(df_tuning.head(1))
+    config_cols = config_columns(df_tuning.columns)
+    df_best_configs = df_tuning.groupby(by=config_cols, as_index=False).agg({
+        'metrics.avg_gmean': 'mean', 'tags.run.command': 'first'})
+    df_best_configs.columns = remove_columns_prefix(df_best_configs.columns)
+    df_best_configs.sort_values(by='avg_gmean', ascending=False)
+    df_best_configs.drop_duplicates(subset=['meta_model', 'model', 'dataset'])
+    print(len(df_best_configs))
+    print(df_best_configs.columns)
+    print(df_best_configs.head(1))
 
-    df_tops = df_groups.reset_index()
-    df_tops = df_tops.sort_values(
-        by=[('metrics.avg_gmean', 'mean')], ascending=False)
-    df_tops = df_tops.groupby(by=['params.dataset']).agg(
-        {'params.model': ['first']})
-    print(df_tops)
-    '''
+
+def config_columns(cols):
+    return [col for col in cols if col.startswith('params') and not col.endswith('seed')]
+
+
+def remove_columns_prefix(cols):
+    return ['.'.join(col.split('.')[1:]) for col in cols]
 
 
 if __name__ == '__main__':
