@@ -151,10 +151,10 @@ def run(config):
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
 
+    target_prediction = target_prediction[config['start']:end]
     target_prediction = target_prediction.reset_index(drop=True)
 
     results = met.prequential_metrics(target_prediction, .99)
-    results = results[config['start']:end]
     save_results(results=results, dir=unique_dir(config))
     report(config)
 
