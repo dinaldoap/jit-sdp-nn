@@ -58,7 +58,7 @@ def set_experiment(config):
         if mlflow_experiment_id is not None:
             raise RuntimeError(
                 'Use \'mlflow run --experiment-name [name]...\' instead of \'mlflow run ... -Pexperiment-name=[name]\'')
-        os.environ['MLFLOW_EXPERIMENT_NAME'] = experiment_name
+        mlflow.set_experiment(experiment_name)
 
 
 def track_forest(prediction, forest):
