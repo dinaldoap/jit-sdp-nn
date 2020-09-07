@@ -5,9 +5,9 @@ import re
 
 def best_configs():
     df_tuning = pd.read_csv('data/tuning.csv')
-    #assert np.all(df_tuning[df_tuning['status'] == 'FINISHED'])
-    print(df_tuning.columns)
-    print(df_tuning.head(1))
+    n_datasets, n_cross_projects, n_models, n_configs, n_seeds = 10, 2, 6, 2, 5
+    assert n_models * n_datasets * n_seeds * n_configs == len(df_tuning)
+    assert np.all(df_tuning[df_tuning['status'] == 'FINISHED'])
     config_cols = config_columns(df_tuning.columns)
     df_best_configs = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
         'metrics.avg_gmean': ['mean', 'std'], 'tags.run.command': 'first'})
