@@ -8,7 +8,7 @@ def best_configs():
     print(df_tuning.columns)
     print(df_tuning.head(1))
     config_cols = config_columns(df_tuning.columns)
-    df_best_configs = df_tuning.groupby(by=config_cols, as_index=False).agg({
+    df_best_configs = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
         'metrics.avg_gmean': ['mean', 'std'], 'tags.run.command': 'first'})
     df_best_configs.columns = remove_columns_prefix(df_best_configs.columns)
     df_best_configs = df_best_configs.sort_values(
