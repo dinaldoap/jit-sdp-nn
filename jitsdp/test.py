@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import re
 
 
 def best_configs():
@@ -18,7 +19,21 @@ def best_configs():
     print(len(df_best_configs))
     print(df_best_configs.columns)
     print(df_best_configs.head(1))
+    commands = tuning_to_testing(df_best_configs['run.command.first'])
 
+    with open('jitsdp/dist/testing.sh', mode='w') as out:
+        for command in commands:
+            out.write(command)
+            out.write('\n')
+        
+def tuning_to_testing(commands):
+    seeds = range(30)
+    for command in commands:
+        for seed in seeds:
+            new_command = command.replace('end', 'start')
+            new_command = re.sub('seed \d+', 'seed {}'.format(seed), new_command)
+            new_command = new_command + ' --experiment-name testing'
+            yield new_command
 
 def config_columns(cols):
     return [col for col in cols if col.startswith('params') and not col.endswith('seed')]
