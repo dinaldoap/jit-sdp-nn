@@ -40,7 +40,7 @@ def add_arguments(parser):
                         help='Decay factor for calculating class proportions in training data (default: .99).',  default=.99)
     parser.add_argument('--orb-n',   type=int,
                         help='The number of clean commits that activate the noise filter (default: 3).',  default=3)
-    parser.add_argument('--orb-rd',   type=int,
+    parser.add_argument('--rate-driven',   type=int,
                         help='Whether must turn ORB rate-driven (default: 0).',
                         default=0, choices=[0, 1])
     parser.add_argument('--orb-rd-grace-period',   type=int,
@@ -128,7 +128,7 @@ def run(config):
                 m=config['orb_m'],
                 base_estimator=base_estimator,
                 n_estimators=config['hts_n_estimators'],
-                rate_driven=config['orb_rd'],
+                rate_driven=config['rate_driven'],
                 rate_driven_grace_period=config['orb_rd_grace_period'],
                 )
     target_prediction = None
@@ -147,7 +147,7 @@ def run(config):
         df_batch_test = df_test[current_test:current_test + test_step]
         current_test += test_step
         target_prediction_test = model.predict(
-            df_batch_test, rd=config['orb_rd'], track_time=config['track_time'], track_forest=config['track_forest'])
+            df_batch_test, track_time=config['track_time'], track_forest=config['track_forest'])
         target_prediction = pd.concat(
             [target_prediction, target_prediction_test])
 

@@ -15,16 +15,14 @@ class Experiment():
         self.models_configs = models_configs
 
     def fix_experimnt_config(self, experiment_config):
-        self.rate_driven = experiment_config['rate-driven']
         self.meta_model = experiment_config['meta-model']
         new_experiment_config = dict(experiment_config)
-        del new_experiment_config['rate-driven']
         del new_experiment_config['meta-model']
         return new_experiment_config
 
     @property
     def name(self):
-        rate_driven = 'r' if self.rate_driven else ''
+        rate_driven = 'r' if self.experiment_config['rate-driven'] else ''
         model = self.experiment_config['model']
         train_data = 'cp' if self.experiment_config['cross-project'] else 'wp'
         return '{}{}-{}-{}'.format(rate_driven, self.meta_model, model, train_data)
@@ -36,18 +34,12 @@ class Experiment():
                 config.update(self.experiment_config)
                 config.update(seed_dataset_config)
                 config.update(models_config)
-                config = self.fix_rate_driven(config)
                 config = self.add_start(config)
                 params = ['--{} {}'.format(key, value)
                           for key, value in config.items()]
                 params = ' '.join(params)
                 out.write(
                     './jitsdp {} {}\n'.format(self.meta_model, params))
-
-    def fix_rate_driven(self, config):
-        config = dict(config)
-        config['{}-rd'.format(self.meta_model)] = self.rate_driven
-        return config
 
     def add_start(self, config):
         config = dict(config)

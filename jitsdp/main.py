@@ -49,7 +49,7 @@ def add_arguments(parser):
                         help='No description. (default: 1.5).',  default=1.5)
     parser.add_argument('--borb',   type=int,
                         help='Whether must use oversampling rate boosting to balance output proportions (default: 1).', default=1, choices=[0, 1])
-    parser.add_argument('--borb-rd',   type=int,
+    parser.add_argument('--rate-driven',   type=int,
                         help='Whether must turn BORB rate-driven (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--cross-project',   type=int,
                         help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])

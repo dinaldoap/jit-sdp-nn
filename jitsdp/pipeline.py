@@ -62,7 +62,7 @@ def create_pipeline(config):
                           l0=config['borb_l0'],
                           l1=config['borb_l1'],
                           m=config['borb_m'],
-                          rate_driven=config['borb_rd'])
+                          rate_driven=config['rate_driven'])
     return classifier
 
 
