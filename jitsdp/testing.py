@@ -5,10 +5,13 @@ import re
 
 def best_configs():
     df_tuning = pd.read_csv('data/tuning.csv')
-    # print_data(df_tuning)
-    n_datasets, n_cross_projects, n_models, n_configs, n_seeds = 10, 2, 6, 2, 5
-    assert n_models * n_datasets * n_seeds * n_configs == len(df_tuning)
-    assert np.all(df_tuning[df_tuning['status'] == 'FINISHED'])
+    #print_data(df_tuning)
+    n_datasets = 10
+    n_cross_projects = 2
+    n_models = 8
+    n_seeds = 5
+    assert len(df_tuning) % (n_models * n_datasets * n_seeds) == 0
+    assert np.all(df_tuning['status'] == 'FINISHED')
     config_cols = config_columns(df_tuning.columns)
     df_best_configs = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
         'metrics.avg_gmean': ['mean', 'std'], 'tags.run.command': 'first'})
@@ -17,7 +20,7 @@ def best_configs():
         by='avg_gmean.mean', ascending=False, kind='mergesort')
     df_best_configs = df_best_configs.drop_duplicates(
         subset=['rate_driven', 'meta_model', 'model', 'dataset'])
-    print_data(df_best_configs)
+    #print_data(df_best_configs)
     commands = tuning_to_testing(df_best_configs['run.command.first'])
 
     with open('jitsdp/dist/testing.sh', mode='w') as out:
