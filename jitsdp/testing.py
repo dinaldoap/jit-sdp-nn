@@ -16,8 +16,8 @@ def best_configs():
     df_best_configs = df_best_configs.sort_values(
         by='avg_gmean.mean', ascending=False, kind='mergesort')
     df_best_configs = df_best_configs.drop_duplicates(
-        subset=['meta_model', 'model', 'dataset'])
-    # print_data(df_best_configs)
+        subset=['rate_driven', 'meta_model', 'model', 'dataset'])
+    print_data(df_best_configs)
     commands = tuning_to_testing(df_best_configs['run.command.first'])
 
     with open('jitsdp/dist/testing.sh', mode='w') as out:
