@@ -93,7 +93,9 @@ class ORB():
             self.ma = self.ma_window.mean()
 
     def update_k(self, **kwargs):
-        self.k = self.lambda_ * self.obf
+        self.k = np.random.poisson(self.lambda_)
+        self.k = self.k * self.obf
+        self.k = max(self.k, 1)
 
     def predict(self, df_test, **kwargs):
         if self.trained:
