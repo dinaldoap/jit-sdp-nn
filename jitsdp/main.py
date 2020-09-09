@@ -9,13 +9,13 @@ import sys
 
 def main():
     parser = argparse.ArgumentParser(
-        description='JIT-SDP: experiment execution')
+        description='JIT-SDP: experiment execution tool')
     subparsers = parser.add_subparsers(
         title='meta-model or script generator', dest='meta_model', required=True)
     add_arguments(subparsers.add_parser(
-        name='borb', help='Batch Oversampling Rate Boosting'))
+        name='borb', help='Run Batch Oversampling Rate Boosting meta-model'))
     baseline.add_arguments(subparsers.add_parser(
-        name='orb', help='Oversampling Rate Boosting'))
+        name='orb', help='Run Oversampling Rate Boosting meta-model'))
     tuning.add_arguments(subparsers.add_parser(
         name='tuning', help='Generate hyperparameter tuning script'))
     tuning.add_arguments(subparsers.add_parser(
