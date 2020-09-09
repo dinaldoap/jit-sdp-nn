@@ -1,7 +1,7 @@
 # coding=utf-8
 from jitsdp.evaluation import run
 from jitsdp.utils import setup_and_run, int_or_none
-from jitsdp import baseline, tuning
+from jitsdp import baseline, tuning, testing
 
 import argparse
 import sys
@@ -18,6 +18,8 @@ def main():
         name='orb', help='Oversampling Rate Boosting'))
     tuning.add_arguments(subparsers.add_parser(
         name='tuning', help='Generate hyperparameter tuning script'))
+    tuning.add_arguments(subparsers.add_parser(
+        name='testing', help='Generate testing script'))
 
     args = parser.parse_args()
     config = dict(vars(args))
@@ -28,6 +30,8 @@ def main():
         return setup_and_run(config, baseline.run)
     elif meta_model_generator == 'tuning':
         return tuning.generate(config)
+    elif meta_model_generator == 'testing':
+        return testing.generate(config)
     else:
         raise ValueError('meta-model and script generator not supported.')
 

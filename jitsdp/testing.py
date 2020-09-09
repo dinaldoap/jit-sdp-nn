@@ -4,18 +4,17 @@ import pandas as pd
 import re
 
 
-def best_configs():
-    # TODO: parameterize n_configs
-    # TODO: add max_results considering n_configs
+def generate(config):
     # TODO: generate tuning and testing scripts in the current folder
-    # TODO: add tuning and testing as subcommand of jitsdp
-    df_tuning = mlflow.search_runs(experiment_ids=0)
     # print_data(df_tuning)
     n_datasets = 10
     n_cross_projects = 2
     n_models = 8
+    n_configs = config['end'] - config['start']
     n_seeds = 5
-    assert len(df_tuning) % (n_models * n_datasets * n_seeds) == 0
+    expected_max_results = n_models * n_datasets * n_configs * n_seeds
+    df_tuning = mlflow.search_runs(experiment_ids=0, max_results= 2 * expected_max_results)
+    assert expected_max_results == len(df_tuning)
     assert np.all(df_tuning['status'] == 'FINISHED')
     config_cols = config_columns(df_tuning.columns)
     df_best_configs = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
@@ -67,7 +66,3 @@ def print_data(df):
     print(len(df))
     print(df.columns)
     print(df.head(1))
-
-
-if __name__ == '__main__':
-    best_configs()
