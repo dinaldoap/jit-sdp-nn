@@ -1,7 +1,7 @@
 # coding=utf-8
 from jitsdp.evaluation import run
 from jitsdp.utils import setup_and_run, int_or_none
-from jitsdp import baseline
+from jitsdp import baseline, tuning
 
 import argparse
 import sys
@@ -11,11 +11,13 @@ def main():
     parser = argparse.ArgumentParser(
         description='JIT-SDP: experiment execution')
     subparsers = parser.add_subparsers(
-        title='meta-model', dest='meta_model', required=True)
+        title='meta-model or script generator', dest='meta_model', required=True)
     add_arguments(subparsers.add_parser(
         name='borb', help='Batch Oversampling Rate Boosting'))
     baseline.add_arguments(subparsers.add_parser(
         name='orb', help='Oversampling Rate Boosting'))
+    tuning.add_arguments(subparsers.add_parser(
+        name='tuning', help='Generate hyperparameter tuning script'))
 
     args = parser.parse_args()
     config = dict(vars(args))
@@ -24,8 +26,10 @@ def main():
         return setup_and_run(config, run)
     elif meta_model_generator == 'orb':
         return setup_and_run(config, baseline.run)
+    elif meta_model_generator == 'tuning':
+        return tuning.generate(config)
     else:
-        raise ValueError('meta-model not supported.')
+        raise ValueError('meta-model and script generator not supported.')
 
 
 def add_arguments(parser):

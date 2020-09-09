@@ -47,19 +47,14 @@ class Experiment():
         return config
 
 
-def main():
-    parser = argparse.ArgumentParser(
-        description='JIT-SDP: hyperparameter tuning')
+def add_arguments(parser):
     parser.add_argument('--start',   type=int,
                         help='First configuration of each model (default: 0).',    default=0)
     parser.add_argument('--end',   type=int,
                         help='Last configuration of each model  (default: 1).',  default=1)
-    args = parser.parse_args()
-    config = dict(vars(args))
-    create_commands(config)
 
 
-def create_commands(config):
+def generate(config):
     # experiments
     orb_rorb_grid = {
         'meta-model': ['orb'],
@@ -251,7 +246,3 @@ def config_space_to_configs(config_space, start, end):
     configs = [config_space_sampler.sample(
         config_space, rng=rng) for i in range(end - start)]
     return configs[start:end]
-
-
-if __name__ == '__main__':
-    main()
