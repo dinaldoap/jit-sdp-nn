@@ -49,9 +49,9 @@ class Experiment():
 
 def add_arguments(parser):
     parser.add_argument('--start',   type=int,
-                        help='First configuration of each model (default: 0).',    default=0)
+                        help='Starting index of the random configurations slice.', required=True)
     parser.add_argument('--end',   type=int,
-                        help='Last configuration of each model  (default: 1).',  default=1)
+                        help='Stopping index of the random configurations slice.', required=True)
 
 
 def generate(config):
