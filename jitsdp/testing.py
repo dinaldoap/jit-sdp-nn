@@ -14,7 +14,8 @@ def generate(config):
     n_models = 8
     n_configs = config['end'] - config['start']
     n_seeds = 5
-    expected_max_results = n_models * n_datasets * n_configs * n_seeds
+    expected_max_results = n_models * n_cross_projects * \
+        n_configs * n_datasets * n_seeds
     df_tuning = mlflow.search_runs(
         experiment_ids=0, max_results=2 * expected_max_results)
     if not config['no_validation']:
