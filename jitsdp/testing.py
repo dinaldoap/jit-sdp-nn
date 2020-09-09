@@ -40,7 +40,7 @@ def tuning_to_testing(commands):
         for seed in seeds:
             new_command = command.replace('end', 'start')
             new_command = re.sub(
-                'seed \d+', 'seed {}'.format(seed), new_command)
+                r'seed \d+', 'seed {}'.format(seed), new_command)
             new_command = new_command + ' --experiment-name testing --track-time 1 --track-forest 1'
             yield new_command
 
