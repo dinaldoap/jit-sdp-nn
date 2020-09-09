@@ -18,6 +18,12 @@ def mkdir(dir):
     dir.mkdir(parents=True, exist_ok=True)
 
 
+def filename_to_path(filename):
+    path = pathlib.Path(filename)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def setup_and_run(config, frun):
     run_command = ' '.join(sys.argv)
     meta_model = config['meta_model']

@@ -1,3 +1,6 @@
+# coding=utf-8
+from jitsdp.utils import filename_to_path
+
 import mlflow
 import numpy as np
 import pandas as pd
@@ -5,7 +8,6 @@ import re
 
 
 def generate(config):
-    # TODO: generate tuning and testing scripts in the current folder
     # print_data(df_tuning)
     n_datasets = 10
     n_cross_projects = 2
@@ -28,8 +30,8 @@ def generate(config):
         subset=['rate_driven', 'meta_model', 'model', 'dataset'])
     # print_data(df_best_configs)
     commands = tuning_to_testing(df_best_configs['run.command.first'])
-
-    with open('jitsdp/dist/testing.sh', mode='w') as out:
+    file_ = filename_to_path(config['filename'])
+    with open(file_, mode='w') as out:
         for command in commands:
             out.write(command)
             out.write('\n')

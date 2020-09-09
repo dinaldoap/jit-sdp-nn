@@ -17,9 +17,9 @@ def main():
     baseline.add_arguments(subparsers.add_parser(
         name='orb', help='Run Oversampling Rate Boosting meta-model'))
     tuning.add_arguments(subparsers.add_parser(
-        name='tuning', help='Generate hyperparameter tuning script'))
+        name='tuning', help='Generate hyperparameter tuning script'), 'logs/tuning.sh')
     tuning.add_arguments(subparsers.add_parser(
-        name='testing', help='Generate testing script'))
+        name='testing', help='Generate testing script'), 'logs/testing.sh')
 
     args = parser.parse_args()
     config = dict(vars(args))

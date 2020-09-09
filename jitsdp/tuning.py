@@ -1,4 +1,6 @@
 # coding=utf-8
+from jitsdp.utils import filename_to_path
+
 import argparse
 import itertools
 import numpy as np
@@ -47,11 +49,13 @@ class Experiment():
         return config
 
 
-def add_arguments(parser):
+def add_arguments(parser, filename):
     parser.add_argument('--start',   type=int,
                         help='Starting index of the random configurations slice.', required=True)
     parser.add_argument('--end',   type=int,
                         help='Stopping index of the random configurations slice.', required=True)
+    parser.add_argument('--filename',   type=str,
+                        help='Output script path.', default=filename)
     parser.add_argument('--no-validation',
                         help='Disable validations of the data the flows from hyperparameter tuning to testing.', action='store_true')
 
@@ -91,8 +95,8 @@ def generate(config):
     seed_dataset_configs = grid_to_configs(seed_dataset_configs)
     # meta-models and models
     models_configs = create_models_configs(config)
-
-    with open('jitsdp/dist/tuning.sh', mode='w') as out:
+    file_ = filename_to_path(config['filename'])
+    with open(file_, mode='w') as out:
         for experiment in configs_to_experiments(experiment_configs, seed_dataset_configs, models_configs):
             experiment.to_shell(out)
 
