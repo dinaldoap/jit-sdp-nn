@@ -13,6 +13,7 @@ run:
 	jitsdp borb --model mlp --start 2000 --end 2050
 	jitsdp borb --model irf --start 2000 --end 2050
 	jitsdp orb --start 2000 --end 2050
+	jitsdp tuning --start 0 --end 1
 
 clean:
 	rm -rf models/ logs/ tests/logs
