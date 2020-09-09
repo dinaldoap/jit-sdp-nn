@@ -18,10 +18,8 @@ def mkdir(dir):
     dir.mkdir(parents=True, exist_ok=True)
 
 
-def setup_and_run(parser, fruns):
+def setup_and_run(config, frun):
     run_command = ' '.join(sys.argv)
-    args = parser.parse_args()
-    config = dict(vars(args))
     meta_model = config['meta_model']
     logging.getLogger('').handlers = []
     dir = pathlib.Path('logs')
@@ -34,7 +32,6 @@ def setup_and_run(parser, fruns):
     logging.info('Config: {}'.format(config))
 
     set_experiment(config)
-    frun = fruns[meta_model]
     with mlflow.start_run():
         mlflow.set_tag('run.command', run_command)
         frun(config=config)

@@ -17,11 +17,15 @@ def main():
     baseline.add_arguments(subparsers.add_parser(
         name='orb', help='Oversampling Rate Boosting'))
 
-    fruns = {
-        'borb': run,
-        'orb': baseline.run,
-    }
-    return setup_and_run(parser, fruns)
+    args = parser.parse_args()
+    config = dict(vars(args))
+    meta_model_generator = config['meta_model']
+    if meta_model_generator == 'borb':
+        return setup_and_run(config, run)
+    elif meta_model_generator == 'orb':
+        return setup_and_run(config, baseline.run)
+    else:
+        raise ValueError('meta-model not supported.')
 
 
 def add_arguments(parser):
