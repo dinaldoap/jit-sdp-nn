@@ -14,7 +14,7 @@ run:
 	jitsdp borb --model irf --start 2000 --end 2050
 	jitsdp orb --start 2000 --end 2050
 	jitsdp tuning --start 0 --end 1
-	jitsdp testing --start 0 --end 1
+	jitsdp testing --start 0 --end 1 --no-validation
 
 clean:
 	rm -rf models/ logs/ tests/logs

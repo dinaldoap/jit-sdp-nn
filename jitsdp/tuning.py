@@ -52,6 +52,8 @@ def add_arguments(parser):
                         help='Starting index of the random configurations slice.', required=True)
     parser.add_argument('--end',   type=int,
                         help='Stopping index of the random configurations slice.', required=True)
+    parser.add_argument('--no-validation',
+                        help='Disable validations of the data the flows from hyperparameter tuning to testing.', action='store_true')
 
 
 def generate(config):

@@ -13,9 +13,11 @@ def generate(config):
     n_configs = config['end'] - config['start']
     n_seeds = 5
     expected_max_results = n_models * n_datasets * n_configs * n_seeds
-    df_tuning = mlflow.search_runs(experiment_ids=0, max_results= 2 * expected_max_results)
-    assert expected_max_results == len(df_tuning)
-    assert np.all(df_tuning['status'] == 'FINISHED')
+    df_tuning = mlflow.search_runs(
+        experiment_ids=0, max_results=2 * expected_max_results)
+    if not config['no_validation']:
+        assert expected_max_results == len(df_tuning)
+        assert np.all(df_tuning['status'] == 'FINISHED')
     config_cols = config_columns(df_tuning.columns)
     df_best_configs = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
         'metrics.avg_gmean': ['mean', 'std'], 'tags.run.command': 'first'})
