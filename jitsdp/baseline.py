@@ -196,24 +196,21 @@ def remove_noise(df_events, orb_n):
 
 
 def balance_events(df_events):
-    cumsum = df_events['target'].cumsum()
-    cumcount = np.array(range(len(df_events))) + 1
-    cumprop = cumsum / cumcount
-    timestamp_event_balance = df_events.loc[cumprop == .5, 'timestamp_event'].min(
-    )
-    # order balanced
-    df_balanced = df_events[df_events['timestamp_event']
-                            <= timestamp_event_balance]
-    df_clean = df_balanced[df_balanced['target'] == 0].copy()
-    df_bug = df_balanced[df_balanced['target'] == 1].copy()
-    # assert balance
-    assert len(df_clean) == len(df_bug)
-    df_bug['timestamp_event'] = df_clean['timestamp_event'].values
-    df_balanced = pd.concat([df_clean, df_bug])
-    df_balanced = df_balanced.sort_values('timestamp_event', kind='mergesort')
-    # order kept
-    df_kept = df_events[df_events['timestamp_event'] > timestamp_event_balance]
-    return pd.concat([df_balanced, df_kept])
+    bug_pool = []
+    df_balanced = []
+    for row in df_events.itertuples(index=False):
+        if row.target == 1:
+            bug_pool.append(row)
+
+        if row.target == 0:
+            df_balanced.append(row)
+            if len(bug_pool) > 0:
+                bug = bug_pool.pop(0)
+                bug = bug._replace(timestamp_event=row.timestamp_event)
+                df_balanced.append(bug)
+
+    df_balanced = pd.DataFrame(df_balanced)
+    return df_balanced
 
 
 def calculate_steps(data, bins, right):
