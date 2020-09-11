@@ -190,7 +190,7 @@ def remove_noise(df_events, orb_n):
     grouped_target = df_events.groupby(FEATURES)['target']
     cumsum = grouped_target.cumsum()
     cumcount = grouped_target.cumcount()
-    noise = cumcount - cumsum > orb_n
+    noise = cumcount - cumsum >= orb_n
     noise = noise & (df_events['target'] == 1)
     return df_events[~noise]
 
