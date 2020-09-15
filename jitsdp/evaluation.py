@@ -20,9 +20,6 @@ def run(config):
     df_prequential = make_stream(dataset)
     # split test partition in folds and iterate over them (fold from current to current + fold_size or end)
     # the previous commits until current are used for training
-    seconds_by_day = 24 * 60 * 60
-    # seconds
-    verification_latency = config['borb_waiting_time'] * seconds_by_day
     # each fold has pull_request_size commits
     fold_size = config['borb_pull_request_size']
     start = config['start']
@@ -40,12 +37,6 @@ def run(config):
     else:
         step = fold_size
 
-    if config['cross_project']:
-        df_others = make_stream_others(dataset)
-    else:
-        # empty df with same schema
-        df_others = df_prequential.head(0).copy()
-
     pipeline = create_pipeline(config)
     if config['incremental']:
         pipeline.save()
@@ -56,8 +47,8 @@ def run(config):
         df_test = df_prequential[current:min(current + step, end)].copy()
         df_train, df_tail = __prepare_tail_data(df_train, config)
 
-        df_train = __prepare_train_data(
-            df_train, df_others, verification_latency, config)
+        df_train = prepare_train_data(
+            df_train, config)
 
         df_train, df_val = __prepare_val_data(df_train, config)
         # train and predict
@@ -95,12 +86,13 @@ def __prepare_tail_data(df_train, config):
     return df_train, df_tail
 
 
-def __prepare_train_data(df_train, df_others, verification_latency, config):
+def prepare_train_data(df_train, config):
     train_timestamp = df_train['timestamp'].max()
-    df_train_others = df_others[df_others['timestamp']
-                                <= train_timestamp].copy()
-    df_train = pd.concat([df_train, df_train_others])
+    df_train = __concat_others(df_train, train_timestamp, config)
 
+    seconds_by_day = 24 * 60 * 60
+    # seconds
+    verification_latency = config['borb_waiting_time'] * seconds_by_day
     # add invalid label as a safe-guard
     df_train['soft_target'] = -1.
     if df_train.empty:
@@ -120,6 +112,19 @@ def __prepare_train_data(df_train, df_others, verification_latency, config):
 
     df_train = df_train.dropna(subset=['soft_target'])
     df_train['target'] = df_train['soft_target'] > .5
+    return df_train
+
+
+def __concat_others(df_train, train_timestamp, config):
+    if config['cross_project']:
+        df_others = make_stream_others(config['dataset'])
+    else:
+        # empty df with same schema
+        df_others = df_train.head(0).copy()
+
+    df_train_others = df_others[df_others['timestamp']
+                                <= train_timestamp].copy()
+    df_train = pd.concat([df_train, df_train_others])
     return df_train
 
 
