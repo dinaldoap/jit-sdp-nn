@@ -39,12 +39,12 @@ class Experiment():
         return '{}{}-{}-{}'.format(rate_driven, self.meta_model, model, train_data)
 
     def to_shell(self, out):
-        for seed_dataset_config in self.seed_dataset_configs:
-            for models_config in self.models_configs:
+        for models_config in self.models_configs:
+            for seed_dataset_config in self.seed_dataset_configs:
                 config = dict()
                 config.update(self.experiment_config)
-                config.update(seed_dataset_config)
                 config.update(models_config)
+                config.update(seed_dataset_config)
                 config = self.add_start(config)
                 config = self.fix_borb_max_sample_size(config)
                 params = ['--{} {}'.format(key, value)
@@ -59,6 +59,8 @@ class Experiment():
         return config
 
     def fix_borb_max_sample_size(self, config):
+        if self.meta_model != 'borb':
+            return config
         config = dict(config)
         relevant_keys = set(['dataset', 'end', 'cross-project',
                              'borb-waiting-time', 'borb-max-sample-size'])
@@ -129,8 +131,8 @@ def generate(config):
     experiment_configs = map(grid_to_configs, experiment_configs)
     experiment_configs = itertools.chain.from_iterable(experiment_configs)
     seed_dataset_configs = {
-        'seed': [0, 1, 2, 3, 4],
         'dataset': ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'],
+        'seed': [0, 1, 2, 3, 4],
     }
     seed_dataset_configs = grid_to_configs(seed_dataset_configs)
     # meta-models and models
