@@ -1,7 +1,7 @@
 build: clean format test run
 
 format:
-	autopep8 --in-place --recursive .
+	autopep8 --in-place --recursive jitsdp setup.py
 
 test: 
 	pytest tests
