@@ -5,10 +5,13 @@ from jitsdp.utils import filename_to_path
 
 import argparse
 import itertools
+from joblib import Memory
 import numpy as np
 from hyperopt import hp
 from hyperopt.pyll.base import scope
 import hyperopt.pyll.stochastic as config_space_sampler
+
+memory = Memory(location='logs', verbose=0)
 
 MAX_BORB_SAMPLE_SIZE_START = 1000
 MAX_BORB_SAMPLE_SIZE_END = 8000
@@ -57,10 +60,16 @@ class Experiment():
 
     def fix_borb_max_sample_size(self, config):
         config = dict(config)
-        config['borb-max-sample-size'] = _scale_max_sample_size(config)
+        relevant_keys = set(['dataset', 'end', 'cross-project',
+                             'borb-waiting-time', 'borb-max-sample-size'])
+        relevant_config = {key: value for (
+            key, value) in config.items() if key in relevant_keys}
+        config['borb-max-sample-size'] = _scale_max_sample_size(
+            relevant_config)
         return config
 
 
+@memory.cache
 def _scale_max_sample_size(config):
     undescore_config = {key.replace(
         '-', '_'): value for (key, value) in config.items()}
@@ -69,9 +78,9 @@ def _scale_max_sample_size(config):
     df_train = df_commits[:undescore_config['end']]
     df_train = prepare_train_data(df_train, undescore_config)
     max_train_size = min(len(df_train), MAX_BORB_SAMPLE_SIZE_END)
+    assert max_train_size >= MAX_BORB_SAMPLE_SIZE_START
     fixed_borb_max_sample_size = (undescore_config['borb_max_sample_size'] - MAX_BORB_SAMPLE_SIZE_START) / (
         MAX_BORB_SAMPLE_SIZE_END - MAX_BORB_SAMPLE_SIZE_START)
-    assert max_train_size >= MAX_BORB_SAMPLE_SIZE_START
     fixed_borb_max_sample_size = fixed_borb_max_sample_size * \
         (max_train_size - MAX_BORB_SAMPLE_SIZE_START) + \
         MAX_BORB_SAMPLE_SIZE_START
