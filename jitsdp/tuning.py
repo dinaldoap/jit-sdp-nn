@@ -239,7 +239,6 @@ def hoeffding_shared_config_space():
                           ['gini', 'info_gain', 'hellinger']),
             loguniform('{}-split-confidence'.format(model), 0.0000001, 0.5),
             uniform('{}-tie-threshold'.format(model), 0.05, 0.5),
-            choiceuniform('{}-remove-poor-atts'.format(model), [1, 0]),
             choiceuniform('{}-no-preprune'.format(model), [1, 0]),
             choiceuniform('{}-leaf-prediction'.format(model),
                           ['mc', 'nb', 'nba']),
