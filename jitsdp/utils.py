@@ -18,6 +18,12 @@ def mkdir(dir):
     dir.mkdir(parents=True, exist_ok=True)
 
 
+def dir_to_path(dirname):
+    path = pathlib.Path(dirname)
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def filename_to_path(filename):
     path = pathlib.Path(filename)
     path.parent.mkdir(parents=True, exist_ok=True)
