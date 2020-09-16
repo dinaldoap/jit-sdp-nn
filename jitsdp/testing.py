@@ -11,12 +11,13 @@ def generate(config):
     # print_data(df_tuning)
     df_best_configs = get_best_configs(config)
     # print_data(df_best_configs)
-    commands = tuning_to_testing(df_best_configs['run.command.first'])
+    commands = tuning_to_testing(df_best_configs['run.command'])
     file_ = filename_to_path(config['filename'])
     with open(file_, mode='w') as out:
         for command in commands:
             out.write(command)
             out.write('\n')
+
 
 def get_best_configs(config):
     n_datasets = 10
@@ -33,15 +34,16 @@ def get_best_configs(config):
         assert np.all(df_tuning['status'] == 'FINISHED')
     config_cols = config_columns(df_tuning.columns)
     df_best_configs = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
-        'metrics.avg_gmean': ['mean', 'std'], 'tags.run.command': 'first'})
+        'metrics.avg_gmean': 'mean', 'tags.run.command': 'first'})
     df_best_configs.columns = remove_columns_prefix(df_best_configs.columns)
     df_best_configs = df_best_configs.sort_values(
-        by='avg_gmean.mean', ascending=False, kind='mergesort')
+        by='avg_gmean', ascending=False, kind='mergesort')
     df_best_configs = df_best_configs.drop_duplicates(
         subset=['rate_driven', 'meta_model', 'model', 'dataset'])
     df_best_configs = df_best_configs.sort_values(
         by=['dataset', 'model'], ascending=True, kind='mergesort')
     return df_best_configs
+
 
 def tuning_to_testing(commands):
     seeds = range(30)
@@ -50,7 +52,8 @@ def tuning_to_testing(commands):
             new_command = command.replace('end', 'start')
             new_command = re.sub(
                 r'seed \d+', 'seed {}'.format(seed), new_command)
-            new_command = new_command + ' --end None --experiment-name testing --track-time 1 --track-forest 1'
+            new_command = new_command + \
+                ' --end None --experiment-name testing --track-time 1 --track-forest 1'
             yield new_command
 
 
@@ -61,13 +64,11 @@ def config_columns(cols):
 def remove_columns_prefix(cols):
     new_cols = []
     for col in cols:
-        first_level = col[0]
-        first_level = first_level.split('.')
-        first_level = '.'.join(first_level[1:])
-        second_level = col[1]
-        second_level = second_level if len(
-            second_level) == 0 else '.{}'.format(second_level)
-        new_col = '{}{}'.format(first_level, second_level)
+        new_col = col.split('.')
+        if len(new_col) > 1:
+            new_col = '.'.join(new_col[1:])
+        else:
+            new_col = '.'.join(new_col[:])
         new_cols.append(new_col)
     return new_cols
 
