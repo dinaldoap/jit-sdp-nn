@@ -9,6 +9,16 @@ import re
 
 def generate(config):
     # print_data(df_tuning)
+    df_best_configs = get_best_configs(config)
+    # print_data(df_best_configs)
+    commands = tuning_to_testing(df_best_configs['run.command.first'])
+    file_ = filename_to_path(config['filename'])
+    with open(file_, mode='w') as out:
+        for command in commands:
+            out.write(command)
+            out.write('\n')
+
+def get_best_configs(config):
     n_datasets = 10
     n_cross_projects = 2
     n_models = 8
@@ -31,14 +41,7 @@ def generate(config):
         subset=['rate_driven', 'meta_model', 'model', 'dataset'])
     df_best_configs = df_best_configs.sort_values(
         by=['dataset', 'model'], ascending=True, kind='mergesort')
-    # print_data(df_best_configs)
-    commands = tuning_to_testing(df_best_configs['run.command.first'])
-    file_ = filename_to_path(config['filename'])
-    with open(file_, mode='w') as out:
-        for command in commands:
-            out.write(command)
-            out.write('\n')
-
+    return df_best_configs
 
 def tuning_to_testing(commands):
     seeds = range(30)
