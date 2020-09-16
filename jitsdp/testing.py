@@ -45,7 +45,7 @@ def tuning_to_testing(commands):
             new_command = command.replace('end', 'start')
             new_command = re.sub(
                 r'seed \d+', 'seed {}'.format(seed), new_command)
-            new_command = new_command + ' --experiment-name testing --track-time 1 --track-forest 1'
+            new_command = new_command + ' --end None --experiment-name testing --track-time 1 --track-forest 1'
             yield new_command
 
 
