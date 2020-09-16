@@ -5,7 +5,7 @@ from jitsdp.utils import mkdir
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-sns.set(rc={'figure.figsize': (12, 9)})
+sns.set(rc={'figure.figsize': (14, 9)})
 
 
 def plot_recalls_gmean(data, config, dir=DIR):
