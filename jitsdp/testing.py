@@ -9,7 +9,7 @@ import re
 
 def generate(config):
     # print_data(df_tuning)
-    df_best_configs = get_best_configs(config)
+    df_best_configs, _ = get_best_configs(config)
     # print_data(df_best_configs)
     commands = tuning_to_testing(df_best_configs['run.command'])
     file_ = filename_to_path(config['filename'])
@@ -32,17 +32,17 @@ def get_best_configs(config):
     if not config['no_validation']:
         assert expected_max_results == len(df_tuning)
         assert np.all(df_tuning['status'] == 'FINISHED')
-    config_cols = config_columns(df_tuning.columns)
+    config_cols = remove_columns_prefix(config_columns(df_tuning.columns))
+    df_tuning.columns = remove_columns_prefix(df_tuning.columns)
     df_best_configs = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
-        'metrics.avg_gmean': 'mean', 'tags.run.command': 'first'})
-    df_best_configs.columns = remove_columns_prefix(df_best_configs.columns)
+        'avg_gmean': 'mean', 'run.command': 'first'})
     df_best_configs = df_best_configs.sort_values(
         by='avg_gmean', ascending=False, kind='mergesort')
     df_best_configs = df_best_configs.drop_duplicates(
         subset=['rate_driven', 'meta_model', 'model', 'dataset'])
     df_best_configs = df_best_configs.sort_values(
         by=['dataset', 'model'], ascending=True, kind='mergesort')
-    return df_best_configs
+    return df_best_configs, config_cols
 
 
 def tuning_to_testing(commands):
