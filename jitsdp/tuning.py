@@ -21,15 +21,15 @@ MAX_BORB_SAMPLE_SIZE_STEP = 1000
 class Experiment():
 
     def __init__(self, experiment_config, seed_dataset_configs, models_configs):
-        self.experiment_config = self.fix_experimnt_config(experiment_config)
+        self.meta_model = experiment_config['meta-model']
+        self.experiment_config = experiment_config
         self.seed_dataset_configs = seed_dataset_configs
         self.models_configs = models_configs
 
-    def fix_experimnt_config(self, experiment_config):
-        self.meta_model = experiment_config['meta-model']
-        new_experiment_config = dict(experiment_config)
-        del new_experiment_config['meta-model']
-        return new_experiment_config
+    def remove_meta_model(self, config):
+        config = dict(config)
+        del config['meta-model']
+        return config
 
     @property
     def name(self):
@@ -38,7 +38,8 @@ class Experiment():
         train_data = 'cp' if self.experiment_config['cross-project'] else 'wp'
         return '{}{}-{}-{}'.format(rate_driven, self.meta_model, model, train_data)
 
-    def to_shell(self, out):
+    def to_configs(self):
+        configs = []
         for models_config in self.models_configs:
             for seed_dataset_config in self.seed_dataset_configs:
                 config = dict()
@@ -47,6 +48,12 @@ class Experiment():
                 config.update(seed_dataset_config)
                 config = self.add_start(config)
                 config = self.fix_borb_max_sample_size(config)
+                configs.append(config)
+        return configs
+
+    def to_shell(self, out):
+            for config in self.to_configs():
+                config = self.remove_meta_model(config)
                 params = ['--{} {}'.format(key, value)
                           for key, value in config.items()]
                 params = ' '.join(params)
