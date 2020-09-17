@@ -58,7 +58,10 @@ def tuning_to_testing(commands):
 
 
 def config_columns(cols):
-    return [col for col in cols if col.startswith('params') and not col.endswith('seed')]
+    exclusions = ['seed', 'start', 'end',
+                  'experiment_name', 'track_time', 'track_forest']
+    exclusions = set(['params.{}'.format(name) for name in exclusions])
+    return [col for col in cols if col.startswith('params') and not col in exclusions]
 
 
 def remove_columns_prefix(cols):
