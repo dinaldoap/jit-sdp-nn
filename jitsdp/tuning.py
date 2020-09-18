@@ -52,13 +52,13 @@ class Experiment():
         return configs
 
     def to_shell(self, out):
-            for config in self.to_configs():
-                config = self.remove_meta_model(config)
-                params = ['--{} {}'.format(key, value)
-                          for key, value in config.items()]
-                params = ' '.join(params)
-                out.write(
-                    './jitsdp {} {}\n'.format(self.meta_model, params))
+        for config in self.to_configs():
+            config = self.remove_meta_model(config)
+            params = ['--{} {}'.format(key, value)
+                      for key, value in config.items()]
+            params = ' '.join(params)
+            out.write(
+                './jitsdp {} {}\n'.format(self.meta_model, params))
 
     def add_start(self, config):
         config = dict(config)
