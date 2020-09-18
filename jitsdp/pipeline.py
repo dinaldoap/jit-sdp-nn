@@ -2,7 +2,7 @@
 from jitsdp import metrics as met
 from jitsdp.mlp import MLP
 from jitsdp.data import FEATURES
-from jitsdp.utils import mkdir, track_forest, track_time
+from jitsdp.utils import mkdir, track_forest, track_c1, track_time
 
 from abc import ABCMeta, abstractmethod
 import joblib
@@ -171,6 +171,10 @@ class Threshold(Classifier):
 
     def predict_proba(self, df_features, **kwargs):
         prediction = self.model.predict_proba(df_features, **kwargs)
+        df_proportion = kwargs.pop('df_proportion', None)
+        if df_proportion is not None:
+            c1 = df_proportion['target'].mean()
+            prediction = track_c1(prediction, c1)
         if kwargs.pop('track_time', 0):
             prediction = track_time(prediction)
         return prediction

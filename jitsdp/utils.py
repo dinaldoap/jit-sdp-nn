@@ -98,6 +98,11 @@ def _concat_property(prediction, name, values):
     return pd.concat([prediction, prop], axis='columns')
 
 
+def track_c1(prediction, p1):
+    prediction['c1'] = p1
+    return prediction
+
+
 def track_time(prediction):
     prediction['timestamp_test'] = time.time()
     return prediction
