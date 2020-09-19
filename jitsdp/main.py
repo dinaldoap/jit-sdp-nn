@@ -101,6 +101,9 @@ def add_arguments(parser):
                         help='Number of epochs performed by the training (default: 1).',    default=1)
     parser.add_argument('--lr-batch-size',   type=int,
                         help='Number of commits included in each batch (default: 256).',    default=256)
+    parser.add_argument('--lr-log-transformation',   type=int,
+                        help='Whether must use log transformation (default: 0).',
+                        default=0, choices=[0, 1])
     parser.add_argument('--mlp-n-hidden-layers',   type=int,
                         help='Number of hidden layers (default: 1).',    default=1)
     parser.add_argument('--mlp-hidden-layers-size',   type=int,

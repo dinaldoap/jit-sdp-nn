@@ -114,11 +114,7 @@ def create_irf_model(config):
 
 
 def create_lr_model(config):
-    steps = []
-    if config['lr_log_transformation']:
-        steps.append(FunctionTransformer(np.absolute))
-        steps.append(FunctionTransformer(np.log1p))
-    steps.append(StandardScaler())
+    steps = linear_model_steps(config)
     classifier = SGDClassifier(loss='log', penalty='elasticnet',
                                alpha=config['lr_alpha'], l1_ratio=config['lr_l1_ratio'], shuffle=False)
     return LogisticRegression(n_epochs=config['lr_n_epochs'], steps=steps, classifier=classifier,
@@ -133,6 +129,17 @@ def create_svm_model(config):
     return LogisticRegression(n_epochs=config['svm_n_epochs'], steps=[scaler], classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
                               batch_size=config['svm_batch_size'], fading_factor=1)
+
+
+def linear_model_steps(config):
+    model = config['model']
+    log_transformation = config['{}_log_transformation'.format(model)]
+    steps = []
+    if log_transformation:
+        steps.append(FunctionTransformer(np.absolute))
+        steps.append(FunctionTransformer(np.log1p))
+    steps.append(StandardScaler())
+    return steps
 
 
 class Model(metaclass=ABCMeta):
