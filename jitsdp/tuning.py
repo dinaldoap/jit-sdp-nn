@@ -193,17 +193,17 @@ def create_models_configs(config):
     ihf.update(borb)
     ihf.update(hoeffding_shared['ihf'])
 
+    linear_shared = linear_shared_config_space()
     lr = {}
     lr.update(borb)
+    lr.update(linear_shared['lr'])
     lr.update([
         loguniform('lr-alpha', .01, 1.),
-        uniform('lr-n-epochs',  10, 80, 10),
-        loguniform('lr-batch-size', 128, 512, 128),
-        choiceuniform('lr-log-transformation', [0, 1]),
     ])
 
     mlp = {}
     mlp.update(borb)
+    mlp.update(linear_shared['mlp'])
     mlp.update([
         loguniform('mlp-learning-rate', .0001, .01),
         uniform('mlp-n-epochs', 10, 80, 10),
@@ -299,6 +299,18 @@ def hoeffding_shared_config_space():
             choiceuniform('{}-no-preprune'.format(model), [1, 0]),
             choiceuniform('{}-leaf-prediction'.format(model),
                           ['mc', 'nb', 'nba']),
+        ]
+    return config_spaces
+
+
+def linear_shared_config_space():
+    config_spaces = {}
+    models = ['lr', 'mlp']
+    for model in models:
+        config_spaces[model] = [
+            uniform('{}-n-epochs'.format(model),  10, 80, 10),
+            loguniform('{}-batch-size'.format(model), 128, 512, 128),
+            choiceuniform('{}-log-transformation'.format(model), [0, 1]),
         ]
     return config_spaces
 
