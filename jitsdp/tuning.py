@@ -103,6 +103,8 @@ def add_arguments(parser, filename):
                         help='Starting index of the random configurations slice.', required=True)
     parser.add_argument('--end',   type=int,
                         help='Stopping index of the random configurations slice.', required=True)
+    parser.add_argument('--cross-project',   type=int,
+                        help='Whether must use cross-project data.', required=True, choices=[0, 1])
     parser.add_argument('--filename',   type=str,
                         help='Output script path.', default=filename)
     parser.add_argument('--no-validation',
@@ -111,21 +113,22 @@ def add_arguments(parser, filename):
 
 def generate(config):
     # experiments
+    cross_project = config['cross_project']
     orb_rorb_grid = {
         'meta-model': ['orb'],
-        'cross-project': [0, 1],
+        'cross-project': [0, 1] if cross_project else [0],
         'rate-driven': [0, 1],
         'model': ['hts'],
     }
     borb_rborb_grid = {
         'meta-model': ['borb'],
-        'cross-project': [0, 1],
+        'cross-project': [0, 1] if cross_project else [0],
         'rate-driven': [0, 1],
         'model': ['ihf'],
     }
     rborb_grid = {
         'meta-model': ['borb'],
-        'cross-project': [0, 1],
+        'cross-project': [0, 1] if cross_project else [0],
         'rate-driven': [1],
         'model': ['lr', 'mlp', 'nb', 'irf'],
     }
