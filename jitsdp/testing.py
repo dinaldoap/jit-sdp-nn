@@ -35,9 +35,9 @@ def get_best_configs(config):
     config_cols = remove_columns_prefix(config_columns(df_tuning.columns))
     df_tuning.columns = remove_columns_prefix(df_tuning.columns)
     df_best_configs = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
-        'avg_gmean': 'mean', 'run.command': 'first'})
+        'g-mean': 'mean', 'run.command': 'first'})
     df_best_configs = df_best_configs.sort_values(
-        by='avg_gmean', ascending=False, kind='mergesort')
+        by='g-mean', ascending=False, kind='mergesort')
     df_best_configs = df_best_configs.drop_duplicates(
         subset=['rate_driven', 'meta_model', 'model', 'dataset'])
     df_best_configs = df_best_configs.sort_values(

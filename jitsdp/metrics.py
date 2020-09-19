@@ -102,7 +102,7 @@ def prequential_recalls_difference(recalls):
 
 def prequential_gmean(recalls):
     gmean = mstats.gmean(recalls[['r0', 'r1']], axis=1)
-    gmean = pd.DataFrame(gmean, columns=['gmean'])
+    gmean = pd.DataFrame(gmean, columns=['g-mean'])
     return pd.concat([recalls, gmean], axis='columns')
 
 

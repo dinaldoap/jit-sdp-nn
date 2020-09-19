@@ -10,7 +10,7 @@ sns.set(rc={'figure.figsize': (14, 9)})
 
 def plot_recalls_gmean(data, config, dir=DIR):
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
-                   'r0', 'r1', 'r0-r1', 'gmean'], filename='recalls_gmean.png')
+                   'r0', 'r1', 'r0-r1', 'g-mean'], filename='recalls_gmean.png')
 
 
 def plot_proportions(data, config, dir=DIR):
@@ -40,11 +40,11 @@ def __plot_metrics(data, config, dir, metrics, filename):
 
 def plot_boxplot(data, dir):
     metrics = {
-        'avg_gmean': 'g-mean',
-        'avg_r0-r1': '|r0-r1|'
+        'g-mean': 'g-mean',
+        'r0-r1': '|r0-r1|'
     }
     for metric_id, metric_name in metrics.items():
-        ax = sns.boxplot(data=data, x='dataset', y=metric_id, hue='model')
+        ax = sns.barplot(data=data, x='dataset', y=metric_id, hue='model')
         ax.set_title('{}'.format(metric_name))
         plt.savefig(dir / '{}.png'.format(metric_id))
         plt.clf()

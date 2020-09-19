@@ -47,7 +47,7 @@ def test_prequential_gmean():
     }
     expected = recalls.copy()
     expected.update({
-        'gmean': [0, 0,       0,          0, .607456739, .701107011],
+        'g-mean': [0, 0,       0,          0, .607456739, .701107011],
     })
     recalls = pd.DataFrame(recalls)
     expected = pd.DataFrame(expected)
