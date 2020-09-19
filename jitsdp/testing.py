@@ -25,12 +25,17 @@ def get_best_configs(config):
     n_models = 8
     n_configs = config['end'] - config['start']
     n_seeds = 5
-    expected_max_results = n_models * n_cross_projects * \
+    expected_n_runs = n_models * n_cross_projects * \
         n_configs * n_datasets * n_seeds
+    experiment_name = config['experiment_name']
+    experiment_id = mlflow.get_experiment_by_name(
+        experiment_name).experiment_id
     df_tuning = mlflow.search_runs(
-        experiment_ids='0', max_results=2 * expected_max_results)
+        experiment_ids=experiment_id, max_results=2 * expected_n_runs)
     if not config['no_validation']:
-        assert expected_max_results == len(df_tuning)
+        n_runs = len(df_tuning)
+        assert expected_n_runs == n_runs, ' Number of runs in experiment {}: {}. Expected: {}.'.format(
+            experiment_name,  n_runs, expected_n_runs)
         assert np.all(df_tuning['status'] == 'FINISHED')
     config_cols = remove_columns_prefix(config_columns(df_tuning.columns))
     df_tuning.columns = remove_columns_prefix(df_tuning.columns)
