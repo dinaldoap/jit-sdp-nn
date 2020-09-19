@@ -84,7 +84,7 @@ def create_ihf_model(config):
 
 
 def create_mlp_model(config):
-    scaler = StandardScaler()
+    steps = linear_model_steps(config)
     criterion = nn.BCEWithLogitsLoss()
     classifier = MLP(input_layer_size=len(FEATURES),
                      n_hidden_layers=config['mlp_n_hidden_layers'],
@@ -93,7 +93,7 @@ def create_mlp_model(config):
                      dropout_hidden_layers=config['mlp_dropout_hidden_layers'])
     optimizer = optim.Adam(params=classifier.parameters(),
                            lr=config['mlp_learning_rate'])
-    return PyTorch(steps=[scaler], classifier=classifier, optimizer=optimizer, criterion=criterion,
+    return PyTorch(steps=steps, classifier=classifier, optimizer=optimizer, criterion=criterion,
                    features=FEATURES, target='target', soft_target='soft_target',
                    max_epochs=config['mlp_n_epochs'], batch_size=config['mlp_batch_size'], fading_factor=1)
 
