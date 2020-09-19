@@ -199,6 +199,7 @@ def create_models_configs(config):
         loguniform('lr-alpha', .01, 1.),
         uniform('lr-n-epochs',  10, 80, 10),
         loguniform('lr-batch-size', 128, 512, 128),
+        choiceuniform('lr-log-transformation', [0, 1]),
     ])
 
     mlp = {}
@@ -211,6 +212,7 @@ def create_models_configs(config):
         uniform('mlp-dropout-input-layer', .1, .3, .1),
         uniform('mlp-dropout-hidden-layer', .3, .5, .1),
         loguniform('mlp-batch-size',  128, 512, 128),
+        choiceuniform('mlp-log-transformation', [0, 1]),
     ])
 
     nb = {}
