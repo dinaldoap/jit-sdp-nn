@@ -19,7 +19,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import FunctionTransformer, StandardScaler
 from sklearn.exceptions import NotFittedError
 from skmultiflow.trees import HoeffdingTreeClassifier
 
@@ -114,10 +114,14 @@ def create_irf_model(config):
 
 
 def create_lr_model(config):
-    scaler = StandardScaler()
+    steps = []
+    if config['lr_log_transformation']:
+        steps.append(FunctionTransformer(np.absolute))
+        steps.append(FunctionTransformer(np.log1p))
+    steps.append(StandardScaler())
     classifier = SGDClassifier(loss='log', penalty='elasticnet',
                                alpha=config['lr_alpha'], l1_ratio=config['lr_l1_ratio'], shuffle=False)
-    return LogisticRegression(n_epochs=config['lr_n_epochs'], steps=[scaler], classifier=classifier,
+    return LogisticRegression(n_epochs=config['lr_n_epochs'], steps=steps, classifier=classifier,
                               features=FEATURES, target='target', soft_target='soft_target',
                               batch_size=config['lr_batch_size'], fading_factor=1)
 
