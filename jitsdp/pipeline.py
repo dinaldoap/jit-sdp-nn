@@ -455,8 +455,7 @@ def _sampler(y, fading_factor, **kwargs):
     age_weights[bug_indices] = _fading_weights(
         size=len(bug_indices), fading_factor=fading_factor, total=weights[1])
     max_sample_size = kwargs.pop('max_sample_size', None)
-    num_samples = len(y) if max_sample_size is None else min(
-        len(y), max_sample_size)
+    num_samples = len(y) if max_sample_size is None else max_sample_size
     return data.WeightedRandomSampler(weights=age_weights, num_samples=num_samples, replacement=True)
 
 
