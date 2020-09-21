@@ -59,24 +59,24 @@ def add_arguments(parser):
     parser.add_argument('--dataset',   type=str, help='Dataset to run the experiment. (default: brackets).',
                         default='brackets', choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'])
     parser.add_argument('--model',   type=str,
-                        help='Which models must use as the base learner (default: hts).', default='hts', choices=['hts'])
-    parser.add_argument('--hts-n-estimators',   type=int,
+                        help='Which models must use as the base learner (default: oht).', default='oht', choices=['oht'])
+    parser.add_argument('--oht-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',  default=1)
-    parser.add_argument('--hts-grace-period',   type=int,
+    parser.add_argument('--oht-grace-period',   type=int,
                         help='Number of instances a leaf should observe between split attempts (default: 200).',  default=200)
-    parser.add_argument('--hts-split-criterion',   type=str, help='Split criterion to use (default: info_gain).',
+    parser.add_argument('--oht-split-criterion',   type=str, help='Split criterion to use (default: info_gain).',
                         default='info_gain', choices=['gini', 'info_gain', 'hellinger'])
-    parser.add_argument('--hts-split-confidence',   type=float,
+    parser.add_argument('--oht-split-confidence',   type=float,
                         help='Allowed error in split decision, a value closer to 0 takes longer to decid (default: .0000001).',  default=.0000001)
-    parser.add_argument('--hts-tie-threshold',   type=float,
+    parser.add_argument('--oht-tie-threshold',   type=float,
                         help='Threshold below which a split will be forced to break ties (default: .05).',  default=.05)
-    parser.add_argument('--hts-remove-poor-atts',   type=int,
+    parser.add_argument('--oht-remove-poor-atts',   type=int,
                         help='Whether must disable poor attributes (default: 0).',
                         default=0, choices=[0, 1])
-    parser.add_argument('--hts-no-preprune',   type=int,
+    parser.add_argument('--oht-no-preprune',   type=int,
                         help='Whether must disable pre-pruning (default: 0).',
                         default=0, choices=[0, 1])
-    parser.add_argument('--hts-leaf-prediction',   type=str, help='Prediction mechanism used at leafs. (default: nba).',
+    parser.add_argument('--oht-leaf-prediction',   type=str, help='Prediction mechanism used at leafs. (default: nba).',
                         default='nba', choices=['mc', 'nb', 'nba'])
     parser.add_argument('--track-time',   type=int,
                         help='Whether must track time. (default: 0).',  default=0)
@@ -112,13 +112,13 @@ def run(config):
 
     train_stream = DataStream(df_train[FEATURES], y=df_train[['target']])
     base_estimator = HoeffdingTreeClassifier(
-        grace_period=config['hts_grace_period'],
-        split_criterion=config['hts_split_criterion'],
-        split_confidence=config['hts_split_confidence'],
-        tie_threshold=config['hts_tie_threshold'],
-        remove_poor_atts=config['hts_remove_poor_atts'],
-        no_preprune=config['hts_no_preprune'],
-        leaf_prediction=config['hts_leaf_prediction'])
+        grace_period=config['oht_grace_period'],
+        split_criterion=config['oht_split_criterion'],
+        split_confidence=config['oht_split_confidence'],
+        tie_threshold=config['oht_tie_threshold'],
+        remove_poor_atts=config['oht_remove_poor_atts'],
+        no_preprune=config['oht_no_preprune'],
+        leaf_prediction=config['oht_leaf_prediction'])
     model = ORB(features=FEATURES,
                 decay_factor=config['orb_decay_factor'],
                 ma_window_size=config['orb_ma_window_size'],
@@ -127,7 +127,7 @@ def run(config):
                 l1=config['orb_l1'],
                 m=config['orb_m'],
                 base_estimator=base_estimator,
-                n_estimators=config['hts_n_estimators'],
+                n_estimators=config['oht_n_estimators'],
                 rate_driven=config['rate_driven'],
                 rate_driven_grace_period=config['orb_rd_grace_period'],
                 )

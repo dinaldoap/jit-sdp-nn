@@ -86,7 +86,7 @@ def generate(config):
         'meta-model': ['orb'],
         'cross-project': [0, 1] if cross_project else [0],
         'rate-driven': [0, 1],
-        'model': ['hts'],
+        'model': ['oht'],
     }
     borb_rborb_grid = {
         'meta-model': ['borb'],
@@ -146,9 +146,9 @@ def create_models_configs(config):
                 ])
 
     hoeffding_shared = hoeffding_shared_config_space()
-    hts = {}
-    hts.update(orb)
-    hts.update(hoeffding_shared['hts'])
+    oht = {}
+    oht.update(orb)
+    oht.update(hoeffding_shared['oht'])
 
     borb = {}
     borb.update(meta_model_shared['borb'])
@@ -199,7 +199,7 @@ def create_models_configs(config):
 
     start = config['start']
     end = config['end']
-    models_configs = {'hts': config_space_to_configs(hts, start, end),
+    models_configs = {'oht': config_space_to_configs(oht, start, end),
                       'ihf': config_space_to_configs(ihf, start, end),
                       'lr': config_space_to_configs(lr, start, end),
                       'mlp': config_space_to_configs(mlp, start, end),
@@ -252,9 +252,9 @@ def meta_model_shared_config_space():
 
 def hoeffding_shared_config_space():
     config_spaces = {}
-    models = ['hts', 'ihf']
+    models = ['oht', 'ihf']
     max_n_estimators = {
-        'hts': 40,
+        'oht': 40,
         'ihf': 20,
     }
     for model in models:

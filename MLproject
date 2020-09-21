@@ -16,5 +16,5 @@ entry_points:
   orb:
     parameters:
         end: {default: None}
-        hts-n-estimators: {default: 20}
-    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp orb --end {end} --hts-n-estimators {hts-n-estimators}'
+        oht-n-estimators: {default: 20}
+    command: 'conda env update --file conda.yml --prune && pip install -r requirements.txt && jitsdp orb --end {end} --oht-n-estimators {oht-n-estimators}'
