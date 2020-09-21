@@ -53,6 +53,20 @@ def generate(config):
         assert expected_n_runs == n_runs, ' Number of runs in experiment {}: {}. Expected: {}.'.format(
             testing_experiment_name,  n_runs, expected_n_runs)
         assert np.all(df_testing['status'] == 'FINISHED')
-    df_testing = df_testing.sort_values(by='dataset')
+    df_testing = df_testing.sort_values(
+        by=['dataset', 'meta_model', 'model', 'rate_driven', 'cross_project'])
+    df_testing['name'] = df_testing.apply(lambda row: name(
+        row, config['cross_project']), axis='columns')
     # plotting
     plot_boxplot(df_testing, dir_to_path(config['filename']))
+
+
+def name(row, cross_project):
+    meta_model = row['meta_model']
+    rate_driven = 'rd' if row['rate_driven'] == '1' else 'nrd'
+    model = row['model']
+    if cross_project:
+        train_data = '-cp' if row['cross_project'] == '1' else '-wp'
+    else:
+        train_data = ''
+    return '{}$_{{{}}}$-{}{}'.format(meta_model.upper(), rate_driven, model.upper(), train_data.upper())

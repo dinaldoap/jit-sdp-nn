@@ -44,7 +44,7 @@ def plot_boxplot(data, dir):
         'r0-r1': '|r0-r1|'
     }
     for metric_id, metric_name in metrics.items():
-        ax = sns.barplot(data=data, x='dataset', y=metric_id, hue='model')
+        ax = sns.barplot(data=data, x='dataset', y=metric_id, hue='name')
         ax.set_title('{}'.format(metric_name))
         plt.savefig(dir / '{}.png'.format(metric_id))
         plt.clf()

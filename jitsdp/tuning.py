@@ -22,13 +22,6 @@ class Experiment():
         del config['meta-model']
         return config
 
-    @property
-    def name(self):
-        rate_driven = 'r' if self.experiment_config['rate-driven'] else ''
-        model = self.experiment_config['model']
-        train_data = 'cp' if self.experiment_config['cross-project'] else 'wp'
-        return '{}{}-{}-{}'.format(rate_driven, self.meta_model, model, train_data)
-
     def to_configs(self):
         configs = []
         for models_config in self.models_configs:
