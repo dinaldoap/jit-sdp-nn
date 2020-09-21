@@ -253,9 +253,14 @@ def meta_model_shared_config_space():
 def hoeffding_shared_config_space():
     config_spaces = {}
     models = ['hts', 'ihf']
+    max_n_estimators = {
+        'hts': 40,
+        'ihf': 20,
+    }
     for model in models:
         config_spaces[model] = [
-            uniform('{}-n-estimators'.format(model), 10, 40, 10),
+            uniform('{}-n-estimators'.format(model),
+                    10, max_n_estimators[model], 10),
             uniform('{}-grace-period'.format(model), 100, 500, 100),
             choiceuniform('{}-split-criterion'.format(model),
                           ['gini', 'info_gain', 'hellinger']),
