@@ -11,7 +11,8 @@ import hyperopt.pyll.stochastic as config_space_sampler
 
 class Experiment():
 
-    def __init__(self, experiment_config, seed_dataset_configs, models_configs):
+    def __init__(self, cross_project, experiment_config, seed_dataset_configs, models_configs):
+        self.cross_project = cross_project
         self.meta_model = experiment_config['meta-model']
         self.experiment_config = experiment_config
         self.seed_dataset_configs = seed_dataset_configs
@@ -40,8 +41,9 @@ class Experiment():
             params = ['--{} {}'.format(key, value)
                       for key, value in config.items()]
             params = ' '.join(params)
+            prefix = './' if self.cross_project else ''
             out.write(
-                './jitsdp {} {}\n'.format(self.meta_model, params))
+                '{}jitsdp {} {}\n'.format(prefix, self.meta_model, params))
 
     def add_start(self, config):
         config = dict(config)
@@ -98,14 +100,15 @@ def generate(config):
     models_configs = create_models_configs(config)
     file_ = filename_to_path(config['filename'])
     with open(file_, mode='w') as out:
-        for experiment in configs_to_experiments(experiment_configs, seed_dataset_configs, models_configs):
+        for experiment in configs_to_experiments(config['cross_project'], experiment_configs, seed_dataset_configs, models_configs):
             experiment.to_shell(out)
 
 
-def configs_to_experiments(experiment_configs, seed_dataset_configs, models_configs):
+def configs_to_experiments(cross_project, experiment_configs, seed_dataset_configs, models_configs):
     for experiment_config in experiment_configs:
         model = experiment_config['model']
-        experiment = Experiment(experiment_config=experiment_config,
+        experiment = Experiment(cross_project=cross_project,
+                                experiment_config=experiment_config,
                                 seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[model])
         yield experiment
 
