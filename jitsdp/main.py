@@ -5,7 +5,7 @@ import torch
 import sklearn
 from jitsdp.evaluation import run
 from jitsdp.utils import setup_and_run, int_or_none
-from jitsdp import baseline, tuning, testing
+from jitsdp import baseline, tuning, testing, report
 
 import argparse
 import sys
@@ -22,8 +22,10 @@ def main():
         name='orb', help='Run Oversampling Rate Boosting meta-model'))
     tuning.add_arguments(subparsers.add_parser(
         name='tuning', help='Generate hyperparameter tuning script'), 'logs/tuning.sh')
-    tuning.add_arguments(subparsers.add_parser(
+    testing.add_arguments(subparsers.add_parser(
         name='testing', help='Generate testing script'), 'logs/testing.sh')
+    report.add_arguments(subparsers.add_parser(
+        name='report', help='Generate report'), 'logs')
 
     args = parser.parse_args()
     config = dict(vars(args))
@@ -36,6 +38,8 @@ def main():
         return tuning.generate(config)
     elif meta_model_generator == 'testing':
         return testing.generate(config)
+    elif meta_model_generator == 'report':
+        return report.generate(config)
     else:
         raise ValueError('meta-model and script generator not supported.')
 

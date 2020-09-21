@@ -1,10 +1,20 @@
 # coding=utf-8
+from jitsdp import tuning
 from jitsdp.utils import filename_to_path
 
 import mlflow
 import numpy as np
 import pandas as pd
 import re
+import sys
+
+
+def add_arguments(parser, filename):
+    tuning.add_arguments(parser, filename)
+    parser.add_argument('--tuning-experiment-name',   type=str,
+                        help='Experiment name used for tuning (default: Default).', default='Default')
+    parser.add_argument('--no-validation',
+                        help='Disable validations of the data the flows from hyperparameter tuning to testing.', action='store_true')
 
 
 def generate(config):
@@ -20,22 +30,22 @@ def generate(config):
 
 
 def get_best_configs(config):
-    n_datasets = 10
-    n_cross_projects = 2
-    n_models = 8
-    n_configs = config['end'] - config['start']
-    n_seeds = 5
-    expected_n_runs = n_models * n_cross_projects * \
-        n_configs * n_datasets * n_seeds
-    experiment_name = config['experiment_name']
-    experiment_id = mlflow.get_experiment_by_name(
-        experiment_name).experiment_id
+    tuning_experiment_name = config['tuning_experiment_name']
+    tuning_experiment_id = mlflow.get_experiment_by_name(
+        tuning_experiment_name).experiment_id
     df_tuning = mlflow.search_runs(
-        experiment_ids=experiment_id, max_results=2 * expected_n_runs)
+        experiment_ids=tuning_experiment_id, max_results=sys.maxsize)
     if not config['no_validation']:
+        n_datasets = 10
+        n_cross_projects = config['cross_project'] + 1
+        n_models = 8
+        n_configs = config['end'] - config['start']
+        n_seeds = 5
+        expected_n_runs = n_models * n_cross_projects * \
+            n_configs * n_datasets * n_seeds
         n_runs = len(df_tuning)
         assert expected_n_runs == n_runs, ' Number of runs in experiment {}: {}. Expected: {}.'.format(
-            experiment_name,  n_runs, expected_n_runs)
+            tuning_experiment_name,  n_runs, expected_n_runs)
         assert np.all(df_tuning['status'] == 'FINISHED')
     config_cols = remove_columns_prefix(config_columns(df_tuning.columns))
     df_tuning.columns = remove_columns_prefix(df_tuning.columns)

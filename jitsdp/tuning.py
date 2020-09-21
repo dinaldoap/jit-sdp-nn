@@ -11,8 +11,7 @@ import hyperopt.pyll.stochastic as config_space_sampler
 
 class Experiment():
 
-    def __init__(self, experiment_name, experiment_config, seed_dataset_configs, models_configs):
-        self.experiment_name = experiment_name
+    def __init__(self, experiment_config, seed_dataset_configs, models_configs):
         self.meta_model = experiment_config['meta-model']
         self.experiment_config = experiment_config
         self.seed_dataset_configs = seed_dataset_configs
@@ -39,7 +38,6 @@ class Experiment():
                 config.update(models_config)
                 config.update(seed_dataset_config)
                 config = self.add_start(config)
-                config = self.add_experiment_name(config)
                 configs.append(config)
         return configs
 
@@ -57,16 +55,8 @@ class Experiment():
         config['end'] = 1000 if config['cross-project'] else 5000
         return config
 
-    def add_experiment_name(self, config):
-        if self.experiment_name is not None:
-            config = dict(config)
-            config['experiment-name'] = self.experiment_name
-        return config
-
 
 def add_arguments(parser, filename):
-    parser.add_argument('--experiment-name',   type=str,
-                        help='Experiment name used for tuning (default: Default).', default='Default')
     parser.add_argument('--start',   type=int,
                         help='Starting index of the random configurations slice.', required=True)
     parser.add_argument('--end',   type=int,
@@ -75,8 +65,6 @@ def add_arguments(parser, filename):
                         help='Whether must use cross-project data.', required=True, choices=[0, 1])
     parser.add_argument('--filename',   type=str,
                         help='Output script path.', default=filename)
-    parser.add_argument('--no-validation',
-                        help='Disable validations of the data the flows from hyperparameter tuning to testing.', action='store_true')
 
 
 def generate(config):
@@ -117,14 +105,14 @@ def generate(config):
     models_configs = create_models_configs(config)
     file_ = filename_to_path(config['filename'])
     with open(file_, mode='w') as out:
-        for experiment in configs_to_experiments(config['experiment_name'], experiment_configs, seed_dataset_configs, models_configs):
+        for experiment in configs_to_experiments(experiment_configs, seed_dataset_configs, models_configs):
             experiment.to_shell(out)
 
 
-def configs_to_experiments(experiment_name, experiment_configs, seed_dataset_configs, models_configs):
+def configs_to_experiments(experiment_configs, seed_dataset_configs, models_configs):
     for experiment_config in experiment_configs:
         model = experiment_config['model']
-        experiment = Experiment(experiment_name=experiment_name, experiment_config=experiment_config,
+        experiment = Experiment(experiment_config=experiment_config,
                                 seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[model])
         yield experiment
 
