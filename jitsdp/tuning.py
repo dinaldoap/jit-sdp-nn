@@ -1,21 +1,12 @@
 # coding=utf-8
-from jitsdp.data import make_stream
-from jitsdp.evaluation import prepare_train_data
 from jitsdp.utils import filename_to_path
 
 import argparse
 import itertools
-from joblib import Memory
 import numpy as np
 from hyperopt import hp
 from hyperopt.pyll.base import scope
 import hyperopt.pyll.stochastic as config_space_sampler
-
-memory = Memory(location='logs', verbose=0)
-
-MAX_BORB_SAMPLE_SIZE_START = 1000
-MAX_BORB_SAMPLE_SIZE_END = 8000
-MAX_BORB_SAMPLE_SIZE_STEP = 1000
 
 
 class Experiment():
@@ -49,7 +40,6 @@ class Experiment():
                 config.update(seed_dataset_config)
                 config = self.add_start(config)
                 config = self.add_experiment_name(config)
-                config = self.fix_borb_max_sample_size(config)
                 configs.append(config)
         return configs
 
@@ -72,38 +62,6 @@ class Experiment():
             config = dict(config)
             config['experiment-name'] = self.experiment_name
         return config
-
-    def fix_borb_max_sample_size(self, config):
-        if self.meta_model != 'borb':
-            return config
-        config = dict(config)
-        relevant_keys = set(['dataset', 'end', 'cross-project',
-                             'borb-waiting-time', 'borb-max-sample-size'])
-        relevant_config = {key: value for (
-            key, value) in config.items() if key in relevant_keys}
-        config['borb-max-sample-size'] = _scale_max_sample_size(
-            relevant_config)
-        return config
-
-
-@memory.cache
-def _scale_max_sample_size(config):
-    undescore_config = {key.replace(
-        '-', '_'): value for (key, value) in config.items()}
-    undescore_config['uncertainty'] = False
-    df_commits = make_stream(undescore_config['dataset'])
-    df_train = df_commits[:undescore_config['end']]
-    df_train = prepare_train_data(df_train, undescore_config)
-    max_train_size = min(len(df_train), MAX_BORB_SAMPLE_SIZE_END)
-    assert max_train_size >= MAX_BORB_SAMPLE_SIZE_START
-    fixed_borb_max_sample_size = (undescore_config['borb_max_sample_size'] - MAX_BORB_SAMPLE_SIZE_START) / (
-        MAX_BORB_SAMPLE_SIZE_END - MAX_BORB_SAMPLE_SIZE_START)
-    fixed_borb_max_sample_size = fixed_borb_max_sample_size * \
-        (max_train_size - MAX_BORB_SAMPLE_SIZE_START) + \
-        MAX_BORB_SAMPLE_SIZE_START
-    fixed_borb_max_sample_size = int(round(
-        fixed_borb_max_sample_size / MAX_BORB_SAMPLE_SIZE_STEP) * MAX_BORB_SAMPLE_SIZE_STEP)
-    return fixed_borb_max_sample_size
 
 
 def add_arguments(parser, filename):
@@ -195,8 +153,7 @@ def create_models_configs(config):
     borb = {}
     borb.update(meta_model_shared['borb'])
     borb.update([uniform('borb-pull-request-size', 50, 200, 50),
-                 loguniform('borb-max-sample-size',
-                            MAX_BORB_SAMPLE_SIZE_START, MAX_BORB_SAMPLE_SIZE_END),
+                 loguniform('borb-max-sample-size', 1000, 8000, 1000),
                  ])
 
     ihf = {}
