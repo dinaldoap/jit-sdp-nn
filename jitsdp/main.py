@@ -53,8 +53,8 @@ def add_arguments(parser):
                         help='Number of recent commits to use to calculate the moving average of the model\'s output (default: 100).',    default=100)
     parser.add_argument('--borb-pull-request-size',   type=int,
                         help='Number of commits to wait before retraining (default: 50).',    default=50)
-    parser.add_argument('--borb-max-sample-size',   type=int_or_none,
-                        help='Max sample size selected from the training data in each iteration (default: 1000). None means bootstrap.',    default=1000)
+    parser.add_argument('--borb-sample-size',   type=int_or_none,
+                        help='Sample size selected from the training data in each iteration (default: 1000). None means bootstrap.',    default=1000)
     parser.add_argument('--borb-th',   type=float,
                         help='Expected value for the moving average of the model\'s output (default: .4).',  default=.4)
     parser.add_argument('--borb-l0',   type=float,

@@ -153,7 +153,7 @@ def create_models_configs(config):
     borb = {}
     borb.update(meta_model_shared['borb'])
     borb.update([uniform('borb-pull-request-size', 50, 200, 50),
-                 loguniform('borb-max-sample-size', 1000, 8000, 1000),
+                 loguniform('borb-sample-size', 1000, 8000, 1000),
                  ])
 
     ihf = {}

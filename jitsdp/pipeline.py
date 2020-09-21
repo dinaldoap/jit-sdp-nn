@@ -57,7 +57,7 @@ def create_pipeline(config):
         classifier = ScoreFixed(model=model)
     if config['borb']:
         classifier = BORB(classifier=classifier,
-                          max_sample_size=config['borb_max_sample_size'],
+                          max_sample_size=config['borb_sample_size'],
                           th=config['borb_th'],
                           l0=config['borb_l0'],
                           l1=config['borb_l1'],
