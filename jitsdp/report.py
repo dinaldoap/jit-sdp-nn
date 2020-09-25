@@ -49,7 +49,7 @@ def generate(config):
         n_seeds = 30
         expected_n_runs = n_models * n_cross_projects * \
             n_configs * n_datasets * n_seeds
-        n_runs = len(df_tuning)
+        n_runs = len(df_testing)
         assert expected_n_runs == n_runs, ' Number of runs in experiment {}: {}. Expected: {}.'.format(
             testing_experiment_name,  n_runs, expected_n_runs)
         assert np.all(df_testing['status'] == 'FINISHED')
