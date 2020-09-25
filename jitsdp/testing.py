@@ -29,7 +29,7 @@ def generate(config):
             out.write('\n')
 
 
-def get_best_configs(config):
+def configs_results(config):
     tuning_experiment_name = config['tuning_experiment_name']
     tuning_experiment_id = mlflow.get_experiment_by_name(
         tuning_experiment_name).experiment_id
@@ -49,8 +49,13 @@ def get_best_configs(config):
         assert np.all(df_tuning['status'] == 'FINISHED')
     config_cols = remove_columns_prefix(config_columns(df_tuning.columns))
     df_tuning.columns = remove_columns_prefix(df_tuning.columns)
-    df_best_configs = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
+    df_configs_results = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
         'g-mean': 'mean', 'run.command': 'first'})
+    return df_configs_results, config_cols
+
+
+def get_best_configs(config):
+    df_best_configs, config_cols = configs_results(config)
     df_best_configs = df_best_configs.sort_values(
         by='g-mean', ascending=False, kind='mergesort')
     df_best_configs = df_best_configs.drop_duplicates(

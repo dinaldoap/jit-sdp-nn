@@ -1,5 +1,5 @@
 # coding=utf-8
-from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot
+from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_efficiency_curves
 from jitsdp.data import load_results
 from jitsdp.utils import unique_dir, dir_to_path
 from jitsdp import testing
@@ -28,6 +28,7 @@ def add_arguments(parser, dirname):
 
 
 def generate(config):
+    efficiency_curves(config)
     df_best_configs, config_cols = testing.get_best_configs(config)
     # replace nan by -1 to allow join
     df_best_configs = df_best_configs.fillna(-1)
@@ -70,3 +71,31 @@ def name(row, cross_project):
     else:
         train_data = ''
     return '{}$_{{{}}}$-{}{}'.format(meta_model.upper(), rate_driven, model.upper(), train_data.upper())
+
+
+def efficiency_curves(config):
+    df_configs_results, _ = testing.configs_results(config)
+    df_configs_results = df_configs_results[[
+        'meta_model', 'rate_driven', 'model', 'cross_project', 'dataset', 'g-mean']]
+    df_efficiency_curve = df_configs_results.groupby(
+        by=['meta_model', 'rate_driven', 'model', 'cross_project', 'dataset']).apply(efficiency_curve)
+    df_efficiency_curve = df_efficiency_curve.reset_index()
+    df_efficiency_curve['name'] = df_efficiency_curve.apply(lambda row: name(
+        row, config['cross_project']), axis='columns')
+    plot_efficiency_curves(df_efficiency_curve,
+                           dir_to_path(config['filename']))
+
+
+def efficiency_curve(df_results):
+    df_results = df_results.copy()
+    total_trials = len(df_results)
+    maximums_by_experiment_size = []
+    for experiment_size in [1, 2, 4, 8, 16, 32]:
+        df_results['experiment'] = np.array(
+            range(total_trials)) // experiment_size
+        maximums = df_results.groupby('experiment')['g-mean'].max()
+        maximums_by_experiment_size.extend(
+            [{'experiment_size': experiment_size, 'g-mean': maximum} for maximum in maximums])
+    df_efficiency_curve = pd.DataFrame(maximums_by_experiment_size)
+    df_efficiency_curve = df_efficiency_curve.set_index('experiment_size')
+    return df_efficiency_curve

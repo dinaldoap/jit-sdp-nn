@@ -48,3 +48,12 @@ def plot_boxplot(data, dir):
         ax.set_title('{}'.format(metric_name))
         plt.savefig(dir / '{}.png'.format(metric_id))
         plt.clf()
+
+
+def plot_efficiency_curves(data, dir):
+    ax = sns.catplot(x="experiment_size", y="g-mean",
+                     hue="name", col="dataset",
+                     data=data, kind="box", col_wrap=5)
+    ax.set_axis_labels(x_var='experiment size')
+    plt.savefig(dir / 'efficiency_curves.png')
+    plt.clf()
