@@ -27,6 +27,7 @@ setup(name='jitsdp',
                         'seaborn==0.9.0',
                         'mlflow==1.11.0',
                         'hyperopt==0.2.4',
+                        'Orange3==3.26.0',
                         ],
       python_requires='>=3.7',
       zip_safe=True)
