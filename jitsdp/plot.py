@@ -3,6 +3,7 @@ from jitsdp.constants import DIR
 from jitsdp.utils import mkdir
 
 import matplotlib.pyplot as plt
+import Orange as og
 import seaborn as sns
 
 sns.set(rc={'figure.figsize': (14, 9)})
@@ -56,4 +57,12 @@ def plot_efficiency_curves(data, dir):
                      data=data, kind="box", col_wrap=5)
     ax.set_axis_labels(x_var='experiment size')
     plt.savefig(dir / 'efficiency_curves.png')
+    plt.clf()
+
+
+def plot_critical_distance(avg_rank, data, dir):
+    cd = og.evaluation.compute_CD(
+        avranks=avg_rank, n=len(data), alpha='0.05', test='nemenyi')
+    og.evaluation.graph_ranks(avranks=avg_rank, names=data.columns, cd=cd)
+    plt.savefig(dir / 'critical_distance.png', bbox_inches='tight')
     plt.clf()

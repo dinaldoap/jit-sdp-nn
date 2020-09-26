@@ -1,5 +1,5 @@
 # coding=utf-8
-from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_efficiency_curves
+from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_efficiency_curves, plot_critical_distance
 from jitsdp.data import load_results
 from jitsdp.utils import unique_dir, dir_to_path
 from jitsdp import testing
@@ -7,6 +7,7 @@ from jitsdp import testing
 import numpy as np
 import pandas as pd
 import mlflow
+from scipy.stats import friedmanchisquare
 import sys
 
 
@@ -60,6 +61,7 @@ def generate(config):
         row, config['cross_project']), axis='columns')
     # plotting
     plot_boxplot(df_testing, dir_to_path(config['filename']))
+    statistical_analysis(config, df_testing)
 
 
 def name(row, cross_project):
@@ -99,3 +101,21 @@ def efficiency_curve(df_results):
     df_efficiency_curve = pd.DataFrame(maximums_by_experiment_size)
     df_efficiency_curve = df_efficiency_curve.set_index('experiment_size')
     return df_efficiency_curve
+
+
+def statistical_analysis(config, df_testing):
+    df_testing = df_testing.groupby(['dataset', 'meta_model', 'model', 'rate_driven',
+                                     'cross_project'], as_index=False).agg({'name': 'first', 'g-mean': 'mean'})
+    df_inferential = pd.pivot_table(
+        df_testing, columns='name', values='g-mean', index='dataset')
+    measurements = [df_inferential[column]
+                    for column in df_inferential.columns]
+    test_stat, p_value = friedmanchisquare(*measurements)
+    dir = dir_to_path(config['filename'])
+    with open(dir / 'p-value.txt', 'w') as f:
+        f.write('p-value: {}'.format(p_value))
+
+    avg_rank = df_inferential.rank(axis='columns', ascending=False)
+    avg_rank = avg_rank.mean()
+    plot_critical_distance(avg_rank, df_inferential,
+                           dir)
