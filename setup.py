@@ -26,6 +26,7 @@ setup(name='jitsdp',
                         'matplotlib==3.1.2',
                         'seaborn==0.9.0',
                         'mlflow==1.11.0',
+                        'hyperopt==0.2.4',
                         ],
       python_requires='>=3.7',
       zip_safe=True)
