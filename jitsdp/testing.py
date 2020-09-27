@@ -1,6 +1,7 @@
 # coding=utf-8
 from jitsdp import tuning
 from jitsdp.utils import filename_to_path
+from jitsdp.data import load_runs
 
 import mlflow
 import numpy as np
@@ -33,8 +34,7 @@ def configs_results(config):
     tuning_experiment_name = config['tuning_experiment_name']
     tuning_experiment_id = mlflow.get_experiment_by_name(
         tuning_experiment_name).experiment_id
-    df_tuning = mlflow.search_runs(
-        experiment_ids=tuning_experiment_id, max_results=sys.maxsize)
+    df_tuning = load_runs(tuning_experiment_id)
     if not config['no_validation']:
         n_datasets = 10
         n_cross_projects = config['cross_project'] + 1

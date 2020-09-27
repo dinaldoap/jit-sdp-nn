@@ -3,8 +3,10 @@ from jitsdp.constants import DIR
 from jitsdp.utils import mkdir
 
 from joblib import Memory
+import mlflow
 import pandas as pd
 import re
+import sys
 
 
 FEATURES = ['fix', 'ns', 'nd', 'nf', 'entrophy', 'la',
@@ -100,3 +102,8 @@ def save_results(results, dir=DIR):
 
 def load_results(dir=DIR):
     return pd.read_pickle(dir / 'results.pickle')
+
+
+@memory.cache
+def load_runs(experiment_id):
+    return mlflow.search_runs(experiment_ids=experiment_id, max_results=sys.maxsize)

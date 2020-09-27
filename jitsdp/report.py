@@ -1,6 +1,6 @@
 # coding=utf-8
 from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_efficiency_curves, plot_critical_distance
-from jitsdp.data import load_results
+from jitsdp.data import load_results, load_runs
 from jitsdp.utils import unique_dir, dir_to_path
 from jitsdp import testing
 
@@ -37,8 +37,7 @@ def generate(config):
     testing_experiment_name = config['testing_experiment_name']
     testing_experiment_id = mlflow.get_experiment_by_name(
         testing_experiment_name).experiment_id
-    df_testing = mlflow.search_runs(
-        experiment_ids=testing_experiment_id, max_results=sys.maxsize)
+    df_testing = load_runs(testing_experiment_id)
     # replace nan by -1 to allow join
     df_testing = df_testing.fillna(-1)
     df_testing.columns = testing.remove_columns_prefix(df_testing.columns)
