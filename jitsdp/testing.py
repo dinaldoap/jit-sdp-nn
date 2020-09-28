@@ -30,6 +30,17 @@ def generate(config):
             out.write('\n')
 
 
+def get_best_configs(config):
+    df_best_configs, config_cols = configs_results(config)
+    df_best_configs = df_best_configs.sort_values(
+        by='g-mean', ascending=False, kind='mergesort')
+    df_best_configs = df_best_configs.drop_duplicates(
+        subset=['meta_model', 'rate_driven', 'model', 'cross_project', 'dataset'])
+    df_best_configs = df_best_configs.sort_values(
+        by=['dataset', 'meta_model', 'model', 'rate_driven', 'cross_project'], ascending=True, kind='mergesort')
+    return df_best_configs, config_cols
+
+
 def configs_results(config):
     tuning_experiment_name = config['tuning_experiment_name']
     tuning_experiment_id = mlflow.get_experiment_by_name(
@@ -59,17 +70,6 @@ def valid_data(config, df_runs, single_config=False):
     else:
         df_runs = df_runs[df_runs['status'] == 'FINISHED']
     return df_runs
-
-
-def get_best_configs(config):
-    df_best_configs, config_cols = configs_results(config)
-    df_best_configs = df_best_configs.sort_values(
-        by='g-mean', ascending=False, kind='mergesort')
-    df_best_configs = df_best_configs.drop_duplicates(
-        subset=['meta_model', 'rate_driven', 'model', 'cross_project', 'dataset'])
-    df_best_configs = df_best_configs.sort_values(
-        by=['dataset', 'meta_model', 'model', 'rate_driven', 'cross_project'], ascending=True, kind='mergesort')
-    return df_best_configs, config_cols
 
 
 def tuning_to_testing(commands):
