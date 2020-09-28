@@ -30,6 +30,13 @@ def add_arguments(parser, dirname):
 
 def generate(config):
     efficiency_curves(config)
+    df_testing = best_configs_testing(config)
+    # plotting
+    plot_boxplot(df_testing, dir_to_path(config['filename']))
+    statistical_analysis(config, df_testing)
+
+
+def best_configs_testing(config):
     df_best_configs, config_cols = testing.get_best_configs(config)
     # replace nan by -1 to allow join
     df_best_configs = df_best_configs.fillna(-1)
@@ -47,9 +54,7 @@ def generate(config):
         by=['dataset', 'meta_model', 'model', 'rate_driven', 'cross_project'])
     df_testing['name'] = df_testing.apply(lambda row: name(
         row, config['cross_project']), axis='columns')
-    # plotting
-    plot_boxplot(df_testing, dir_to_path(config['filename']))
-    statistical_analysis(config, df_testing)
+    return df_testing
 
 
 def name(row, cross_project):
