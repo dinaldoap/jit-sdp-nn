@@ -42,7 +42,7 @@ def generate(config):
     df_testing = df_testing.fillna(-1)
     df_testing.columns = testing.remove_columns_prefix(df_testing.columns)
     df_testing = df_testing.join(df_best_configs, on=config_cols, how='inner')
-    testing.validate_data(config, df_testing, single_config=True)
+    df_testing = testing.valid_data(config, df_testing, single_config=True)
     df_testing = df_testing.sort_values(
         by=['dataset', 'meta_model', 'model', 'rate_driven', 'cross_project'])
     df_testing['name'] = df_testing.apply(lambda row: name(
