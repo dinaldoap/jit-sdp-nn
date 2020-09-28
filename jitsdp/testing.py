@@ -35,23 +35,27 @@ def configs_results(config):
     tuning_experiment_id = mlflow.get_experiment_by_name(
         tuning_experiment_name).experiment_id
     df_tuning = load_runs(tuning_experiment_id)
-    if not config['no_validation']:
-        n_datasets = 10
-        n_cross_projects = config['cross_project'] + 1
-        n_models = 8
-        n_configs = config['end'] - config['start']
-        n_seeds = 5
-        expected_n_runs = n_models * n_cross_projects * \
-            n_configs * n_datasets * n_seeds
-        n_runs = len(df_tuning)
-        assert expected_n_runs == n_runs, ' Number of runs in experiment {}: {}. Expected: {}.'.format(
-            tuning_experiment_name,  n_runs, expected_n_runs)
-        assert np.all(df_tuning['status'] == 'FINISHED')
+    validate_data(config, df_tuning)
     config_cols = remove_columns_prefix(config_columns(df_tuning.columns))
     df_tuning.columns = remove_columns_prefix(df_tuning.columns)
     df_configs_results = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
         'g-mean': 'mean', 'run.command': 'first'})
     return df_configs_results, config_cols
+
+
+def validate_data(config, df_runs, single_config=False):
+    if not config['no_validation']:
+        n_datasets = 10
+        n_cross_projects = config['cross_project'] + 1
+        n_models = 8
+        n_configs = 1 if single_config else config['end'] - config['start']
+        n_seeds = 5
+        expected_n_runs = n_models * n_cross_projects * \
+            n_configs * n_datasets * n_seeds
+        n_runs = len(df_runs)
+        assert expected_n_runs == n_runs, ' Number of runs: {}. Expected: {}.'.format(
+            n_runs, expected_n_runs)
+        assert np.all(df_runs['status'] == 'FINISHED')
 
 
 def get_best_configs(config):
