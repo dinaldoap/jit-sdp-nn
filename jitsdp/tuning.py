@@ -65,28 +65,19 @@ def add_arguments(parser, filename):
 def generate(config):
     # experiments
     cross_project = config['cross_project']
-    orb_ht_grid = {
+    orb_grid = {
         'meta-model': ['orb'],
         'cross-project': [0, 1] if cross_project else [0],
-        'rate-driven': [0, 1],
         'model': ['oht'],
     }
-    borb_ht_grid = {
+    borb_grid = {
         'meta-model': ['borb'],
         'cross-project': [0, 1] if cross_project else [0],
-        'rate-driven': [0, 1],
-        'model': ['ihf'],
-    }
-    borb_batch_grid = {
-        'meta-model': ['borb'],
-        'cross-project': [0, 1] if cross_project else [0],
-        'rate-driven': [1],
-        'model': ['lr', 'mlp', 'nb', 'irf'],
+        'model': ['ihf', 'lr', 'mlp', 'nb', 'irf'],
     }
     experiment_configs = [
-        borb_ht_grid,
-        orb_ht_grid,
-        borb_batch_grid,
+        orb_grid,
+        borb_grid,
     ]
     # seeds and datasets
     experiment_configs = map(grid_to_configs, experiment_configs)

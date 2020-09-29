@@ -59,13 +59,12 @@ def best_configs_testing(config):
 
 def name(row, cross_project):
     meta_model = row['meta_model']
-    rate_driven = 'rd' if row['rate_driven'] == '1' else 'nrd'
     model = row['model']
     if cross_project:
         train_data = '-cp' if row['cross_project'] == '1' else '-wp'
     else:
         train_data = ''
-    return '{}$_{{{}}}$-{}{}'.format(meta_model.upper(), rate_driven, model.upper(), train_data.upper())
+    return '{}-{}{}'.format(meta_model.upper(), model.upper(), train_data.upper())
 
 
 def efficiency_curves(config):
