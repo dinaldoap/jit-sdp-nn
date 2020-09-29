@@ -84,7 +84,7 @@ def generate(config):
     experiment_configs = itertools.chain.from_iterable(experiment_configs)
     seed_dataset_configs = {
         'dataset': ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'],
-        'seed': [0, 1, 2, 3, 4],
+        'seed': [0, 1, 2],
     }
     seed_dataset_configs = grid_to_configs(seed_dataset_configs)
     # meta-models and models
