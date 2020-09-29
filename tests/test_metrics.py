@@ -69,7 +69,11 @@ def test_prequential_proportions():
         's1': [1, .4736842105, .2988929889, .2119802268, .4044101487, .4248109630],
         'p1': [1, .4736842105, .2988929889, .2119802268, .4044101487, .5315211105],
     })
+    threshold = .5
+    expected.update({
+        'th-p1': [abs(threshold-p1) for p1 in expected['p1']]
+    })
     results = pd.DataFrame(results)
     expected = pd.DataFrame(expected)
-    actual = metrics.prequential_proportions(results, fading_factor)
+    actual = metrics.prequential_proportions(results, fading_factor, threshold)
     assert_frame_equal(expected, actual)

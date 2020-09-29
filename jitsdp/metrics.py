@@ -106,7 +106,7 @@ def prequential_gmean(recalls):
     return pd.concat([recalls, gmean], axis='columns')
 
 
-def prequential_proportions(results, fading_factor):
+def prequential_proportions(results, fading_factor, threshold):
     proportions = []
     total = 0
     input_columns = ['target', 'probability', 'prediction']
@@ -119,11 +119,12 @@ def prequential_proportions(results, fading_factor):
         proportions.append(counts / total)
     output_columns = ['t1', 's1', 'p1']
     proportions = pd.DataFrame(proportions, columns=output_columns)
+    proportions['th-p1'] = (proportions['p1'] - threshold).abs()
     return pd.concat([results, proportions], axis='columns')
 
 
-def prequential_metrics(results, fading_factor):
+def prequential_metrics(results, fading_factor, threshold):
     metrics = prequential_recalls(results, fading_factor)
     metrics = prequential_recalls_difference(metrics)
     metrics = prequential_gmean(metrics)
-    return prequential_proportions(metrics, fading_factor)
+    return prequential_proportions(metrics, fading_factor, threshold)
