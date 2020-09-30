@@ -4,6 +4,7 @@ from jitsdp.data import load_results, load_runs
 from jitsdp.utils import unique_dir, dir_to_path
 from jitsdp import testing
 
+from collections import namedtuple
 import numpy as np
 import pandas as pd
 import mlflow
@@ -32,8 +33,14 @@ def generate(config):
     efficiency_curves(config)
     df_testing = best_configs_testing(config)
     # plotting
-    plot_boxplot(df_testing, dir_to_path(config['filename']))
-    statistical_analysis(config, df_testing)
+    Metric = namedtuple('Metric', ['column', 'name', 'ascending'])
+    metrics = [
+        Metric('g-mean', 'g-mean', False),
+        Metric('r0-r1', '|r0-r1|', True),
+        Metric('th-p1', '|th-p1|', True),
+    ]
+    plot_boxplot(df_testing, metrics, dir_to_path(config['filename']))
+    statistical_analysis(config, df_testing, metrics)
 
 
 def best_configs_testing(config):
@@ -95,19 +102,22 @@ def efficiency_curve(df_results):
     return df_efficiency_curve
 
 
-def statistical_analysis(config, df_testing):
-    df_testing = df_testing.groupby(['dataset', 'meta_model', 'model', 'rate_driven',
-                                     'cross_project'], as_index=False).agg({'name': 'first', 'g-mean': 'mean'})
-    df_inferential = pd.pivot_table(
-        df_testing, columns='name', values='g-mean', index='dataset')
-    measurements = [df_inferential[column]
-                    for column in df_inferential.columns]
-    test_stat, p_value = friedmanchisquare(*measurements)
-    dir = dir_to_path(config['filename'])
-    with open(dir / 'p-value.txt', 'w') as f:
-        f.write('p-value: {}'.format(p_value))
+def statistical_analysis(config, df_testing, metrics):
+    for metric in metrics:
+        df_inferential = df_testing.groupby(['dataset', 'meta_model', 'model', 'rate_driven',
+                                             'cross_project'], as_index=False).agg({'name': 'first', metric.column: 'mean'})
+        df_inferential = pd.pivot_table(
+            df_inferential, columns='name', values=metric.column, index='dataset')
+        df_inferential['dummy'] = df_inferential['BORB-LR']
+        measurements = [df_inferential[column]
+                        for column in df_inferential.columns]
+        test_stat, p_value = friedmanchisquare(*measurements)
+        dir = dir_to_path(config['filename'])
+        with open(dir / '{}.txt'.format(metric.column), 'w') as f:
+            f.write('p-value: {}'.format(p_value))
 
-    avg_rank = df_inferential.rank(axis='columns', ascending=False)
-    avg_rank = avg_rank.mean()
-    plot_critical_distance(avg_rank, df_inferential,
-                           dir)
+        avg_rank = df_inferential.rank(
+            axis='columns', ascending=metric.ascending)
+        avg_rank = avg_rank.mean()
+        plot_critical_distance(avg_rank, df_inferential, metric,
+                               dir)

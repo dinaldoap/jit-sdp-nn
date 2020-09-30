@@ -41,16 +41,11 @@ def __plot_metrics(data, config, dir, metrics, filename):
     plt.clf()
 
 
-def plot_boxplot(data, dir):
-    metrics = {
-        'g-mean': 'g-mean',
-        'r0-r1': '|r0-r1|',
-        'th-p1': '|th-p1|',
-    }
-    for metric_id, metric_name in metrics.items():
-        ax = sns.barplot(data=data, x='dataset', y=metric_id, hue='name')
-        ax.set_title('{}'.format(metric_name))
-        plt.savefig(dir / '{}.png'.format(metric_id))
+def plot_boxplot(data, metrics, dir):
+    for metric in metrics:
+        ax = sns.barplot(data=data, x='dataset', y=metric.column, hue='name')
+        ax.set_title('{}'.format(metric.name))
+        plt.savefig(dir / '{}.png'.format(metric.column))
         plt.clf()
 
 
@@ -63,9 +58,9 @@ def plot_efficiency_curves(data, dir):
     plt.clf()
 
 
-def plot_critical_distance(avg_rank, data, dir):
+def plot_critical_distance(avg_rank, data, metric, dir):
     cd = og.evaluation.compute_CD(
         avranks=avg_rank, n=len(data), alpha='0.05', test='nemenyi')
     og.evaluation.graph_ranks(avranks=avg_rank, names=data.columns, cd=cd)
-    plt.savefig(dir / 'critical_distance.png', bbox_inches='tight')
+    plt.savefig(dir / '{}_cd.png'.format(metric.column), bbox_inches='tight')
     plt.clf()
