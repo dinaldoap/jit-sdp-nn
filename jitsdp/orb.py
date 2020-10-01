@@ -115,7 +115,7 @@ class ORB():
         prediction['probability'] = probabilities
         if kwargs['track_forest']:
             prediction = track_forest(prediction, self)
-        prediction = track_metric(prediction, 'c1', self.p1)
+        prediction = track_metric(prediction, 'tr1', self.p1)
         prediction = track_metric(prediction, 'ma', self.ma)
         if kwargs['track_time']:
             prediction = track_time(prediction)

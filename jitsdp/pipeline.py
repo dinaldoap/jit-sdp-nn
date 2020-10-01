@@ -184,8 +184,8 @@ class Threshold(Classifier):
         prediction = self.model.predict_proba(df_features, **kwargs)
         df_proportion = kwargs.pop('df_proportion', None)
         if df_proportion is not None:
-            c1 = df_proportion['target'].mean()
-            prediction = track_metric(prediction, 'c1', c1)
+            tr1 = df_proportion['target'].mean()
+            prediction = track_metric(prediction, 'tr1', tr1)
         if kwargs.pop('track_time', 0):
             prediction = track_time(prediction)
         return prediction

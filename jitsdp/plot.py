@@ -16,7 +16,7 @@ def plot_recalls_gmean(data, config, dir=DIR):
 
 def plot_proportions(data, config, dir=DIR):
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
-                   'c1', 't1', 'p1'], filename='proportions.png')
+                   'tr1', 't1', 'p1'], filename='proportions.png')
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
                    'th-ma'], filename='intended_proportion.png')
 
