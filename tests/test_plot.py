@@ -30,7 +30,7 @@ def test_plot_proportions():
         'timestep': [0, 1, 2],
         'tr1':    [1., .5, 0.],
         'te1':    [1., .5, 1.],
-        'p1':    [0., .5, 0.],
+        'pr1':    [0., .5, 0.],
         'th-ma':    [.1, .2, .1],
     })
     plot.plot_proportions(data=data, config=config, dir=DIR)
