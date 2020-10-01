@@ -29,7 +29,7 @@ def test_plot_proportions():
     data = pd.DataFrame({
         'timestep': [0, 1, 2],
         'tr1':    [1., .5, 0.],
-        't1':    [1., .5, 1.],
+        'te1':    [1., .5, 1.],
         'p1':    [0., .5, 0.],
         'th-ma':    [.1, .2, .1],
     })
