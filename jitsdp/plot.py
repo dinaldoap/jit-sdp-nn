@@ -18,7 +18,7 @@ def plot_proportions(data, config, dir=DIR):
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
                    'c1', 't1', 's1', 'p1'], filename='proportions.png')
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
-                   'th-p1'], filename='intended_proportion.png')
+                   'th-ma'], filename='intended_proportion.png')
 
 
 def __plot_metrics(data, config, dir, metrics, filename):

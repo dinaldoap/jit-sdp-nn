@@ -119,7 +119,7 @@ def prequential_proportions(results, fading_factor, threshold):
         proportions.append(counts / total)
     output_columns = ['t1', 's1', 'p1']
     proportions = pd.DataFrame(proportions, columns=output_columns)
-    proportions['th-p1'] = (proportions['p1'] - threshold).abs()
+    proportions['th-ma'] = (threshold - results['ma']).abs()
     return pd.concat([results, proportions], axis='columns')
 
 

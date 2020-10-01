@@ -62,16 +62,17 @@ def test_prequential_proportions():
         'target': [1, 0, 0, 0, 1, 0],
         'probability': [1, 0, 0, 0, 1, .5],
         'prediction': [1, 0, 0, 0, 1, 1],
+        'ma': [1, .4736842105, .2988929889, .2119802268, .4044101487, .5315211105],
     }
     expected = results.copy()
     expected.update({
         't1': [1, .4736842105, .2988929889, .2119802268, .4044101487, .3181008155],
         's1': [1, .4736842105, .2988929889, .2119802268, .4044101487, .4248109630],
-        'p1': [1, .4736842105, .2988929889, .2119802268, .4044101487, .5315211105],
+        'p1': [1, .4736842105, .2988929889, .2119802268, .4044101487, .5315211105],        
     })
     threshold = .5
     expected.update({
-        'th-p1': [abs(threshold-p1) for p1 in expected['p1']]
+        'th-ma': [abs(threshold-ma) for ma in results['ma']]
     })
     results = pd.DataFrame(results)
     expected = pd.DataFrame(expected)
