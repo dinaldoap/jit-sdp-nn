@@ -287,30 +287,33 @@ class BORB(Classifier):
             if p0 > p1 and p1 != 0:
                 lambda1 = p0 / p1
         df_ma = kwargs.pop('df_ma', None)
-        ma = self.th
+        self.ma = self.th
         for i in range(self.classifier.n_iterations):
             obf0 = 1
             obf1 = 1
-            if ma > self.th:
-                obf0 = ((self.m ** ma - self.m ** self.th) *
+            if self.ma > self.th:
+                obf0 = ((self.m ** self.ma - self.m ** self.th) *
                         self.l0) / (self.m - self.m ** self.th) + 1
-            elif ma < self.th:
-                obf1 = (((self.m ** (self.th - ma) - 1) * self.l1) /
+            elif self.ma < self.th:
+                obf1 = (((self.m ** (self.th - self.ma) - 1) * self.l1) /
                         (self.m ** self.th - 1)) + 1
             new_kwargs = dict(kwargs)
             new_kwargs['weights'] = [lambda0 * obf0, lambda1 * obf1]
             new_kwargs['n_iterations'] = 1
             new_kwargs['max_sample_size'] = self.max_sample_size
             for metrics in self.classifier.train(df_train, **new_kwargs):
-                yield _track_orb(metrics=metrics, ma=ma, lambda0=lambda0, lambda1=lambda1, obf0=obf0, obf1=obf1, **kwargs)
+                yield _track_orb(metrics=metrics, ma=self.ma, lambda0=lambda0, lambda1=lambda1, obf0=obf0, obf1=obf1, **kwargs)
             df_output = self.classifier.predict(df_ma)
-            ma = df_output['prediction'].mean()
+            self.ma = df_output['prediction'].mean()
 
     def predict(self, df_features, **kwargs):
-        return self.classifier.predict(df_features, **kwargs)
+        return self.__track(self.classifier.predict(df_features, **kwargs))
 
     def predict_proba(self, df_features, **kwargs):
-        return self.classifier.predict_proba(df_features, **kwargs)
+        return self.__track(self.classifier.predict_proba(df_features, **kwargs))
+
+    def __track(self, df_prediction):
+        return track_metric(df_prediction, 'ma', self.ma)
 
     def save(self):
         self.classifier.save()

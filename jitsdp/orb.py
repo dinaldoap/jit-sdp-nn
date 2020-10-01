@@ -24,6 +24,7 @@ class ORB():
         # state
         self.observed_classes = set()
         self.observed_weight_window = None
+        self.ma = th
         self.ma_window = None
         self.ma_instance_window = None
         self.p1 = .5
@@ -115,6 +116,7 @@ class ORB():
         if kwargs['track_forest']:
             prediction = track_forest(prediction, self)
         prediction = track_metric(prediction, 'c1', self.p1)
+        prediction = track_metric(prediction, 'ma', self.ma)
         if kwargs['track_time']:
             prediction = track_time(prediction)
         return prediction
