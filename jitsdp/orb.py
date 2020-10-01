@@ -1,5 +1,5 @@
 from jitsdp.pipeline import MultiflowBaseEstimator
-from jitsdp.utils import track_forest, track_c1, track_time
+from jitsdp.utils import track_forest, track_metric, track_time
 
 import mlflow
 import numpy as np
@@ -114,7 +114,7 @@ class ORB():
         prediction['probability'] = probabilities
         if kwargs['track_forest']:
             prediction = track_forest(prediction, self)
-        prediction = track_c1(prediction, self.p1)
+        prediction = track_metric(prediction, 'c1', self.p1)
         if kwargs['track_time']:
             prediction = track_time(prediction)
         return prediction

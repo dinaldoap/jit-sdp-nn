@@ -98,8 +98,8 @@ def _concat_property(prediction, name, values):
     return pd.concat([prediction, prop], axis='columns')
 
 
-def track_c1(prediction, p1):
-    prediction['c1'] = p1
+def track_metric(prediction, name, value):
+    prediction[name] = value
     return prediction
 
 
