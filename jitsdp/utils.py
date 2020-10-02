@@ -5,7 +5,6 @@ from datetime import datetime
 from itertools import product
 import logging
 import mlflow
-from multiprocessing import Pool
 import numpy as np
 import os
 import pandas as pd
