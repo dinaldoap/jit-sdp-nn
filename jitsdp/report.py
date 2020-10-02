@@ -110,7 +110,6 @@ def statistical_analysis(config, df_testing, metrics):
                                              'cross_project'], as_index=False).agg({'name': 'first', metric.column: 'mean'})
         df_inferential = pd.pivot_table(
             df_inferential, columns='name', values=metric.column, index='dataset')
-        df_inferential['dummy'] = df_inferential['BORB-LR']
         measurements = [df_inferential[column]
                         for column in df_inferential.columns]
         test_stat, p_value = friedmanchisquare(*measurements)
