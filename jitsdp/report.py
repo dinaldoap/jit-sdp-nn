@@ -88,13 +88,15 @@ def efficiency_curves(config):
 
 
 def efficiency_curve(df_results):
-    df_results = df_results.copy()
     total_trials = len(df_results)
     maximums_by_experiment_size = []
+    np.random.seed(0)
     for experiment_size in [1, 2, 4, 8, 16, 32]:
-        df_results['experiment'] = np.array(
-            range(total_trials)) // experiment_size
-        maximums = df_results.groupby('experiment')['g-mean'].max()
+        maximums = []
+        for i in range(1000):
+            sample_indices = np.random.choice(total_trials, experiment_size)
+            maximum = df_results['g-mean'].iloc[sample_indices].max()
+            maximums.append(maximum)
         maximums_by_experiment_size.extend(
             [{'experiment_size': experiment_size, 'g-mean': maximum} for maximum in maximums])
     df_efficiency_curve = pd.DataFrame(maximums_by_experiment_size)
