@@ -265,5 +265,5 @@ def linear_shared_config_space():
 def config_space_to_configs(config_space, start, end):
     rng = np.random.RandomState(seed=0)
     configs = [config_space_sampler.sample(
-        config_space, rng=rng) for i in range(end - start)]
+        config_space, rng=rng) for i in range(end)]
     return configs[start:end]
