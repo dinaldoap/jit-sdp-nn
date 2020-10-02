@@ -31,7 +31,7 @@ def filename_to_path(filename):
 
 
 def setup_and_run(config, frun):
-    run_command = ' '.join(sys.argv)
+    run_command = standard_run_command(sys.argv)
     meta_model = config['meta_model']
     logging.getLogger('').handlers = []
     dir = pathlib.Path('logs')
@@ -48,6 +48,12 @@ def setup_and_run(config, frun):
         mlflow.set_tag('run.command', run_command)
         frun(config=config)
         mlflow.log_artifact(log)
+
+
+def standard_run_command(sys_args):
+    std_args = list(sys_args)
+    std_args[0] = pathlib.Path(std_args[0]).name
+    return ' '.join(std_args)
 
 
 def int_or_none(string):
