@@ -60,7 +60,7 @@ def int_or_none(string):
 
 
 def unique_dir(config):
-    return DIR / '{}_{}_{}_{}_{}_{}'.format(config['rate_driven'], config['meta_model'], config['model'], config['cross_project'], config['dataset'], config['seed'])
+    return DIR / mlflow.active_run().info.run_id
 
 
 def set_experiment(config):
