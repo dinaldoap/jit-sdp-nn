@@ -1,6 +1,6 @@
 # coding=utf-8
 from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_efficiency_curves, plot_critical_distance
-from jitsdp.data import load_results, load_runs
+from jitsdp.data import load_results, load_runs, save_results
 from jitsdp.utils import unique_dir, dir_to_path
 from jitsdp import testing
 
@@ -12,14 +12,16 @@ from scipy.stats import friedmanchisquare
 import sys
 
 
-def report(config):
-    dir = unique_dir(config)
-    results = load_results(dir=dir)
-    plot_recalls_gmean(results, config=config, dir=dir)
-    plot_proportions(results, config=config, dir=dir)
+def report(config, results):
+    # metrics
     metrics = ['r0', 'r1', 'r0-r1', 'g-mean', 'tr1', 'te1', 'pr1', 'th-ma']
     metrics = {metric: results[metric].mean() for metric in metrics}
     mlflow.log_metrics(metrics)
+    # artifacts
+    dir = unique_dir(config)
+    save_results(results=results, dir=dir)
+    plot_recalls_gmean(results, config=config, dir=dir)
+    plot_proportions(results, config=config, dir=dir)
     mlflow.log_artifacts(local_dir=dir)
 
 

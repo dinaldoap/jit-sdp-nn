@@ -3,7 +3,7 @@ from jitsdp.data import make_stream, make_stream_others, save_results, DATASETS,
 from jitsdp.orb import ORB
 from jitsdp.pipeline import set_seed
 from jitsdp.report import report
-from jitsdp.utils import int_or_none, unique_dir, setup_and_run
+from jitsdp.utils import int_or_none, setup_and_run
 
 import argparse
 from datetime import datetime
@@ -155,8 +155,7 @@ def run(config):
     target_prediction = target_prediction.reset_index(drop=True)
 
     results = met.prequential_metrics(target_prediction, .99, config['orb_th'])
-    save_results(results=results, dir=unique_dir(config))
-    report(config)
+    report(config, results)
 
 
 def extract_events(df_commit, waiting_time):

@@ -4,7 +4,6 @@ from jitsdp.constants import DIR
 from jitsdp.data import make_stream, make_stream_others, save_results
 from jitsdp.pipeline import create_pipeline, set_seed
 from jitsdp.report import report
-from jitsdp.utils import unique_dir
 
 import math
 import mlflow
@@ -69,8 +68,7 @@ def run(config):
     target_prediction = target_prediction.reset_index(drop=True)
     results = met.prequential_metrics(
         target_prediction, .99, config['borb_th'])
-    save_results(results=results, dir=unique_dir(config))
-    report(config)
+    report(config, results)
 
 
 def __verification_latency_label(train_timestamp, commit_timestamp, verification_latency):
