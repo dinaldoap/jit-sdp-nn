@@ -32,7 +32,9 @@ def test_plot_proportions():
         'te1':    [1., .5, 1.],
         'pr1':    [0., .5, 0.],
         'th-ma':    [.1, .2, .1],
+        'th-pr1':    [.1, .2, .2],
     })
     plot.plot_proportions(data=data, config=config, dir=DIR)
     assert (DIR / 'proportions.png').exists()
-    assert (DIR / 'intended_proportion.png').exists()
+    assert (DIR / 'rate_driven_val.png').exists()
+    assert (DIR / 'rate_driven_test.png').exists()

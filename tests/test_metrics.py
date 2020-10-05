@@ -70,7 +70,8 @@ def test_prequential_proportions():
     })
     threshold = .5
     expected.update({
-        'th-ma': [abs(threshold-ma) for ma in results['ma']]
+        'th-ma': [abs(threshold-ma) for ma in results['ma']],
+        'th-pr1': [abs(threshold-pr1) for pr1 in expected['pr1']],
     })
     results = pd.DataFrame(results)
     expected = pd.DataFrame(expected)

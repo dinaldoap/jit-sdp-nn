@@ -14,7 +14,8 @@ import sys
 
 def report(config, results):
     # metrics
-    metrics = ['r0', 'r1', 'r0-r1', 'g-mean', 'tr1', 'te1', 'pr1', 'th-ma']
+    metrics = ['r0', 'r1', 'r0-r1', 'g-mean',
+               'tr1', 'te1', 'pr1', 'th-ma', 'th-pr1']
     metrics = {metric: results[metric].mean() for metric in metrics}
     mlflow.log_metrics(metrics)
     # artifacts
@@ -40,6 +41,7 @@ def generate(config):
         Metric('g-mean', 'g-mean', False),
         Metric('r0-r1', '|r0-r1|', True),
         Metric('th-ma', '|th-ma|', True),
+        Metric('th-pr1', '|th-pr1|', True),
     ]
     plot_boxplot(df_testing, metrics, dir_to_path(config['filename']))
     statistical_analysis(config, df_testing, metrics)
