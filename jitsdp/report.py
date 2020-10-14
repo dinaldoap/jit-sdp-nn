@@ -45,6 +45,7 @@ def generate(config):
     ]
     plot_boxplot(df_testing, metrics, dir_to_path(config['filename']))
     statistical_analysis(config, df_testing, metrics)
+    table(config, df_testing, metrics)
 
 
 def best_configs_testing(config):
@@ -129,3 +130,12 @@ def statistical_analysis(config, df_testing, metrics):
         avg_rank = avg_rank.mean()
         plot_critical_distance(avg_rank, df_inferential, metric,
                                dir)
+
+
+def table(config, df_testing, metrics):
+    metric_columns = {metric.column: ['mean', 'std'] for metric in metrics}
+    df_table = df_testing.groupby(by=['dataset', 'name']).agg(metric_columns)
+    metric_names = {metric.column: metric.name for metric in metrics}
+    df_table = df_table.rename(metric_names, axis='columns')
+    dir = dir_to_path(config['filename'])
+    df_table.to_csv(dir / 'table.csv')
