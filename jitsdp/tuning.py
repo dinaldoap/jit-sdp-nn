@@ -120,7 +120,7 @@ def create_models_configs(config):
                 uniform('orb-rd-grace-period', 100, 500, 100),
                 ])
 
-    hoeffding_shared = hoeffding_shared_config_space()
+    hoeffding_shared = hoeffding_shared_config_space(config)
     oht = {}
     oht.update(orb)
     oht.update(hoeffding_shared['oht'])
@@ -226,12 +226,12 @@ def meta_model_shared_config_space():
     return config_spaces
 
 
-def hoeffding_shared_config_space():
+def hoeffding_shared_config_space(config):
     config_spaces = {}
     models = ['oht', 'ihf']
     max_n_estimators = {
         'oht': 40,
-        'ihf': 20,
+        'ihf': 40 if config['cross_project'] else 20,
     }
     for model in models:
         config_spaces[model] = [
