@@ -91,7 +91,7 @@ def generate(config):
     models_configs = create_models_configs(config)
     file_ = filename_to_path(config['filename'])
     with open(file_, mode='w') as out:
-        for experiment in configs_to_experiments(config['cross_project'], experiment_configs, seed_dataset_configs, models_configs):
+        for experiment in configs_to_experiments(cross_project, experiment_configs, seed_dataset_configs, models_configs):
             experiment.to_shell(out)
 
 
