@@ -52,6 +52,9 @@ class Experiment():
 
 
 def add_arguments(parser, filename):
+    add_shared_arguments(parser, filename)
+
+def add_shared_arguments(parser, filename):
     parser.add_argument('--start',   type=int,
                         help='Starting index of the random configurations slice.', required=True)
     parser.add_argument('--end',   type=int,

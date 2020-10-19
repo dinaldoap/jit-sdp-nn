@@ -11,7 +11,7 @@ import sys
 
 
 def add_arguments(parser, filename):
-    tuning.add_arguments(parser, filename)
+    tuning.add_shared_arguments(parser, filename)
     parser.add_argument('--tuning-experiment-name',   type=str,
                         help='Experiment name used for tuning (default: Default).', default='Default')
     parser.add_argument('--no-validation',
