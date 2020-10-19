@@ -11,7 +11,8 @@ import hyperopt.pyll.stochastic as config_space_sampler
 
 class Experiment():
 
-    def __init__(self, cross_project, experiment_config, seed_dataset_configs, models_configs):
+    def __init__(self, validation_size, cross_project, experiment_config, seed_dataset_configs, models_configs):
+        self.validation_size = validation_size
         self.cross_project = cross_project
         self.meta_model = experiment_config['meta-model']
         self.experiment_config = experiment_config
@@ -47,12 +48,15 @@ class Experiment():
 
     def add_start(self, config):
         config = dict(config)
-        config['end'] = 1000 if config['cross-project'] else 5000
+        config['end'] = self.validation_size
         return config
 
 
 def add_arguments(parser, filename):
     add_shared_arguments(parser, filename)
+    parser.add_argument('--validation-size', type=int,
+                        help='Size of the stream segment used for hyperparameter tuning.', default=5000)
+
 
 def add_shared_arguments(parser, filename):
     parser.add_argument('--start',   type=int,
@@ -94,14 +98,15 @@ def generate(config):
     models_configs = create_models_configs(config)
     file_ = filename_to_path(config['filename'])
     with open(file_, mode='w') as out:
-        for experiment in configs_to_experiments(cross_project, experiment_configs, seed_dataset_configs, models_configs):
+        for experiment in configs_to_experiments(config['validation_size'], cross_project, experiment_configs, seed_dataset_configs, models_configs):
             experiment.to_shell(out)
 
 
-def configs_to_experiments(cross_project, experiment_configs, seed_dataset_configs, models_configs):
+def configs_to_experiments(validation_size, cross_project, experiment_configs, seed_dataset_configs, models_configs):
     for experiment_config in experiment_configs:
         model = experiment_config['model']
-        experiment = Experiment(cross_project=cross_project,
+        experiment = Experiment(validation_size=validation_size,
+                                cross_project=cross_project,
                                 experiment_config=experiment_config,
                                 seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[model])
         yield experiment
