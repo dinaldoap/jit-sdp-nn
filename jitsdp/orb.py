@@ -42,7 +42,8 @@ class ORB():
             self.update_state(target, **kwargs)
             self.oza_bag.partial_fit([features], [target], classes=[
                                      0, 1], sample_weight=[self.k])
-            self.observed_classes.update(y)
+            if self.k > 0:
+                self.observed_classes.update(y)
             self.observed_weight_window = None if self.observed_weight_window is None else self.observed_weight_window + self.k
 
     def update_state(self, target, **kwargs):
