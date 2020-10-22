@@ -46,7 +46,7 @@ def configs_results(config):
     tuning_experiment_id = mlflow.get_experiment_by_name(
         tuning_experiment_name).experiment_id
     df_tuning = load_runs(tuning_experiment_id)
-    df_tuning = valid_data(config, df_tuning)
+    df_tuning = valid_data(config, df_tuning, single_config=False, n_seeds=3)
     config_cols = remove_columns_prefix(config_columns(df_tuning.columns))
     df_tuning.columns = remove_columns_prefix(df_tuning.columns)
     df_configs_results = df_tuning.groupby(by=config_cols, as_index=False, dropna=False).agg({
@@ -54,13 +54,12 @@ def configs_results(config):
     return df_configs_results, config_cols
 
 
-def valid_data(config, df_runs, single_config=False):
+def valid_data(config, df_runs, single_config, n_seeds):
     if not config['no_validation']:
         n_datasets = 10
         n_cross_projects = config['cross_project'] + 1
         n_models = 6
         n_configs = 1 if single_config else config['end'] - config['start']
-        n_seeds = 3
         expected_n_runs = n_models * n_cross_projects * \
             n_configs * n_datasets * n_seeds
         n_runs = len(df_runs)
