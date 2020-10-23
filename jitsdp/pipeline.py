@@ -53,8 +53,9 @@ def create_pipeline(config):
             model=model, normal_proportion=(1 - config['borb_th']))
     else:
         classifier = ScoreFixed(model=model)
+
     if config['borb']:
-        classifier = BORB(classifier=classifier,
+        classifier = BORB(model=model,
                           max_sample_size=config['borb_sample_size'],
                           th=config['borb_th'],
                           l0=config['borb_l0'],
@@ -246,8 +247,10 @@ def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
 
 
 class BORB(Classifier):
-    def __init__(self, classifier, max_sample_size, th, l0, l1, m, rate_driven):
-        self.classifier = classifier
+    def __init__(self, model, max_sample_size, th, l0, l1, m, rate_driven):
+        self.classifier_train = ScoreFixed(model=model)
+        self.classifier_predict = RateFixed(
+            model=model, normal_proportion=(1 - th))
         self.max_sample_size = max_sample_size
         self.th = th
         self.l0 = l0
@@ -267,7 +270,7 @@ class BORB(Classifier):
                 lambda1 = p0 / p1
         df_ma = kwargs.pop('df_ma', None)
         self.ma = self.th
-        for i in range(self.classifier.n_iterations):
+        for i in range(self.classifier_train.n_iterations):
             obf0 = 1
             obf1 = 1
             if self.ma > self.th:
@@ -280,16 +283,16 @@ class BORB(Classifier):
             new_kwargs['weights'] = [lambda0 * obf0, lambda1 * obf1]
             new_kwargs['n_iterations'] = 1
             new_kwargs['max_sample_size'] = self.max_sample_size
-            for metrics in self.classifier.train(df_train, **new_kwargs):
+            for metrics in self.classifier_train.train(df_train, **new_kwargs):
                 yield _track_orb(metrics=metrics, ma=self.ma, lambda0=lambda0, lambda1=lambda1, obf0=obf0, obf1=obf1, **kwargs)
-            df_output = self.classifier.predict(df_ma)
+            df_output = self.classifier_train.predict(df_ma)
             self.ma = df_output['prediction'].mean()
 
     def predict(self, df_features, **kwargs):
-        return self.__track(self.classifier.predict(df_features, **kwargs))
+        return self.__track(self.classifier_predict.predict(df_features, **kwargs))
 
     def predict_proba(self, df_features, **kwargs):
-        return self.__track(self.classifier.predict_proba(df_features, **kwargs))
+        return self.__track(self.classifier_predict.predict_proba(df_features, **kwargs))
 
     def __track(self, df_prediction):
         return track_metric(df_prediction, 'ma', self.ma)
