@@ -73,8 +73,8 @@ def valid_data(config, df_runs, single_config, n_seeds):
 
 def tuning_to_testing(commands):
     seeds = range(30)
-    for command in commands:
-        for seed in seeds:
+    for seed in seeds:
+        for command in commands:
             new_command = command.replace('end', 'start')
             new_command = re.sub(
                 r'seed \d+', 'seed {}'.format(seed), new_command)
