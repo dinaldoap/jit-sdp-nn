@@ -220,7 +220,7 @@ class RateFixed(Threshold):
     def predict(self, df_features, **kwargs):
         df_threshold = kwargs.pop('df_threshold', None)
         val_probabilities = self.predict_proba(
-            df_threshold, **kwargs)['probability'] if df_threshold is not None else None
+            df_threshold, **kwargs)['probability'] if df_threshold is not None and len(df_threshold) > 0 else None
         prediction = self.predict_proba(df_features=df_features, **kwargs)
         threshold = _tune_threshold(val_probabilities=val_probabilities,
                                     test_probabilities=prediction['probability'], normal_proportion=self.normal_proportion)
