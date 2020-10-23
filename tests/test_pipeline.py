@@ -83,7 +83,7 @@ def test_combine():
 def test_tune_threshold():
     val_probabilities = pd.Series([0, .1], name='probability')
     test_probabilities = pd.Series([.2, .3], name='probability')
-    expected = pd.Series([.05, .15], name='threshold',
+    expected = pd.Series([.15, .25], name='threshold',
                          index=test_probabilities.index)
     thresholds = _tune_threshold(val_probabilities=val_probabilities,
                                  test_probabilities=test_probabilities, normal_proportion=.5)
