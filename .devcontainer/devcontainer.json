@@ -12,7 +12,7 @@
     "--mount", "type=volume,src=jit-sdp-nn_devcontainer_vscode-server,dst=/home/pytorch/.vscode-server",
     "--gpus", "all"],
   "extensions": [
-    "ms-python.python",
+    "ms-python.vscode-pylance",
     "VisualStudioExptTeam.vscodeintellicode",
     "eamodio.gitlens",
     "mhutchie.git-graph"
@@ -45,6 +45,7 @@
     "gitlens.currentLine.enabled": false,
     "gitlens.codeLens.enabled": false,
     // Python
+    "python.languageServer": "Pylance",
     "python.pythonPath": "/home/pytorch/.conda/envs/pytorch/bin/python",
     // pytest
     "python.testing.pytestArgs": [
