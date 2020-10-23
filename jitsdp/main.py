@@ -148,7 +148,7 @@ def add_arguments(parser):
     parser.add_argument('--ensemble-size',   type=int,
                         help='Number of models in the ensemble (default: 1).',    default=1)
     parser.add_argument('--threshold',   type=int,
-                        help='Whether must tune threshold to balance output proportions (default: 0).', default=0, choices=[0, 1, 2])
+                        help='Whether must tune threshold to balance output proportions (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--uncertainty',   type=int,
                         help='Whether must use decreasing uncertainty about normal commit labels inside verification latency (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--incremental',   type=int,

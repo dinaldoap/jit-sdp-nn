@@ -47,12 +47,10 @@ def create_pipeline(config):
         model = Ensemble(models=models)
     else:
         model = fn_create_model(config)
-    if config['threshold'] == 1:
+
+    if config['threshold']:
         classifier = RateFixed(
             model=model, normal_proportion=(1 - config['borb_th']))
-    elif config['threshold'] == 2:
-        classifier = RateFixedTrain(
-            model=model)
     else:
         classifier = ScoreFixed(model=model)
     if config['borb']:
@@ -244,26 +242,6 @@ def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
     threshold = threshold.dropna()
     threshold.index = test_probabilities.index
     return threshold
-
-
-class RateFixedTrain(Threshold):
-    def __init__(self, model):
-        super().__init__(model=model)
-
-    def predict(self, df_features, **kwargs):
-        df_proportion = kwargs.pop('df_proportion', None)
-        normal_proportion = 1 - df_proportion['soft_target'].mean()
-        normal_proportion = (normal_proportion + .5) / 2
-        df_threshold = kwargs.pop('df_threshold', None)
-        threshold_probabilities = self.predict_proba(df_threshold, **kwargs)[
-            'probability']
-        prediction = self.predict_proba(df_features=df_features)
-        threshold = _tune_threshold(val_probabilities=threshold_probabilities,
-                                    test_probabilities=prediction['probability'], normal_proportion=normal_proportion)
-        threshold = threshold.values
-        prediction['prediction'] = (
-            prediction['probability'] >= threshold).round().astype('int')
-        return prediction
 
 
 class BORB(Classifier):
