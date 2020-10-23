@@ -235,11 +235,12 @@ def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
         return pd.Series([.5] * len(test_probabilities), name='threshold', index=test_probabilities.index)
 
     # rolling threshold
-    probabilities = pd.concat([val_probabilities, test_probabilities[:-1]])
+    probabilities = pd.concat([val_probabilities, test_probabilities])
     threshold = probabilities.rolling(len(val_probabilities)).quantile(
         quantile=normal_proportion)
     threshold = threshold.rename('threshold')
     threshold = threshold.dropna()
+    threshold = threshold[-len(test_probabilities):]
     threshold.index = test_probabilities.index
     return threshold
 
