@@ -235,14 +235,10 @@ def meta_model_shared_config_space():
 def hoeffding_shared_config_space(config):
     config_spaces = {}
     models = ['oht', 'ihf']
-    max_n_estimators = {
-        'oht': 40,
-        'ihf': 40 if config['cross_project'] else 20,
-    }
     for model in models:
         config_spaces[model] = [
             uniform('{}-n-estimators'.format(model),
-                    10, max_n_estimators[model], 10),
+                    10, 40, 10),
             uniform('{}-grace-period'.format(model), 100, 500, 100),
             choiceuniform('{}-split-criterion'.format(model),
                           ['gini', 'info_gain', 'hellinger']),
