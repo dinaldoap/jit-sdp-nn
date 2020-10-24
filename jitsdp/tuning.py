@@ -158,13 +158,10 @@ def create_models_configs(config):
     mlp.update(linear_shared['mlp'])
     mlp.update([
         loguniform('mlp-learning-rate', .0001, .01),
-        uniform('mlp-n-epochs', 10, 80, 10),
         uniform('mlp-n-hidden-layers', 1, 3, 1),
         uniform('mlp-hidden-layers-size', 5, 15, 2),
         uniform('mlp-dropout-input-layer', .1, .3, .1),
         uniform('mlp-dropout-hidden-layer', .3, .5, .1),
-        loguniform('mlp-batch-size',  128, 512, 128),
-        choiceuniform('mlp-log-transformation', [0, 1]),
     ])
 
     nb = {}
