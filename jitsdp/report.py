@@ -97,7 +97,7 @@ def efficiency_curve(df_results):
     total_trials = len(df_results)
     maximums_by_experiment_size = []
     np.random.seed(0)
-    for experiment_size in [1, 2, 4, 8, 16, 32]:
+    for experiment_size in [1, 2, 4, 8, 16, 32, 64]:
         maximums = []
         for i in range(1000):
             sample_indices = np.random.choice(total_trials, experiment_size)
