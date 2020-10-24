@@ -79,7 +79,7 @@ def create_ihf_model(config):
         base_estimator=base_estimator, n_estimators=0, warm_start=True, bootstrap=False)
     return IterativeForest(steps=[], classifier=classifier,
                            features=FEATURES, target='target', soft_target='soft_target',
-                           n_trees=config['ihf_n_estimators'], fading_factor=1)
+                           n_trees=config['ihf_n_estimators'], fading_factor=1, n_updates=config['ihf_n_updates'])
 
 
 def create_mlp_model(config):
@@ -109,7 +109,7 @@ def create_irf_model(config):
         n_estimators=0, criterion=config['irf_criterion'], max_depth=config['irf_max_depth'], min_samples_leaf=config['irf_min_samples_leaf'], max_features=config['irf_max_features'], min_impurity_decrease=config['irf_min_impurity_decrease'], warm_start=True, bootstrap=False)
     return IterativeForest(steps=[], classifier=classifier,
                            features=FEATURES, target='target', soft_target='soft_target',
-                           n_trees=config['irf_n_estimators'], fading_factor=1)
+                           n_trees=config['irf_n_estimators'], fading_factor=1, n_updates=1)
 
 
 def create_lr_model(config):
@@ -595,14 +595,16 @@ class NaiveBayes(Scikit):
 
 class IterativeForest(Scikit):
 
-    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_trees):
+    def __init__(self, steps, classifier, features, target, soft_target, fading_factor, n_trees, n_updates):
         super().__init__(steps=steps, classifier=classifier, features=features, target=target,
                          soft_target=soft_target, fading_factor=fading_factor, batch_size=None)
         self.n_trees = n_trees
+        self.n_updates = n_updates
+        self.updates_count = 0
 
     @property
     def n_iterations(self):
-        return self.n_trees
+        return self.n_trees * self.n_updates
 
     @property
     def estimators(self):
@@ -611,9 +613,13 @@ class IterativeForest(Scikit):
     def train_iteration(self, inputs, targets):
         if len(np.unique(targets)) != 2:
             return
-        self.classifier.n_estimators += 1
-        self.classifier.fit(
-            inputs, targets)
+        if self.updates_count % self.n_updates == 0:
+            self.classifier.n_estimators += 1
+            self.classifier.fit(inputs, targets)
+        else:
+            last_estimator = self.classifier.n_estimators - 1
+            self.estimators[last_estimator].fit(inputs, targets)
+        self.updates_count += 1
 
     def predict_proba(self, df_features, **kwargs):
         prediction = super().predict_proba(df_features, **kwargs)

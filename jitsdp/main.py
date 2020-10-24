@@ -97,6 +97,8 @@ def add_arguments(parser):
                         default=0, choices=[0, 1])
     parser.add_argument('--ihf-leaf-prediction',   type=str, help='Prediction mechanism used at leafs. (default: nba).',
                         default='nba', choices=['mc', 'nb', 'nba'])
+    parser.add_argument('--ihf-n-updates',   type=int,
+                        help='Number of updates performed by each hoeffding tree (default: 1).',    default=1)
     parser.add_argument('--lr-alpha',   type=float,
                         help='Constant that multiplies the regularization term. Also used to compute the learning rate (default: .1).',  default=.1)
     parser.add_argument('--lr-l1-ratio',   type=float,
