@@ -224,7 +224,7 @@ def meta_model_shared_config_space():
         config_spaces[meta_model] = [
             uniform('{}-waiting-time'.format(meta_model), 90, 180, 30),
             uniform('{}-ma-window-size'.format(meta_model), 50, 200, 50),
-            uniform('{}-th'.format(meta_model), .3, .5, .05),
+            uniform('{}-th'.format(meta_model), .3, .5, .025),
             loguniform('{}-l0'.format(meta_model), 1., 20.),
             loguniform('{}-l1'.format(meta_model), 1., 20.),
             uniform('{}-m'.format(meta_model), 1.1, np.e, .2),
