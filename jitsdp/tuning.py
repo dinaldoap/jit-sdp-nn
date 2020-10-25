@@ -143,7 +143,10 @@ def create_models_configs(config):
     ihf = {}
     ihf.update(borb)
     ihf.update(hoeffding_shared['ihf'])
-    ihf.update([uniform('ihf-n-updates',  1, 4), ])
+    ihf.update([
+        uniform('borb-pull-request-size', 300, 1000),
+    ])
+    ihf.update([uniform('ihf-n-updates',  1, 3), ])
 
     linear_shared = linear_shared_config_space()
     lr = {}
@@ -236,10 +239,14 @@ def meta_model_shared_config_space():
 def hoeffding_shared_config_space(config):
     config_spaces = {}
     models = ['oht', 'ihf']
+    max_n_estimators = {
+        'oht': 40,
+        'ihf': 40 if config['cross_project'] else 30,
+    }
     for model in models:
         config_spaces[model] = [
             uniform('{}-n-estimators'.format(model),
-                    10, 40),
+                    10, max_n_estimators[model]),
             uniform('{}-grace-period'.format(model), 100, 500),
             choiceuniform('{}-split-criterion'.format(model),
                           ['gini', 'info_gain', 'hellinger']),
