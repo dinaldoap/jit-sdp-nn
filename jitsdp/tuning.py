@@ -124,8 +124,8 @@ def create_models_configs(config):
     orb = {}
     orb.update(meta_model_shared['orb'])
     orb.update([loguniform('orb-decay-factor', .9, .999),
-                uniform('orb-n', 3, 7, 2),
-                uniform('orb-rd-grace-period', 100, 500, 100),
+                uniform('orb-n', 3, 7),
+                uniform('orb-rd-grace-period', 100, 500),
                 ])
 
     hoeffding_shared = hoeffding_shared_config_space(config)
@@ -135,15 +135,15 @@ def create_models_configs(config):
 
     borb = {}
     borb.update(meta_model_shared['borb'])
-    borb.update([uniform('borb-pull-request-size', 100, 1000, 100),
+    borb.update([uniform('borb-pull-request-size', 100, 1000),
                  uniform('borb-sample-size', 1000,
-                         8000 if config['cross_project'] else 4000, 1000),
+                         8000 if config['cross_project'] else 4000),
                  ])
 
     ihf = {}
     ihf.update(borb)
     ihf.update(hoeffding_shared['ihf'])
-    ihf.update([uniform('ihf-n-updates',  1, 4, 1), ])
+    ihf.update([uniform('ihf-n-updates',  1, 4), ])
 
     linear_shared = linear_shared_config_space()
     lr = {}
@@ -158,25 +158,25 @@ def create_models_configs(config):
     mlp.update(linear_shared['mlp'])
     mlp.update([
         loguniform('mlp-learning-rate', .0001, .01),
-        uniform('mlp-n-hidden-layers', 1, 3, 1),
-        uniform('mlp-hidden-layers-size', 5, 15, 2),
-        uniform('mlp-dropout-input-layer', .1, .3, .1),
-        uniform('mlp-dropout-hidden-layer', .3, .5, .1),
+        uniform('mlp-n-hidden-layers', 1, 3),
+        uniform('mlp-hidden-layers-size', 5, 15),
+        uniform('mlp-dropout-input-layer', .1, .3),
+        uniform('mlp-dropout-hidden-layer', .3, .5),
     ])
 
     nb = {}
     nb.update(borb)
     nb.update([
-        uniform('nb-n-updates', 10, 80, 10),
+        uniform('nb-n-updates', 10, 80),
     ])
 
     irf = {}
     irf.update(borb)
     irf.update([
-        uniform('irf-n-estimators', 20, 100, 20),
+        uniform('irf-n-estimators', 20, 100),
         choiceuniform('irf-criterion', ['gini', 'entropy']),
-        uniform('irf-min-samples-leaf', 100, 300,  100),
-        uniform('irf-max-features', 3, 7, 2),
+        uniform('irf-min-samples-leaf', 100, 300),
+        uniform('irf-max-features', 3, 7),
     ])
 
     start = config['start']
@@ -192,25 +192,26 @@ def create_models_configs(config):
     return models_configs
 
 
-def uniform(name, start, end, step=None):
-    if step is None:
-        return (name, converter(start, hp.uniform(name, start, end)))
+def uniform(name, start, end):
+    if is_int(start):
+        return (name, to_int(start + hp.quniform(name, 0, end - start, 1)))
     else:
-        return (name, converter(start, start + hp.quniform(name, 0, end - start, step)))
+        return (name, hp.uniform(name, start, end))
 
 
-def loguniform(name, start, end, step=None):
-    if step is None:
-        return (name, converter(start, hp.loguniform(name, np.log(start), np.log(end))))
+def loguniform(name, start, end):
+    if is_int(start):
+        return (name, to_int(start + hp.qloguniform(name, 0, np.log(end) - np.log(start), 1)))
     else:
-        return (name, converter(start, start + hp.qloguniform(name, 0, np.log(end) - np.log(start), step)))
+        return (name, hp.loguniform(name, np.log(start), np.log(end)))
 
 
-def converter(sample, apply):
-    if int == type(sample):
-        return scope.int(apply)
-    else:
-        return apply
+def is_int(start):
+    return int == type(start)
+
+
+def to_int(apply):
+    return scope.int(apply)
 
 
 def choiceuniform(name, options):
@@ -222,12 +223,12 @@ def meta_model_shared_config_space():
     meta_models = ['orb', 'borb']
     for meta_model in meta_models:
         config_spaces[meta_model] = [
-            uniform('{}-waiting-time'.format(meta_model), 90, 180, 30),
-            uniform('{}-ma-window-size'.format(meta_model), 50, 200, 50),
-            uniform('{}-th'.format(meta_model), .3, .5, .025),
+            uniform('{}-waiting-time'.format(meta_model), 90, 180),
+            uniform('{}-ma-window-size'.format(meta_model), 50, 200),
+            uniform('{}-th'.format(meta_model), .3, .5),
             loguniform('{}-l0'.format(meta_model), 1., 20.),
             loguniform('{}-l1'.format(meta_model), 1., 20.),
-            uniform('{}-m'.format(meta_model), 1.1, np.e, .2),
+            uniform('{}-m'.format(meta_model), 1.1, np.e),
         ]
     return config_spaces
 
@@ -238,8 +239,8 @@ def hoeffding_shared_config_space(config):
     for model in models:
         config_spaces[model] = [
             uniform('{}-n-estimators'.format(model),
-                    10, 40, 10),
-            uniform('{}-grace-period'.format(model), 100, 500, 100),
+                    10, 40),
+            uniform('{}-grace-period'.format(model), 100, 500),
             choiceuniform('{}-split-criterion'.format(model),
                           ['gini', 'info_gain', 'hellinger']),
             loguniform('{}-split-confidence'.format(model), 0.0000001, 0.5),
@@ -258,8 +259,8 @@ def linear_shared_config_space():
     models = ['lr', 'mlp']
     for model in models:
         config_spaces[model] = [
-            uniform('{}-n-epochs'.format(model),  10, 80, 10),
-            loguniform('{}-batch-size'.format(model), 128, 512, 128),
+            uniform('{}-n-epochs'.format(model),  10, 80),
+            loguniform('{}-batch-size'.format(model), 128, 512),
             choiceuniform('{}-log-transformation'.format(model), [0, 1]),
         ]
     return config_spaces
