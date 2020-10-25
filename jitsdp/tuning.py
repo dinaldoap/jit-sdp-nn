@@ -83,8 +83,8 @@ def generate(config):
         'model': ['ihf', 'lr', 'mlp', 'nb', 'irf'],
     }
     experiment_configs = [
-        orb_grid,
         borb_grid,
+        orb_grid,
     ]
     # seeds and datasets
     experiment_configs = map(grid_to_configs, experiment_configs)
