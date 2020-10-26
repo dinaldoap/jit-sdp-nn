@@ -125,7 +125,7 @@ def statistical_analysis(config, df_testing, metrics):
             f.write('Friedman p-value: {}\n'.format(friedman_p_value))
             if not config['cross_project']:
                 _, wilcoxon_p_value = wilcoxon(
-                    df_inferential['BORB-IHF'], df_inferential['ORB-OHT'], alternative='less' if metric.ascending else 'greater')
+                    df_inferential['BORB-IHF'], df_inferential['ORB-OHT'], alternative='two-sided')
                 f.write('Wilcoxon p-value: {}'.format(wilcoxon_p_value))
 
         avg_rank = df_inferential.rank(
