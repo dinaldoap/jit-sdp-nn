@@ -116,6 +116,7 @@ def statistical_analysis(config, df_testing, metrics):
                                              'cross_project'], as_index=False).agg({'name': 'first', metric.column: 'mean'})
         df_inferential = pd.pivot_table(
             df_inferential, columns='name', values=metric.column, index='dataset')
+        df_inferential = df_inferential.round(2)
         measurements = [df_inferential[column]
                         for column in df_inferential.columns]
         _, friedman_p_value = friedmanchisquare(*measurements)
@@ -140,4 +141,5 @@ def table(config, df_testing, metrics):
     metric_names = {metric.column: metric.name for metric in metrics}
     df_table = df_table.rename(metric_names, axis='columns')
     dir = dir_to_path(config['filename'])
+    df_table = df_table.round(2)
     df_table.to_csv(dir / 'table.csv')
