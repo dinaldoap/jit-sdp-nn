@@ -143,10 +143,6 @@ def create_models_configs(config):
     ihf = {}
     ihf.update(borb)
     ihf.update(hoeffding_shared['ihf'])
-    ihf.update([
-        uniform('borb-pull-request-size', 300, 1000),
-    ])
-    ihf.update([uniform('ihf-n-updates',  1, 3), ])
 
     linear_shared = linear_shared_config_space()
     lr = {}
