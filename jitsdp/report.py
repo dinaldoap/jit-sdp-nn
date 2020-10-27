@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import mlflow
 from scipy.stats import friedmanchisquare, wilcoxon
-import sys
+from statsmodels.stats.multitest import multipletests
 
 
 def report(config, results):
@@ -123,9 +123,18 @@ def statistical_analysis(config, df_testing, metrics):
         with open(dir / '{}.txt'.format(metric.column), 'w') as f:
             f.write('Friedman p-value: {}\n'.format(friedman_p_value))
             if not config['cross_project']:
-                _, wilcoxon_p_value = wilcoxon(
-                    df_inferential['BORB-IHF'], df_inferential['ORB-OHT'], alternative='two-sided')
-                f.write('Wilcoxon p-value: {}'.format(wilcoxon_p_value))
+                names = df_inferential.columns.drop('ORB-OHT')
+                p_values = []
+                for name in names:
+                    _, wilcoxon_p_value = wilcoxon(
+                        df_inferential[name], df_inferential['ORB-OHT'], alternative='less' if metric.ascending else 'greater')
+                    p_values.append(wilcoxon_p_value)
+
+                reject, p_values, _, _ = multipletests(
+                    pvals=p_values, alpha=.05, method='hs', is_sorted=False, returnsorted=False)
+                for i, name in enumerate(names):
+                    f.write(
+                        'Is {} better? {}. Wilcoxon p-value: {}\n'.format(name, reject[i], p_values[i]))
 
         avg_rank = df_inferential.rank(
             axis='columns', ascending=metric.ascending)
