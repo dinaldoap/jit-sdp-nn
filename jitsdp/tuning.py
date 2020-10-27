@@ -1,5 +1,5 @@
 # coding=utf-8
-from jitsdp.utils import filename_to_path
+from jitsdp.utils import filename_to_path, random_state_seed
 
 import argparse
 import itertools
@@ -91,7 +91,7 @@ def generate(config):
     experiment_configs = itertools.chain.from_iterable(experiment_configs)
     seed_dataset_configs = {
         'dataset': ['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'],
-        'seed': [0, 1, 2],
+        'seed': [118819124794768324716243582738038647832, 233788382964979925575822780126624241621, 123852561530946589675929508680442328351],
     }
     seed_dataset_configs = grid_to_configs(seed_dataset_configs)
     # meta-models and models
@@ -270,7 +270,8 @@ def linear_shared_config_space():
 
 
 def config_space_to_configs(config_space, start, end):
-    rng = np.random.RandomState(seed=0)
+    rng = np.random.RandomState(seed=random_state_seed(
+        168584965791772849512190648581246426632))
     configs = [config_space_sampler.sample(
         config_space, rng=rng) for i in range(end)]
     return configs[start:end]

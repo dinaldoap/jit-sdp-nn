@@ -111,3 +111,11 @@ def track_metric(prediction, name, value):
 def track_time(prediction):
     prediction['timestamp_test'] = time.time()
     return prediction
+
+
+def torch_seed(seed):
+    return seed & (2**63 - 10)
+
+
+def random_state_seed(seed):
+    return seed & (2**32 - 1)

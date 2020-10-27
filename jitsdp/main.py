@@ -74,7 +74,7 @@ def add_arguments(parser):
     parser.add_argument('--cross-project',   type=int,
                         help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--seed',   type=int,
-                        help='Seed of random state (default: 0).',    default=0)
+                        help='Seed of random state (default: 273243676114050081847384039665342324335).',    default=273243676114050081847384039665342324335)
     parser.add_argument('--dataset',   type=str, help='Dataset to run the experiment. (default: brackets).',
                         default='brackets', choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'])
     parser.add_argument('--model',   type=str,

@@ -2,7 +2,7 @@
 from jitsdp import metrics as met
 from jitsdp.mlp import MLP
 from jitsdp.data import FEATURES
-from jitsdp.utils import mkdir, track_forest, track_metric, track_time
+from jitsdp.utils import mkdir, track_forest, track_metric, track_time, torch_seed, random_state_seed
 
 from abc import ABCMeta, abstractmethod
 import joblib
@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 
 def set_seed(config):
     seed = config['seed']
-    torch.manual_seed(seed)
-    np.random.seed(seed)
+    torch.manual_seed(torch_seed(seed))
+    np.random.seed(random_state_seed(seed))
 
 
 def create_pipeline(config):
