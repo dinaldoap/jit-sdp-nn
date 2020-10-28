@@ -112,10 +112,9 @@ def efficiency_curve(df_results):
 
 def statistical_analysis(config, df_testing, metrics):
     for metric in metrics:
-        df_inferential = df_testing.groupby(['dataset', 'meta_model', 'model', 'rate_driven',
-                                             'cross_project'], as_index=False).agg({'name': 'first', metric.column: 'mean'})
         df_inferential = pd.pivot_table(
-            df_inferential, columns='name', values=metric.column, index='dataset')
+            df_metrics, columns='name', values=metric.column, index='dataset')
+        df_inferential = df_inferential * (-1 if metric.ascending else 1)
         measurements = [df_inferential[column]
                         for column in df_inferential.columns]
         _, friedman_p_value = friedmanchisquare(*measurements)
@@ -125,19 +124,29 @@ def statistical_analysis(config, df_testing, metrics):
             if not config['cross_project']:
                 names = df_inferential.columns.drop('ORB-OHT')
                 p_values = []
+                r_pluses = []
                 for name in names:
                     _, wilcoxon_p_value = wilcoxon(
-                        df_inferential[name], df_inferential['ORB-OHT'], alternative='less' if metric.ascending else 'greater')
+                        df_inferential[name], df_inferential['ORB-OHT'], alternative='two-sided')
+                    r_plus, _ = wilcoxon(
+                        df_inferential[name], df_inferential['ORB-OHT'], alternative='greater')
                     p_values.append(wilcoxon_p_value)
+                    r_pluses.append(r_plus)
 
                 reject, p_values, _, _ = multipletests(
                     pvals=p_values, alpha=.05, method='hs', is_sorted=False, returnsorted=False)
+                count = len(df_inferential)
+                middle_rank_sum = ((count * (count + 1)) / 2) / 2
                 for i, name in enumerate(names):
+                    if reject[i] and r_pluses[i] != middle_rank_sum:
+                        winner = name if r_pluses[i] > middle_rank_sum else 'ORB-OHT'
+                    else:
+                        winner = 'None'
                     f.write(
-                        'Is {} better? {}. Wilcoxon p-value: {}\n'.format(name, reject[i], p_values[i]))
+                        '{}, wilcoxon p-value: {}, reject: {}, winner: {}\n'.format(name, p_values[i], reject[i], winner))
 
         avg_rank = df_inferential.rank(
-            axis='columns', ascending=metric.ascending)
+            axis='columns')
         avg_rank = avg_rank.mean()
         plot_critical_distance(avg_rank, df_inferential, metric,
                                dir)
