@@ -8,7 +8,7 @@ from collections import namedtuple
 import numpy as np
 import pandas as pd
 import mlflow
-from scipy.stats import friedmanchisquare, wilcoxon
+from scipy.stats import friedmanchisquare, wilcoxon, spearmanr
 from statsmodels.stats.multitest import multipletests
 
 
@@ -111,6 +111,11 @@ def efficiency_curve(df_results):
 
 
 def statistical_analysis(config, df_testing, metrics):
+    agg_cols = {metric.column: 'mean' for metric in metrics}
+    agg_cols.update({'name': 'first'})
+    df_metrics = df_testing.groupby(['dataset', 'meta_model', 'model', 'rate_driven',
+                                     'cross_project'], as_index=False).agg(agg_cols)
+    dir = dir_to_path(config['filename'])
     for metric in metrics:
         df_inferential = pd.pivot_table(
             df_metrics, columns='name', values=metric.column, index='dataset')
@@ -118,7 +123,6 @@ def statistical_analysis(config, df_testing, metrics):
         measurements = [df_inferential[column]
                         for column in df_inferential.columns]
         _, friedman_p_value = friedmanchisquare(*measurements)
-        dir = dir_to_path(config['filename'])
         with open(dir / '{}.txt'.format(metric.column), 'w') as f:
             f.write('Friedman p-value: {}\n'.format(friedman_p_value))
             if not config['cross_project']:
@@ -150,6 +154,16 @@ def statistical_analysis(config, df_testing, metrics):
         avg_rank = avg_rank.mean()
         plot_critical_distance(avg_rank, df_inferential, metric,
                                dir)
+
+    with open(dir / 'correlations.txt', 'w') as f:
+        df_correlation = df_metrics[df_metrics['name'] != 'ORB-OHT']
+        correlation, p_value = spearmanr(
+            df_correlation['th-pr1'], df_correlation['g-mean'])
+        f.write(
+            'corr(|th-pr1|, g-mean): {}, p-value: {}\n'.format(correlation, p_value))
+        correlation, p_value = spearmanr(
+            df_correlation['th-ma'], df_correlation['g-mean'])
+        f.write('corr(|th-ma|, g-mean): {}, p-value: {}\n'.format(correlation, p_value))
 
 
 def table(config, df_testing, metrics):
