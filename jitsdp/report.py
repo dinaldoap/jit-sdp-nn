@@ -125,29 +125,7 @@ def statistical_analysis(config, df_testing, metrics):
         _, friedman_p_value = friedmanchisquare(*measurements)
         with open(dir / '{}.txt'.format(metric.column), 'w') as f:
             f.write('Friedman p-value: {}\n'.format(friedman_p_value))
-            if not config['cross_project']:
-                names = df_inferential.columns.drop('ORB-OHT')
-                p_values = []
-                r_pluses = []
-                for name in names:
-                    _, wilcoxon_p_value = wilcoxon(
-                        df_inferential[name], df_inferential['ORB-OHT'], alternative='two-sided')
-                    r_plus, _ = wilcoxon(
-                        df_inferential[name], df_inferential['ORB-OHT'], alternative='greater')
-                    p_values.append(wilcoxon_p_value)
-                    r_pluses.append(r_plus)
-
-                reject, p_values, _, _ = multipletests(
-                    pvals=p_values, alpha=.05, method='hs', is_sorted=False, returnsorted=False)
-                count = len(df_inferential)
-                middle_rank_sum = ((count * (count + 1)) / 2) / 2
-                for i, name in enumerate(names):
-                    if reject[i] and r_pluses[i] != middle_rank_sum:
-                        winner = name if r_pluses[i] > middle_rank_sum else 'ORB-OHT'
-                    else:
-                        winner = 'None'
-                    f.write(
-                        '{}, wilcoxon p-value: {}, reject: {}, winner: {}\n'.format(name, p_values[i], reject[i], winner))
+            safe_write_wilcoxon(config, df_inferential, f)
 
         avg_rank = df_inferential.rank(
             axis='columns')
@@ -164,6 +142,39 @@ def statistical_analysis(config, df_testing, metrics):
         correlation, p_value = spearmanr(
             df_correlation['th-ma'], df_correlation['g-mean'])
         f.write('corr(|th-ma|, g-mean): {}, p-value: {}\n'.format(correlation, p_value))
+
+
+def safe_write_wilcoxon(config, df_inferential, f):
+    if not config['cross_project']:
+        try:
+            write_wilcoxon(df_inferential, f)
+        except ValueError as e:
+            f.write(repr(e))
+
+
+def write_wilcoxon(df_inferential, f):
+    names = df_inferential.columns.drop('ORB-OHT')
+    p_values = []
+    r_pluses = []
+    for name in names:
+        _, wilcoxon_p_value = wilcoxon(
+            df_inferential[name], df_inferential['ORB-OHT'], alternative='two-sided')
+        r_plus, _ = wilcoxon(
+            df_inferential[name], df_inferential['ORB-OHT'], alternative='greater')
+        p_values.append(wilcoxon_p_value)
+        r_pluses.append(r_plus)
+
+    reject, p_values, _, _ = multipletests(
+        pvals=p_values, alpha=.05, method='hs', is_sorted=False, returnsorted=False)
+    count = len(df_inferential)
+    middle_rank_sum = ((count * (count + 1)) / 2) / 2
+    for i, name in enumerate(names):
+        if reject[i] and r_pluses[i] != middle_rank_sum:
+            winner = name if r_pluses[i] > middle_rank_sum else 'ORB-OHT'
+        else:
+            winner = 'None'
+        f.write(
+            '{}, wilcoxon p-value: {}, reject: {}, winner: {}\n'.format(name, p_values[i], reject[i], winner))
 
 
 def table(config, df_testing, metrics):
