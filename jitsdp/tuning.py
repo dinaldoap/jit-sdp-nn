@@ -11,9 +11,9 @@ import hyperopt.pyll.stochastic as config_space_sampler
 
 class Experiment():
 
-    def __init__(self, validation_size, cross_project, experiment_config, seed_dataset_configs, models_configs):
+    def __init__(self, validation_size, bundle, experiment_config, seed_dataset_configs, models_configs):
         self.validation_size = validation_size
-        self.cross_project = cross_project
+        self.bundle = bundle
         self.meta_model = experiment_config['meta-model']
         self.experiment_config = experiment_config
         self.seed_dataset_configs = seed_dataset_configs
@@ -42,7 +42,7 @@ class Experiment():
             params = ['--{} {}'.format(key, value)
                       for key, value in config.items()]
             params = ' '.join(params)
-            prefix = './' if self.cross_project else ''
+            prefix = './' if self.bundle else ''
             out.write(
                 '{}jitsdp {} {}\n'.format(prefix, self.meta_model, params))
 
@@ -54,6 +54,8 @@ class Experiment():
 
 def add_arguments(parser, filename):
     add_shared_arguments(parser, filename)
+    parser.add_argument('--bundle', type=int,
+                        help='Whether must generate commands to the bundle executable.', default=0, choices=[0, 1])
     parser.add_argument('--validation-size', type=int,
                         help='Size of the stream segment used for hyperparameter tuning.', default=5000)
 
@@ -98,15 +100,15 @@ def generate(config):
     models_configs = create_models_configs(config)
     file_ = filename_to_path(config['filename'])
     with open(file_, mode='w') as out:
-        for experiment in configs_to_experiments(config['validation_size'], cross_project, experiment_configs, seed_dataset_configs, models_configs):
+        for experiment in configs_to_experiments(config['validation_size'], config['bundle'], experiment_configs, seed_dataset_configs, models_configs):
             experiment.to_shell(out)
 
 
-def configs_to_experiments(validation_size, cross_project, experiment_configs, seed_dataset_configs, models_configs):
+def configs_to_experiments(validation_size, bundle, experiment_configs, seed_dataset_configs, models_configs):
     for experiment_config in experiment_configs:
         model = experiment_config['model']
         experiment = Experiment(validation_size=validation_size,
-                                cross_project=cross_project,
+                                bundle=bundle,
                                 experiment_config=experiment_config,
                                 seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[model])
         yield experiment
