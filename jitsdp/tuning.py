@@ -64,7 +64,7 @@ def add_shared_arguments(parser, filename):
     parser.add_argument('--end',   type=int,
                         help='Stopping index of the random configurations slice.', required=True)
     parser.add_argument('--cross-project',   type=int,
-                        help='Whether must use cross-project data.', required=True, choices=[0, 1])
+                        help='Whether must use cross-project data.', required=True, choices=[0, 1], nargs='+')
     parser.add_argument('--filename',   type=str,
                         help='Output script path.', default=filename)
 
@@ -74,12 +74,12 @@ def generate(config):
     cross_project = config['cross_project']
     orb_grid = {
         'meta-model': ['orb'],
-        'cross-project': [0, 1] if cross_project else [0],
+        'cross-project': cross_project,
         'model': ['oht'],
     }
     borb_grid = {
         'meta-model': ['borb'],
-        'cross-project': [0, 1] if cross_project else [0],
+        'cross-project': cross_project,
         'model': ['ihf', 'lr', 'mlp', 'nb', 'irf'],
     }
     experiment_configs = [
