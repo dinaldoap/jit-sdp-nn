@@ -27,7 +27,7 @@ setup(name='jitsdp',
                         'seaborn==0.11.0',
                         'mlflow==1.11.0',
                         'hyperopt==0.2.4',
-                        'statsmodels==0.12.0'
+                        'statsmodels==0.12.0',
                         'Orange3==3.26.0',
                         ],
       python_requires='>=3.7',
