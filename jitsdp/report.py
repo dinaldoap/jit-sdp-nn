@@ -73,7 +73,7 @@ def best_configs_testing(config):
 def name(row, cross_project):
     meta_model = row['meta_model']
     model = row['model']
-    if cross_project:
+    if len(cross_project) > 1:
         train_data = '-cp' if row['cross_project'] == '1' else '-wp'
     else:
         train_data = ''
@@ -145,7 +145,7 @@ def statistical_analysis(config, df_testing, metrics):
 
 
 def safe_write_wilcoxon(config, df_inferential, f):
-    if not config['cross_project']:
+    if len(config['cross_project']) == 1:
         try:
             write_wilcoxon(df_inferential, f)
         except ValueError as e:

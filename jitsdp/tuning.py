@@ -48,7 +48,7 @@ class Experiment():
 
     def add_start(self, config):
         config = dict(config)
-        config['end'] = self.validation_size
+        config['end'] = self.validation_size[config['cross-project']]
         return config
 
 
@@ -57,7 +57,7 @@ def add_arguments(parser, filename):
     parser.add_argument('--bundle', type=int,
                         help='Whether must generate commands to the bundle executable.', default=0, choices=[0, 1])
     parser.add_argument('--validation-size', type=int,
-                        help='Size of the stream segment used for hyperparameter tuning.', default=5000)
+                        help='Number of commits used for hyperparameter tuning. This list will be ziped with the cross-project list.', required=True, nargs='+')
 
 
 def add_shared_arguments(parser, filename):
@@ -74,6 +74,10 @@ def add_shared_arguments(parser, filename):
 def generate(config):
     # experiments
     cross_project = config['cross_project']
+    validation_size = config['validation_size']
+    assert len(cross_project) == len(
+        validation_size), 'cross-project list must match validation-size list in terms of length.'
+    validation_size = dict(zip(cross_project, validation_size))
     orb_grid = {
         'meta-model': ['orb'],
         'cross-project': cross_project,
@@ -100,7 +104,7 @@ def generate(config):
     models_configs = create_models_configs(config)
     file_ = filename_to_path(config['filename'])
     with open(file_, mode='w') as out:
-        for experiment in configs_to_experiments(config['validation_size'], config['bundle'], experiment_configs, seed_dataset_configs, models_configs):
+        for experiment in configs_to_experiments(validation_size, config['bundle'], experiment_configs, seed_dataset_configs, models_configs):
             experiment.to_shell(out)
 
 
