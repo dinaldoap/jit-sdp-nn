@@ -243,7 +243,7 @@ def hoeffding_shared_config_space(config):
     models = ['oht', 'ihf']
     max_n_estimators = {
         'oht': 40,
-        'ihf': 40 if config['cross_project'] else 30,
+        'ihf': 30,
     }
     for model in models:
         config_spaces[model] = [
