@@ -128,7 +128,7 @@ def statistical_analysis(config, df_testing, metrics):
             safe_write_wilcoxon(config, df_inferential, f)
 
         avg_rank = df_inferential.rank(
-            axis='columns')
+            axis='columns', ascending=False)
         avg_rank = avg_rank.mean()
         plot_critical_distance(avg_rank, df_inferential, metric,
                                dir)
