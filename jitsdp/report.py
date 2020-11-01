@@ -183,5 +183,4 @@ def table(config, df_testing, metrics):
     metric_names = {metric.column: metric.name for metric in metrics}
     df_table = df_table.rename(metric_names, axis='columns')
     dir = dir_to_path(config['filename'])
-    df_table = df_table.round(2)
     df_table.to_csv(dir / 'table.csv')
