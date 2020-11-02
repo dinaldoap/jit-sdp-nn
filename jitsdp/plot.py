@@ -43,12 +43,11 @@ def __plot_metrics(data, config, dir, metrics, filename):
     plt.clf()
 
 
-def plot_boxplot(data, metrics, dir):
-    for metric in metrics:
-        ax = sns.barplot(data=data, x='dataset', y=metric.column, hue='name')
-        ax.set_title('{}'.format(metric.name))
-        plt.savefig(dir / '{}.png'.format(metric.column))
-        plt.clf()
+def plot_boxplot(data, metric, dir):
+    ax = sns.barplot(data=data, x='dataset', y=metric.column, hue='name')
+    ax.set_title('{}'.format(metric.name))
+    plt.savefig(dir / '{}.png'.format(metric.column))
+    plt.clf()
 
 
 def plot_efficiency_curves(data, dir):

@@ -5,6 +5,7 @@ from jitsdp.utils import unique_dir, dir_to_path
 from jitsdp import testing
 
 from collections import namedtuple
+import itertools
 import numpy as np
 import pandas as pd
 import mlflow
@@ -36,14 +37,14 @@ def generate(config):
     efficiency_curves(config)
     df_testing = best_configs_testing(config)
     # plotting
-    Metric = namedtuple('Metric', ['column', 'name', 'ascending'])
+    Metric = namedtuple('Metric', ['column', 'name', 'ascending', 'baseline'])
     metrics = [
-        Metric('g-mean', 'g-mean', False),
-        Metric('r0-r1', '|r0-r1|', True),
-        Metric('th-ma', '|th-ma|', True),
-        Metric('th-pr1', '|th-pr1|', True),
+        Metric('g-mean', 'g-mean', False, True),
+        Metric('r0-r1', '|r0-r1|', True, True),
+        Metric('th-ma', '|th-ma|', True, False),
+        Metric('th-pr1', '|th-pr1|', True, False),
     ]
-    plot_boxplot(df_testing, metrics, dir_to_path(config['filename']))
+    plots(config, df_testing, metrics)
     statistical_analysis(config, df_testing, metrics)
     table(config, df_testing, metrics)
 
@@ -110,6 +111,12 @@ def efficiency_curve(df_results):
     return df_efficiency_curve
 
 
+def plots(config, df_testing: pd.DataFrame, metrics):
+    for metric in metrics:
+        plot_data = filter_baseline(df_testing, metric)
+        plot_boxplot(plot_data, metric, dir_to_path(config['filename']))
+
+
 def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
     config_cols = ['dataset', 'meta_model', 'model', 'rate_driven',
                    'cross_project']
@@ -118,15 +125,13 @@ def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
     df_metrics = df_testing.groupby(config_cols, as_index=False).agg(agg_cols)
     dir = dir_to_path(config['filename'])
     for metric in metrics:
+        df_inferential = filter_baseline(df_metrics, metric)
         df_inferential = pd.pivot_table(
-            df_metrics, columns='name', values=metric.column, index='dataset')
+            df_inferential, columns='name', values=metric.column, index='dataset')
         df_inferential = df_inferential * (-1 if metric.ascending else 1)
-        measurements = [df_inferential[column]
-                        for column in df_inferential.columns]
-        _, friedman_p_value = friedmanchisquare(*measurements)
         with open(dir / '{}.txt'.format(metric.column), 'w') as f:
-            f.write('Friedman p-value: {}\n'.format(friedman_p_value))
-            safe_write_wilcoxon(config, df_inferential, f)
+            write_friedman(df_inferential, f)
+            safe_write_wilcoxon(config, df_inferential, metric.baseline, f)
 
         avg_rank = df_inferential.rank(
             axis='columns', ascending=False)
@@ -135,7 +140,8 @@ def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
                                dir)
 
     with open(dir / 'correlations.txt', 'w') as f:
-        df_correlation = df_testing[df_testing['name'] != 'ORB-OHT'].copy()
+        df_correlation = df_testing[~df_testing['name'].str.contains(
+            'ORB-OHT')].copy()
         agg_rate_cols = {
             'borb_th': 'mean',
             'pr1': 'mean',
@@ -155,23 +161,51 @@ def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
         f.write('corr(|th-ma|, g-mean): {}, p-value: {}\n'.format(correlation, p_value))
 
 
-def safe_write_wilcoxon(config, df_inferential, f):
+def filter_baseline(df_testing, metric):
+    _, baseline_name = split_porposal_baseline(df_testing['name'].unique())
+    if metric.baseline:
+        return df_testing
+    else:
+        return df_testing[df_testing['name'] != baseline_name[0]]
+
+
+def split_porposal_baseline(names: list):
+    porposal_names = [name
+                      for name in names if 'ORB-OHT' not in name]
+    baseline_name = [name
+                     for name in names if 'ORB-OHT' in name]
+    return porposal_names, baseline_name
+
+
+def write_friedman(df_inferential, f):
+    measurements = [df_inferential[column]
+                    for column in df_inferential.columns]
+    _, friedman_p_value = friedmanchisquare(*measurements)
+    f.write('Friedman p-value: {}\n'.format(friedman_p_value))
+
+
+def safe_write_wilcoxon(config, df_inferential, baseline, f):
     if len(config['cross_project']) == 1:
         try:
-            write_wilcoxon(df_inferential, f)
+            write_wilcoxon(df_inferential, baseline, f)
         except ValueError as e:
             f.write(repr(e))
 
 
-def write_wilcoxon(df_inferential, f):
-    names = df_inferential.columns.drop('ORB-OHT')
+def write_wilcoxon(df_inferential: pd.DataFrame, baseline, f):
+    porposal_names, baseline_name = split_porposal_baseline(
+        df_inferential.columns)
+    if baseline:
+        pairs = list(itertools.product(porposal_names, baseline_name))
+    else:
+        pairs = list(itertools.combinations(porposal_names, 2))
     p_values = []
     r_pluses = []
-    for name in names:
+    for name0, name1 in pairs:
         _, wilcoxon_p_value = wilcoxon(
-            df_inferential[name], df_inferential['ORB-OHT'], alternative='two-sided')
+            df_inferential[name0], df_inferential[name1], alternative='two-sided')
         r_plus, _ = wilcoxon(
-            df_inferential[name], df_inferential['ORB-OHT'], alternative='greater')
+            df_inferential[name0], df_inferential[name1], alternative='greater')
         p_values.append(wilcoxon_p_value)
         r_pluses.append(r_plus)
 
@@ -179,13 +213,13 @@ def write_wilcoxon(df_inferential, f):
         pvals=p_values, alpha=.05, method='hs', is_sorted=False, returnsorted=False)
     count = len(df_inferential)
     middle_rank_sum = ((count * (count + 1)) / 2) / 2
-    for i, name in enumerate(names):
+    for i, (name0, name1) in enumerate(pairs):
         if reject[i] and r_pluses[i] != middle_rank_sum:
-            winner = name if r_pluses[i] > middle_rank_sum else 'ORB-OHT'
+            winner = name0 if r_pluses[i] > middle_rank_sum else name1
         else:
             winner = 'None'
         f.write(
-            '{}, wilcoxon p-value: {}, reject: {}, winner: {}\n'.format(name, p_values[i], reject[i], winner))
+            '{} = {}, wilcoxon p-value: {}, reject: {}, winner: {}\n'.format(name0, name1, p_values[i], reject[i], winner))
 
 
 def table(config, df_testing, metrics):
