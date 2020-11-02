@@ -110,11 +110,12 @@ def efficiency_curve(df_results):
     return df_efficiency_curve
 
 
-def statistical_analysis(config, df_testing, metrics):
+def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
+    config_cols = ['dataset', 'meta_model', 'model', 'rate_driven',
+                   'cross_project']
     agg_cols = {metric.column: 'mean' for metric in metrics}
     agg_cols.update({'name': 'first'})
-    df_metrics = df_testing.groupby(['dataset', 'meta_model', 'model', 'rate_driven',
-                                     'cross_project'], as_index=False).agg(agg_cols)
+    df_metrics = df_testing.groupby(config_cols, as_index=False).agg(agg_cols)
     dir = dir_to_path(config['filename'])
     for metric in metrics:
         df_inferential = pd.pivot_table(
@@ -134,11 +135,21 @@ def statistical_analysis(config, df_testing, metrics):
                                dir)
 
     with open(dir / 'correlations.txt', 'w') as f:
-        df_correlation = df_metrics[df_metrics['name'] != 'ORB-OHT']
-        correlation, p_value = spearmanr(
-            df_correlation['th-pr1'], df_correlation['g-mean'])
+        df_correlation = df_testing[df_testing['name'] != 'ORB-OHT'].copy()
+        agg_rate_cols = {
+            'borb_th': 'mean',
+            'pr1': 'mean',
+            'th-ma': 'mean',
+            'g-mean': 'mean'
+        }
+        for col in agg_rate_cols.keys():
+            df_correlation[col] = df_correlation[col].astype(float)
+        df_correlation = df_correlation.groupby(
+            config_cols, as_index=False).agg(agg_rate_cols)
+        _, wilcoxon_p_value = wilcoxon(
+            df_correlation['borb_th'], df_correlation['pr1'], alternative='two-sided')
         f.write(
-            'corr(|th-pr1|, g-mean): {}, p-value: {}\n'.format(correlation, p_value))
+            'th = pr1, wilcoxon p-value : {}, reject: {}\n'.format(wilcoxon_p_value, wilcoxon_p_value < .05))
         correlation, p_value = spearmanr(
             df_correlation['th-ma'], df_correlation['g-mean'])
         f.write('corr(|th-ma|, g-mean): {}, p-value: {}\n'.format(correlation, p_value))
