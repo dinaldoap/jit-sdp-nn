@@ -143,8 +143,7 @@ def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
         df_correlation = df_testing[~df_testing['name'].str.contains(
             'ORB-OHT')].copy()
         agg_rate_cols = {
-            'borb_th': 'mean',
-            'pr1': 'mean',
+            'th-pr1': 'mean',
             'th-ma': 'mean',
             'g-mean': 'mean'
         }
@@ -152,10 +151,15 @@ def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
             df_correlation[col] = df_correlation[col].astype(float)
         df_correlation = df_correlation.groupby(
             config_cols, as_index=False).agg(agg_rate_cols)
+        quantiles = df_correlation['th-pr1'].quantile(q=[.7, .8, .9])
+        f.write('quantiles |th-pr1|:\n')
+        quantiles.to_string(f)
+        f.write('\n')
+        max_distance = .05
         _, wilcoxon_p_value = wilcoxon(
-            df_correlation['borb_th'], df_correlation['pr1'], alternative='two-sided')
+            df_correlation['th-pr1'], [max_distance] * len(df_correlation), alternative='less')
         f.write(
-            'th = pr1, wilcoxon p-value : {}, reject: {}\n'.format(wilcoxon_p_value, wilcoxon_p_value < .05))
+            '|th-pr1| < {}, wilcoxon p-value : {}, reject: {}\n'.format(max_distance, wilcoxon_p_value, wilcoxon_p_value < .05))
         correlation, p_value = spearmanr(
             df_correlation['th-ma'], df_correlation['g-mean'])
         f.write('corr(|th-ma|, g-mean): {}, p-value: {}\n'.format(correlation, p_value))
