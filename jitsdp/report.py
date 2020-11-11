@@ -1,7 +1,7 @@
 # coding=utf-8
 from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_efficiency_curves, plot_critical_distance
 from jitsdp.data import load_results, load_runs, save_results
-from jitsdp.utils import unique_dir, dir_to_path
+from jitsdp.utils import unique_dir, dir_to_path, split_proposal_baseline
 from jitsdp import testing
 
 from collections import namedtuple
@@ -166,19 +166,11 @@ def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
 
 
 def filter_baseline(df_testing, metric):
-    _, baseline_name = split_porposal_baseline(df_testing['name'].unique())
+    _, baseline_name = split_proposal_baseline(df_testing['name'].unique())
     if metric.baseline:
         return df_testing
     else:
         return df_testing[df_testing['name'] != baseline_name[0]]
-
-
-def split_porposal_baseline(names: list):
-    porposal_names = [name
-                      for name in names if 'ORB-OHT' not in name]
-    baseline_name = [name
-                     for name in names if 'ORB-OHT' in name]
-    return porposal_names, baseline_name
 
 
 def write_friedman(df_inferential, f):
@@ -197,12 +189,12 @@ def safe_write_wilcoxon(config, df_inferential, baseline, f):
 
 
 def write_wilcoxon(df_inferential: pd.DataFrame, baseline, f):
-    porposal_names, baseline_name = split_porposal_baseline(
+    proposal_names, baseline_name = split_proposal_baseline(
         df_inferential.columns)
     if baseline:
-        pairs = list(itertools.product(porposal_names, baseline_name))
+        pairs = list(itertools.product(proposal_names, baseline_name))
     else:
-        pairs = list(itertools.combinations(porposal_names, 2))
+        pairs = list(itertools.combinations(proposal_names, 2))
     p_values = []
     r_pluses = []
     for name0, name1 in pairs:

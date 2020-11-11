@@ -119,3 +119,11 @@ def torch_seed(seed):
 
 def random_state_seed(seed):
     return seed & (2**32 - 1)
+
+
+def split_proposal_baseline(names: list):
+    porposal_names = [name
+                      for name in names if 'ORB-OHT' not in name]
+    baseline_name = [name
+                     for name in names if 'ORB-OHT' in name]
+    return porposal_names, baseline_name

@@ -1,6 +1,6 @@
 # coding=utf-8
 from jitsdp.constants import DIR
-from jitsdp.utils import mkdir
+from jitsdp.utils import mkdir, split_proposal_baseline
 
 import matplotlib.pyplot as plt
 import Orange as og
@@ -62,8 +62,17 @@ def plot_efficiency_curves(data, dir):
 
 
 def plot_critical_distance(avg_rank, data, metric, dir):
+    if metric.baseline:
+        test = 'bonferroni-dunn'
+        _, baseline_name = split_proposal_baseline(data.columns)
+        cdmethod = data.columns.get_loc(baseline_name[0])
+    else:
+        test = 'nemenyi'
+        cdmethod = None
+
     cd = og.evaluation.compute_CD(
-        avranks=avg_rank, n=len(data), alpha='0.05', test='nemenyi')
-    og.evaluation.graph_ranks(avranks=avg_rank, names=data.columns, cd=cd)
+        avranks=avg_rank, n=len(data), alpha='0.05', test=test)
+    og.evaluation.graph_ranks(
+        avranks=avg_rank, names=data.columns, cd=cd, cdmethod=cdmethod)
     plt.savefig(dir / '{}_cd.png'.format(metric.column), bbox_inches='tight')
     plt.clf()
