@@ -28,7 +28,7 @@ def report(config, results):
 
 
 def add_arguments(parser, dirname):
-    testing.add_arguments(parser, dirname)
+    testing.add_shared_arguments(parser, dirname)
     parser.add_argument('--testing-experiment-name',   type=str,
                         help='Experiment name used for testing (default: testing).', default='testing')
 

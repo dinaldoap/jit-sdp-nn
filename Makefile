@@ -14,7 +14,7 @@ run:
 	jitsdp borb --model irf --start 2000 --end 2050 --experiment-name dev
 	jitsdp orb --start 2000 --end 2050 --experiment-name dev
 	jitsdp tuning --start 0 --end 1 --cross-project 0 1 --validation-size 5000 1000
-	jitsdp testing --start 0 --end 1 --cross-project 0 1 --tuning-experiment-name dev --no-validation
+	jitsdp testing --start 0 --end 1 --cross-project 0 1 --testing-start 5000 --tuning-experiment-name dev --no-validation
 	jitsdp report --start 0 --end 1 --cross-project 0 1 --tuning-experiment-name dev --testing-experiment-name dev --no-validation
 
 clean:

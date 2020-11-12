@@ -1,4 +1,5 @@
 # coding=utf-8
+from jitsdp.tuning import add_shared_arguments
 from jitsdp import tuning
 from jitsdp.utils import filename_to_path
 from jitsdp.data import load_runs
@@ -11,6 +12,12 @@ import sys
 
 
 def add_arguments(parser, filename):
+    add_shared_arguments(parser, filename)
+    parser.add_argument('--testing-start', type=int,
+                        help='First commit to be used for testing.', required=True)
+
+
+def add_shared_arguments(parser, filename):
     tuning.add_shared_arguments(parser, filename)
     parser.add_argument('--tuning-experiment-name',   type=str,
                         help='Experiment name used for tuning (default: Default).', default='Default')
@@ -22,7 +29,8 @@ def generate(config):
     # print_data(df_tuning)
     df_best_configs, _ = get_best_configs(config)
     # print_data(df_best_configs)
-    commands = tuning_to_testing(df_best_configs['run.command'])
+    commands = tuning_to_testing(
+        df_best_configs['run.command'], config['testing_start'])
     file_ = filename_to_path(config['filename'])
     with open(file_, mode='w') as out:
         for command in commands:
@@ -71,7 +79,7 @@ def valid_data(config, df_runs, single_config, n_seeds):
     return df_runs
 
 
-def tuning_to_testing(commands):
+def tuning_to_testing(commands, testing_start):
     seeds = [
         126553321124052187622850717793961581415, 14787688002703798423351339219352185274,
         193056263972238819939972572120722936383, 114338109874184942262013079161379184987,
@@ -91,7 +99,8 @@ def tuning_to_testing(commands):
     ]
     for seed in seeds:
         for command in commands:
-            new_command = command.replace('end', 'start')
+            new_command = re.sub(
+                r'end \d+', 'start {}'.format(testing_start), command)
             new_command = re.sub(
                 r'seed \d+', 'seed {}'.format(seed), new_command)
             new_command = new_command + \
