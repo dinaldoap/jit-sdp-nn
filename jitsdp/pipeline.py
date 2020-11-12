@@ -60,8 +60,7 @@ def create_pipeline(config):
                           th=config['borb_th'],
                           l0=config['borb_l0'],
                           l1=config['borb_l1'],
-                          m=config['borb_m'],
-                          rate_driven=config['rate_driven'])
+                          m=config['borb_m'])
     return classifier
 
 
@@ -247,7 +246,7 @@ def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
 
 
 class BORB(Classifier):
-    def __init__(self, model, max_sample_size, th, l0, l1, m, rate_driven):
+    def __init__(self, model, max_sample_size, th, l0, l1, m):
         self.classifier_train = ScoreFixed(model=model)
         self.classifier_predict = RateFixed(
             model=model, normal_proportion=(1 - th))
@@ -256,18 +255,10 @@ class BORB(Classifier):
         self.l0 = l0
         self.l1 = l1
         self.m = m
-        self.rate_driven = rate_driven
 
     def train(self, df_train, **kwargs):
         lambda0 = 1
         lambda1 = 1
-        if not self.rate_driven:
-            p1 = df_train['target'].mean()
-            p0 = 1 - p1
-            if p0 < p1 and p0 != 0:
-                lambda0 = p1 / p0
-            if p0 > p1 and p1 != 0:
-                lambda1 = p0 / p1
         df_ma = kwargs.pop('df_ma', None)
         self.ma = self.th
         for i in range(self.classifier_train.n_iterations):
