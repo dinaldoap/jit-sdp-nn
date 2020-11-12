@@ -11,8 +11,8 @@ import hyperopt.pyll.stochastic as config_space_sampler
 
 class Experiment():
 
-    def __init__(self, validation_size, bundle, experiment_config, seed_dataset_configs, models_configs):
-        self.validation_size = validation_size
+    def __init__(self, validation_end, bundle, experiment_config, seed_dataset_configs, models_configs):
+        self.validation_end = validation_end
         self.bundle = bundle
         self.meta_model = experiment_config['meta-model']
         self.experiment_config = experiment_config
@@ -48,7 +48,7 @@ class Experiment():
 
     def add_start(self, config):
         config = dict(config)
-        config['end'] = self.validation_size[config['cross-project']]
+        config['end'] = self.validation_end[config['cross-project']]
         return config
 
 
@@ -56,8 +56,8 @@ def add_arguments(parser, filename):
     add_shared_arguments(parser, filename)
     parser.add_argument('--bundle', type=int,
                         help='Whether must generate commands to the bundle executable.', default=0, choices=[0, 1])
-    parser.add_argument('--validation-size', type=int,
-                        help='Number of commits used for hyperparameter tuning. This list will be ziped with the cross-project list.', required=True, nargs='+')
+    parser.add_argument('--validation-end', type=int,
+                        help='Last commits used for hyperparameter tuning. This list will be ziped with the cross-project list.', required=True, nargs='+')
 
 
 def add_shared_arguments(parser, filename):
@@ -74,10 +74,10 @@ def add_shared_arguments(parser, filename):
 def generate(config):
     # experiments
     cross_project = config['cross_project']
-    validation_size = config['validation_size']
+    validation_end = config['validation_end']
     assert len(cross_project) == len(
-        validation_size), 'cross-project list must match validation-size list in terms of length.'
-    validation_size = dict(zip(cross_project, validation_size))
+        validation_end), 'cross-project list must match validation-size list in terms of length.'
+    validation_end = dict(zip(cross_project, validation_end))
     orb_grid = {
         'meta-model': ['orb'],
         'cross-project': cross_project,
@@ -104,14 +104,14 @@ def generate(config):
     models_configs = create_models_configs(config)
     file_ = filename_to_path(config['filename'])
     with open(file_, mode='w') as out:
-        for experiment in configs_to_experiments(validation_size, config['bundle'], experiment_configs, seed_dataset_configs, models_configs):
+        for experiment in configs_to_experiments(validation_end, config['bundle'], experiment_configs, seed_dataset_configs, models_configs):
             experiment.to_shell(out)
 
 
-def configs_to_experiments(validation_size, bundle, experiment_configs, seed_dataset_configs, models_configs):
+def configs_to_experiments(validation_end, bundle, experiment_configs, seed_dataset_configs, models_configs):
     for experiment_config in experiment_configs:
         model = experiment_config['model']
-        experiment = Experiment(validation_size=validation_size,
+        experiment = Experiment(validation_end=validation_end,
                                 bundle=bundle,
                                 experiment_config=experiment_config,
                                 seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[model])
