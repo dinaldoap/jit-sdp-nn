@@ -36,5 +36,5 @@ def test_plot_proportions():
     })
     plot.plot_proportions(data=data, config=config, dir=DIR)
     assert (DIR / 'proportions.png').exists()
-    assert (DIR / 'rate_driven_val.png').exists()
-    assert (DIR / 'rate_driven_test.png').exists()
+    assert (DIR / 'distance_induced_rate.png').exists()
+    assert (DIR / 'distance_actual_rate.png').exists()

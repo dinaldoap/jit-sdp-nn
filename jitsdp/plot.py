@@ -18,9 +18,9 @@ def plot_proportions(data, config, dir=DIR):
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
                    'tr1', 'te1', 'pr1'], filename='proportions.png')
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
-                   'th-ma'], filename='rate_driven_val.png')
+                   'th-ma'], filename='distance_induced_rate.png')
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
-                   'th-pr1'], filename='rate_driven_test.png')
+                   'th-pr1'], filename='distance_actual_rate.png')
 
 
 def __plot_metrics(data, config, dir, metrics, filename):
