@@ -131,7 +131,6 @@ def create_models_configs(config):
     orb.update(meta_model_shared['orb'])
     orb.update([loguniform('orb-decay-factor', .9, .999),
                 uniform('orb-n', 3, 7),
-                uniform('orb-rd-grace-period', 100, 500),
                 ])
 
     hoeffding_shared = hoeffding_shared_config_space(config)
