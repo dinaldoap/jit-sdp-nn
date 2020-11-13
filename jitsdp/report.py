@@ -65,7 +65,7 @@ def best_configs_testing(config):
     df_testing = testing.valid_data(
         config, df_testing, single_config=True, n_seeds=30)
     df_testing = df_testing.sort_values(
-        by=['dataset', 'meta_model', 'model', 'rate_driven', 'cross_project'])
+        by=['dataset', 'meta_model', 'model', 'cross_project'])
     df_testing['name'] = df_testing.apply(lambda row: name(
         row, config['cross_project']), axis='columns')
     return df_testing
@@ -84,9 +84,9 @@ def name(row, cross_project):
 def efficiency_curves(config):
     df_configs_results, _ = testing.configs_results(config)
     df_configs_results = df_configs_results[[
-        'meta_model', 'rate_driven', 'model', 'cross_project', 'dataset', 'g-mean']]
+        'meta_model', 'model', 'cross_project', 'dataset', 'g-mean']]
     df_efficiency_curve = df_configs_results.groupby(
-        by=['meta_model', 'rate_driven', 'model', 'cross_project', 'dataset']).apply(efficiency_curve)
+        by=['meta_model', 'model', 'cross_project', 'dataset']).apply(efficiency_curve)
     df_efficiency_curve = df_efficiency_curve.reset_index()
     df_efficiency_curve['name'] = df_efficiency_curve.apply(lambda row: name(
         row, config['cross_project']), axis='columns')
@@ -118,8 +118,7 @@ def plots(config, df_testing: pd.DataFrame, metrics):
 
 
 def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
-    config_cols = ['dataset', 'meta_model', 'model', 'rate_driven',
-                   'cross_project']
+    config_cols = ['dataset', 'meta_model', 'model', 'cross_project']
     agg_cols = {metric.column: 'mean' for metric in metrics}
     agg_cols.update({'name': 'first'})
     df_metrics = df_testing.groupby(config_cols, as_index=False).agg(agg_cols)

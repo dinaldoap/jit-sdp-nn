@@ -43,9 +43,9 @@ def get_best_configs(config):
     df_best_configs = df_best_configs.sort_values(
         by='g-mean', ascending=False, kind='mergesort')
     df_best_configs = df_best_configs.drop_duplicates(
-        subset=['meta_model', 'rate_driven', 'model', 'cross_project', 'dataset'])
+        subset=['meta_model', 'model', 'cross_project', 'dataset'])
     df_best_configs = df_best_configs.sort_values(
-        by=['dataset', 'meta_model', 'model', 'rate_driven', 'cross_project'], ascending=True, kind='mergesort')
+        by=['dataset', 'meta_model', 'model', 'cross_project'], ascending=True, kind='mergesort')
     return df_best_configs, config_cols
 
 
