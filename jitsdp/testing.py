@@ -103,6 +103,9 @@ def tuning_to_testing(commands, testing_start):
                 r'end \d+', 'start {}'.format(testing_start), command)
             new_command = re.sub(
                 r'seed \d+', 'seed {}'.format(seed), new_command)
+            # TODO: remove this replacing when there is no more tuning data with orb-rd-grace-period
+            new_command = re.sub(
+                r'--orb-rd-grace-period \d+', '', new_command)
             new_command = new_command + \
                 ' --end None --experiment-name testing --track-time 1 --track-forest 1'
             yield new_command
