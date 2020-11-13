@@ -40,12 +40,6 @@ def add_arguments(parser):
                         help='Decay factor for calculating class proportions in training data (default: .99).',  default=.99)
     parser.add_argument('--orb-n',   type=int,
                         help='The number of clean commits that activate the noise filter (default: 3).',  default=3)
-    parser.add_argument('--rate-driven',   type=int,
-                        help='Whether must turn ORB rate-driven (default: 0).',
-                        default=0, choices=[0, 1])
-    parser.add_argument('--orb-rd-grace-period',   type=int,
-                        help='The number of instances the model is trained before fully updating the moving average window (default: 300).',
-                        default=300)
     parser.add_argument('--cross-project',   type=int,
                         help='Whether must use cross-project data (default: 0).', default=0, choices=[0, 1])
     parser.add_argument('--noise',   type=int,
@@ -128,8 +122,6 @@ def run(config):
                 m=config['orb_m'],
                 base_estimator=base_estimator,
                 n_estimators=config['oht_n_estimators'],
-                rate_driven=config['rate_driven'],
-                rate_driven_grace_period=config['orb_rd_grace_period'],
                 )
     target_prediction = None
     train_first = len(test_steps) < len(train_steps)
