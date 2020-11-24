@@ -50,14 +50,14 @@ def plot_boxplot(data, metric, dir):
     plt.clf()
 
 
-def plot_efficiency_curves(data, dir):
+def plot_tuning_convergence(data, dir):
     ax = sns.catplot(x="experiment_size", y="g-mean",
                      hue="name", col="dataset",
                      data=data, kind="boxen",
                      k_depth='proportion', outlier_prop=0.05,
-                     showfliers=False, col_wrap=5)
+                     showfliers=False, col_wrap=3)
     ax.set_axis_labels(x_var='experiment size')
-    plt.savefig(dir / 'efficiency_curves.png')
+    plt.savefig(dir / 'tuning_convergence.png')
     plt.clf()
 
 

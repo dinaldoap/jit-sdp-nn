@@ -1,5 +1,5 @@
 # coding=utf-8
-from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_efficiency_curves, plot_critical_distance
+from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance
 from jitsdp.data import load_results, load_runs, save_results
 from jitsdp.utils import unique_dir, dir_to_path, split_proposal_baseline
 from jitsdp import testing
@@ -34,7 +34,7 @@ def add_arguments(parser, dirname):
 
 
 def generate(config):
-    efficiency_curves(config)
+    tuning_convergence(config)
     df_testing = best_configs_testing(config)
     # plotting
     Metric = namedtuple('Metric', ['column', 'name', 'ascending', 'baseline'])
@@ -81,20 +81,20 @@ def name(row, cross_project):
     return '{}-{}{}'.format(meta_model.upper(), model.upper(), train_data.upper())
 
 
-def efficiency_curves(config):
+def tuning_convergence(config):
     df_configs_results, _ = testing.configs_results(config)
     df_configs_results = df_configs_results[[
         'meta_model', 'model', 'cross_project', 'dataset', 'g-mean']]
-    df_efficiency_curve = df_configs_results.groupby(
-        by=['meta_model', 'model', 'cross_project', 'dataset']).apply(efficiency_curve)
-    df_efficiency_curve = df_efficiency_curve.reset_index()
-    df_efficiency_curve['name'] = df_efficiency_curve.apply(lambda row: name(
+    df_tuning_convergence = df_configs_results.groupby(
+        by=['meta_model', 'model', 'cross_project', 'dataset']).apply(tuning_convergence_by_dataset)
+    df_tuning_convergence = df_tuning_convergence.reset_index()
+    df_tuning_convergence['name'] = df_tuning_convergence.apply(lambda row: name(
         row, config['cross_project']), axis='columns')
-    plot_efficiency_curves(df_efficiency_curve,
-                           dir_to_path(config['filename']))
+    plot_tuning_convergence(df_tuning_convergence,
+                            dir_to_path(config['filename']))
 
 
-def efficiency_curve(df_results):
+def tuning_convergence_by_dataset(df_results):
     total_trials = len(df_results)
     maximums_by_experiment_size = []
     rng = np.random.default_rng(268737018669781749321160927763689789779)
@@ -106,9 +106,9 @@ def efficiency_curve(df_results):
             maximums.append(maximum)
         maximums_by_experiment_size.extend(
             [{'experiment_size': experiment_size, 'g-mean': maximum} for maximum in maximums])
-    df_efficiency_curve = pd.DataFrame(maximums_by_experiment_size)
-    df_efficiency_curve = df_efficiency_curve.set_index('experiment_size')
-    return df_efficiency_curve
+    df_tuning_convergence = pd.DataFrame(maximums_by_experiment_size)
+    df_tuning_convergence = df_tuning_convergence.set_index('experiment_size')
+    return df_tuning_convergence
 
 
 def plots(config, df_testing: pd.DataFrame, metrics):
