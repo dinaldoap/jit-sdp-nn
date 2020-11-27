@@ -6,7 +6,10 @@ import matplotlib.pyplot as plt
 import Orange as og
 import seaborn as sns
 
-sns.set(rc={'figure.figsize': (14, 9)})
+
+def setup():
+    plt.figure(figsize=(14, 9))
+    sns.set()
 
 
 def plot_recalls_gmean(data, config, dir=DIR):
@@ -30,6 +33,7 @@ def __plot_metrics(data, config, dir, metrics, filename):
                      value_vars=metrics,
                      var_name='metric',
                      value_name='value')
+    setup()
     ax = sns.lineplot(x='timestep', y='value',
                       hue='metric', data=data)
     styles = ['--', '-.', ':', '-']
@@ -44,6 +48,7 @@ def __plot_metrics(data, config, dir, metrics, filename):
 
 
 def plot_boxplot(data, metric, dir):
+    setup()
     ax = sns.barplot(data=data, x='dataset', y=metric.column, hue='name')
     ax.set_title('{}'.format(metric.name))
     plt.savefig(dir / '{}.png'.format(metric.column))
@@ -51,6 +56,7 @@ def plot_boxplot(data, metric, dir):
 
 
 def plot_tuning_convergence(data, dir):
+    setup()
     ax = sns.catplot(x="experiment_size", y="g-mean",
                      hue="name", col="dataset",
                      data=data, kind="boxen",
