@@ -41,6 +41,8 @@ def generate(config):
     metrics = [
         Metric('g-mean', 'g-mean', False, True),
         Metric('r0-r1', '|$r_0-r_1$|', True, True),
+        Metric('r0', '$r_0$', False, True),
+        Metric('r1', '$r_1$', False, True),
         Metric('th-ma', '|$fr_1-ir_1$|', True, False),
         Metric('th-pr1', '|$fr_1-pr_1$|', True, False),
     ]
