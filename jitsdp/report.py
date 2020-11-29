@@ -40,9 +40,9 @@ def generate(config):
     Metric = namedtuple('Metric', ['column', 'name', 'ascending', 'baseline'])
     metrics = [
         Metric('g-mean', 'g-mean', False, True),
-        Metric('r0-r1', '|r0-r1|', True, True),
-        Metric('th-ma', '|th-ma|', True, False),
-        Metric('th-pr1', '|th-pr1|', True, False),
+        Metric('r0-r1', '|$r_0-r_1$|', True, True),
+        Metric('th-ma', '|$fr_1-ir_1$|', True, False),
+        Metric('th-pr1', '|$fr_1-pr_1$|', True, False),
     ]
     plots(config, df_testing, metrics)
     statistical_analysis(config, df_testing, metrics)
