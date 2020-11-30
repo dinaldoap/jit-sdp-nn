@@ -1,6 +1,6 @@
 # coding=utf-8
 from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance
-from jitsdp.data import load_results, load_runs, save_results
+from jitsdp.data import DATASETS, load_results, load_runs, make_stream, save_results
 from jitsdp.utils import unique_dir, dir_to_path, split_proposal_baseline
 from jitsdp import testing
 
@@ -49,6 +49,7 @@ def generate(config):
     plots(config, df_testing, metrics)
     statistical_analysis(config, df_testing, metrics)
     table(config, df_testing, metrics)
+    datasets_statistics(config)
 
 
 def best_configs_testing(config):
@@ -239,3 +240,37 @@ def format_metric(metrics, row):
             row[(metric.column, 'mean')], row[(metric.column, 'std')]))
         index.append(metric.name)
     return pd.Series(data, index=index)
+
+
+def datasets_statistics(config):
+    language = {
+        'fabric8': 'Java',
+        'jgroups': 'Java',
+        'camel': 'Java',
+        'tomcat': 'Java',
+        'brackets': 'JavaScript',
+        'neutron': 'Python',
+        'spring-integration': 'Java',
+        'broadleaf': 'Java',
+        'nova': 'Python',
+        'npm': 'JavaScript',
+    }
+    rows = []
+    columns = pd.MultiIndex.from_tuples([('dataset', ''), ('code changes', ''), ('defect-inducing proportions', 'entire dataset'),
+                                         ('defect-inducing proportions', 'validation segment'), ('defect-inducing proportions', 'testing segment'), ('language', '')])
+    for dataset in sorted(DATASETS):
+        row = []
+        df_dataset = make_stream(dataset)
+        row.append(dataset)
+        row.append(len(df_dataset))
+        percentual_format = '{:03.0%}'
+        row.append(percentual_format.format(df_dataset['target'].mean()))
+        row.append(percentual_format.format(
+            df_dataset.loc[:5000, 'target'].mean()))
+        row.append(percentual_format.format(
+            df_dataset.loc[5000:, 'target'].mean()))
+        row.append(language[dataset])
+        rows.append(row)
+    dir = dir_to_path(config['filename'])
+    df_datasets = pd.DataFrame(rows, columns=columns)
+    df_datasets.to_csv(dir / 'datasets.csv', index=False)
