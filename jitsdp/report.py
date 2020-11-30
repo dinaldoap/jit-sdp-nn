@@ -219,10 +219,21 @@ def write_wilcoxon(df_inferential: pd.DataFrame, baseline, f):
             '{} = {}, wilcoxon p-value: {}, reject: {}, winner: {}\n'.format(name0, name1, p_values[i], reject[i], winner))
 
 
-def table(config, df_testing, metrics):
+def table(config, df_testing: pd.DataFrame, metrics):
     metric_columns = {metric.column: ['mean', 'std'] for metric in metrics}
     df_table = df_testing.groupby(by=['dataset', 'name']).agg(metric_columns)
-    metric_names = {metric.column: metric.name for metric in metrics}
-    df_table = df_table.rename(metric_names, axis='columns')
+    df_table = df_table.round(4)
+    df_table = df_table.apply(
+        lambda row: format_metric(metrics, row), axis='columns')
     dir = dir_to_path(config['filename'])
     df_table.to_csv(dir / 'table.csv')
+
+
+def format_metric(metrics, row):
+    data = []
+    index = []
+    for metric in metrics:
+        data.append('{:06.2%} ({:06.2%})'.format(
+            row[(metric.column, 'mean')], row[(metric.column, 'std')]))
+        index.append(metric.name)
+    return pd.Series(data, index=index)
