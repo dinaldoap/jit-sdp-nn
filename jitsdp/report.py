@@ -238,7 +238,7 @@ def format_metric(metrics, row):
     for metric in metrics:
         data.append('{:06.2%} ({:06.2%})'.format(
             row[(metric.column, 'mean')], row[(metric.column, 'std')]))
-        index.append(metric.name)
+        index.append('{} (std)'.format(metric.name))
     return pd.Series(data, index=index)
 
 
