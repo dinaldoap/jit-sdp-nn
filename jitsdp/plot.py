@@ -49,7 +49,7 @@ def __plot_metrics(data, config, dir, metrics, filename):
 
 def plot_boxplot(data, metric, dir):
     setup()
-    ax = sns.barplot(data=data, x='dataset', y=metric.column, hue='name')
+    ax = sns.barplot(data=data, x='dataset', y=metric.column, hue='classifier')
     ax.set_title('{}'.format(metric.name))
     plt.savefig(dir / '{}.png'.format(metric.column))
     plt.clf()

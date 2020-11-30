@@ -68,12 +68,12 @@ def best_configs_testing(config):
         config, df_testing, single_config=True, n_seeds=30)
     df_testing = df_testing.sort_values(
         by=['dataset', 'meta_model', 'model', 'cross_project'])
-    df_testing['name'] = df_testing.apply(lambda row: name(
+    df_testing['classifier'] = df_testing.apply(lambda row: format_classifier(
         row, config['cross_project']), axis='columns')
     return df_testing
 
 
-def name(row, cross_project):
+def format_classifier(row, cross_project):
     meta_model = row['meta_model']
     model = row['model']
     if len(cross_project) > 1:
@@ -90,7 +90,7 @@ def tuning_convergence(config):
     df_tuning_convergence = df_configs_results.groupby(
         by=['meta_model', 'model', 'cross_project', 'dataset']).apply(tuning_convergence_by_dataset)
     df_tuning_convergence = df_tuning_convergence.reset_index()
-    df_tuning_convergence['name'] = df_tuning_convergence.apply(lambda row: name(
+    df_tuning_convergence['classifier'] = df_tuning_convergence.apply(lambda row: format_classifier(
         row, config['cross_project']), axis='columns')
     plot_tuning_convergence(df_tuning_convergence,
                             dir_to_path(config['filename']))
@@ -122,13 +122,13 @@ def plots(config, df_testing: pd.DataFrame, metrics):
 def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
     config_cols = ['dataset', 'meta_model', 'model', 'cross_project']
     agg_cols = {metric.column: 'mean' for metric in metrics}
-    agg_cols.update({'name': 'first'})
+    agg_cols.update({'classifier': 'first'})
     df_metrics = df_testing.groupby(config_cols, as_index=False).agg(agg_cols)
     dir = dir_to_path(config['filename'])
     for metric in metrics:
         df_inferential = filter_baseline(df_metrics, metric)
         df_inferential = pd.pivot_table(
-            df_inferential, columns='name', values=metric.column, index='dataset')
+            df_inferential, columns='classifier', values=metric.column, index='dataset')
         df_inferential = df_inferential * (-1 if metric.ascending else 1)
         with open(dir / '{}.txt'.format(metric.column), 'w') as f:
             write_friedman(df_inferential, f)
@@ -141,7 +141,7 @@ def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
                                dir)
 
     with open(dir / 'correlations.txt', 'w') as f:
-        df_correlation = df_testing[~df_testing['name'].str.contains(
+        df_correlation = df_testing[~df_testing['classifier'].str.contains(
             'ORB-OHT')].copy()
         agg_rate_cols = {
             'th-pr1': 'mean',
@@ -167,11 +167,12 @@ def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
 
 
 def filter_baseline(df_testing, metric):
-    _, baseline_name = split_proposal_baseline(df_testing['name'].unique())
+    _, baseline_name = split_proposal_baseline(
+        df_testing['classifier'].unique())
     if metric.baseline:
         return df_testing
     else:
-        return df_testing[df_testing['name'] != baseline_name[0]]
+        return df_testing[df_testing['classifier'] != baseline_name[0]]
 
 
 def write_friedman(df_inferential, f):
@@ -221,7 +222,8 @@ def write_wilcoxon(df_inferential: pd.DataFrame, baseline, f):
 
 def table(config, df_testing: pd.DataFrame, metrics):
     metric_columns = {metric.column: ['mean', 'std'] for metric in metrics}
-    df_table = df_testing.groupby(by=['dataset', 'name']).agg(metric_columns)
+    df_table = df_testing.groupby(
+        by=['dataset', 'classifier']).agg(metric_columns)
     df_table = df_table.round(4)
     df_table = df_table.apply(
         lambda row: format_metric(metrics, row), axis='columns')
