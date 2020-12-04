@@ -38,8 +38,9 @@ def generate(config):
     df_testing = best_configs_testing(config)
     # plotting
     Metric = namedtuple('Metric', ['column', 'name', 'ascending', 'baseline'])
+    gmean = Metric('g-mean', 'g-mean', False, True)
     metrics = [
-        Metric('g-mean', 'g-mean', False, True),
+        gmean,
         Metric('r0-r1', '|$r_0-r_1$|', True, True),
         Metric('r0', '$r_0$', False, True),
         Metric('r1', '$r_1$', False, True),
@@ -50,6 +51,7 @@ def generate(config):
     statistical_analysis(config, df_testing, metrics)
     table(config, df_testing, metrics)
     datasets_statistics(config)
+    relative_gmean(config, df_testing, gmean)
 
 
 def best_configs_testing(config):
@@ -274,3 +276,16 @@ def datasets_statistics(config):
     dir = dir_to_path(config['filename'])
     df_datasets = pd.DataFrame(rows, columns=columns)
     df_datasets.to_csv(dir / 'datasets.csv', index=False)
+
+
+def relative_gmean(config, df_testing, gmean):
+    df_relative_gmean = df_testing.groupby(
+        by=['dataset', 'classifier']).agg({gmean.column: 'mean'})
+    df_relative_gmean = df_relative_gmean.rename({'mean': gmean.column})
+    df_relative_gmean = pd.pivot_table(
+        df_relative_gmean, columns='classifier', values=gmean.column, index='dataset')
+    _, baseline_name = split_proposal_baseline(df_relative_gmean.columns)
+    df_relative_gmean = df_relative_gmean.div(
+        df_relative_gmean[baseline_name[0]], axis='index')
+    dir = dir_to_path(config['filename'])
+    df_relative_gmean.to_csv(dir / 'relative_gmean.csv')
