@@ -58,7 +58,7 @@ def plot_boxplot(data, metric, dir):
 def plot_tuning_convergence(data, dir):
     setup()
     ax = sns.catplot(x="experiment_size", y="g-mean",
-                     hue="name", col="dataset",
+                     hue="classifier", col="dataset",
                      data=data, kind="boxen",
                      k_depth='proportion', outlier_prop=0.05,
                      showfliers=False, col_wrap=3)
