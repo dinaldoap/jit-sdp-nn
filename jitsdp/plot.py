@@ -7,9 +7,12 @@ import Orange as og
 import seaborn as sns
 
 
-def setup():
+def setup(font_scale=None):
     plt.figure(figsize=(14, 9))
-    sns.set()
+    if font_scale is None:
+        sns.set()
+    else:
+        sns.set(font_scale=font_scale)
 
 
 def plot_recalls_gmean(data, config, dir=DIR):
@@ -54,7 +57,7 @@ def plot_streams(data, metrics, dir):
 
 def __plot_metrics_grid(data, dir, metrics, filename, col, row):
     assert len(metrics) <= 4, 'Only support four or less metrics.'
-    setup()
+    setup(font_scale=2.5)
     cols_to_names = {metric.column: metric.name for metric in metrics}
     data = data.rename(cols_to_names, axis='columns')
     metric_names = [metric.name for metric in metrics]
@@ -65,7 +68,9 @@ def __plot_metrics_grid(data, dir, metrics, filename, col, row):
 
     sns.relplot(x='timestep', y='value',
                 hue='metric', data=data,
-                kind='line', col=col, row=row, facet_kws={'sharex': False})
+                kind='line', aspect=2.5,
+                col=col, row=row,
+                facet_kws={'sharex': False})
     plt.savefig(dir / filename)
     plt.clf()
 
