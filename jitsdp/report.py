@@ -1,6 +1,7 @@
 # coding=utf-8
-from jitsdp.plot import plot_recalls_gmean, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance
-from jitsdp.data import DATASETS, load_results, load_runs, make_stream, save_results
+from pathlib import Path
+from jitsdp.plot import plot_recalls_gmean, plot_streams, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance
+from jitsdp.data import DATASETS, load_runs, make_stream, save_results
 from jitsdp.utils import unique_dir, dir_to_path, split_proposal_baseline
 from jitsdp import testing
 
@@ -38,12 +39,14 @@ def generate(config):
     df_testing = best_configs_testing(config)
     # plotting
     Metric = namedtuple('Metric', ['column', 'name', 'ascending', 'baseline'])
-    gmean = Metric('g-mean', 'g-mean', False, True)
-    metrics = [
-        gmean,
-        Metric('r0-r1', '|$r_0-r_1$|', True, True),
+    recalls = [
         Metric('r0', '$r_0$', False, True),
         Metric('r1', '$r_1$', False, True),
+        Metric('r0-r1', '|$r_0-r_1$|', True, True),
+    ]
+    gmean = Metric('g-mean', 'g-mean', False, True)
+    recalls_gmean = recalls + [gmean]
+    metrics = recalls_gmean + [
         Metric('th-ma', '|$fr_1-ir_1$|', True, False),
         Metric('th-pr1', '|$fr_1-pr_1$|', True, False),
     ]
@@ -52,6 +55,7 @@ def generate(config):
     table(config, df_testing, metrics)
     datasets_statistics(config)
     relative_gmean(config, df_testing, gmean)
+    streams(config, recalls_gmean, gmean)
 
 
 def best_configs_testing(config):
@@ -289,3 +293,50 @@ def relative_gmean(config, df_testing, gmean):
         df_relative_gmean[baseline_name[0]], axis='index')
     dir = dir_to_path(config['filename'])
     df_relative_gmean.to_csv(dir / 'relative_gmean.csv')
+
+
+def streams(config, metrics, gmean):
+    df_testing = best_configs_testing(config)
+    df_testing = df_testing[df_testing['classifier'].isin(
+        best_and_baseline(df_testing, gmean))]
+    key_cols = ['dataset', 'classifier']
+    df_streams = []
+    for key_values, df_grouped_testing in df_testing.groupby(by=key_cols):
+        keys = dict(zip(key_cols, key_values))
+        df_stream = stream_by_dataset_classifier(df_grouped_testing)
+        df_stream['dataset'] = keys['dataset']
+        df_stream['classifier'] = keys['classifier']
+        df_streams.append(df_stream)
+    df_streams = pd.concat(df_streams)
+    plot_streams(df_streams, metrics, dir=dir_to_path(config['filename']))
+
+
+def best_and_baseline(df_testing, gmean):
+    proposal, baseline = split_proposal_baseline(
+        df_testing['classifier'].unique())
+    df_best = df_testing[df_testing['classifier'].isin(proposal)]
+    df_best = pd.pivot_table(
+        df_best, columns='classifier', values=gmean.column, index='dataset')
+    avg_rank = df_best.rank(axis='columns', ascending=gmean.ascending)
+    avg_rank = avg_rank.mean()
+    best = avg_rank.idxmin()
+    return [best] + baseline
+
+
+def stream_by_dataset_classifier(df_grouped_testing):
+    df_stream = None
+    for artifact_uri in df_grouped_testing['artifact_uri']:
+        df_stream = add_stream(df_stream, artifact_uri)
+    df_stream = df_stream / len(df_grouped_testing)
+    return df_stream
+
+
+def add_stream(df_stream, artifact_uri):
+    df_results = pd.read_pickle(
+        '{}/{}'.format(artifact_uri, 'results.pickle'))
+    df_results = df_results[[
+        'timestep', 'r0', 'r1', 'r0-r1', 'g-mean']]
+    if df_stream is None:
+        return df_results
+    else:
+        return df_stream + df_results

@@ -47,6 +47,29 @@ def __plot_metrics(data, config, dir, metrics, filename):
     plt.clf()
 
 
+def plot_streams(data, metrics, dir):
+    __plot_metrics_grid(data=data, dir=dir, metrics=metrics,
+                        filename='streams.png', col='classifier', row='dataset')
+
+
+def __plot_metrics_grid(data, dir, metrics, filename, col, row):
+    assert len(metrics) <= 4, 'Only support four or less metrics.'
+    setup()
+    cols_to_names = {metric.column: metric.name for metric in metrics}
+    data = data.rename(cols_to_names, axis='columns')
+    metric_names = [metric.name for metric in metrics]
+    data = data.melt(id_vars=['timestep', col, row],
+                     value_vars=metric_names,
+                     var_name='metric',
+                     value_name='value')
+
+    sns.relplot(x='timestep', y='value',
+                hue='metric', data=data,
+                kind='line', col=col, row=row, facet_kws={'sharex': False})
+    plt.savefig(dir / filename)
+    plt.clf()
+
+
 def plot_boxplot(data, metric, dir):
     setup()
     ax = sns.barplot(data=data, x='dataset', y=metric.column, hue='classifier')

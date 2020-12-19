@@ -19,3 +19,4 @@ run:
 
 clean:
 	rm -rf models/ logs/ tests/logs
+	rm -rf data/joblib/jitsdp/data/load_runs/67034ca7d7c3020626a5784042924e95/
