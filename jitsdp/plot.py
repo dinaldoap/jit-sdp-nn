@@ -50,13 +50,13 @@ def __plot_metrics(data, config, dir, metrics, filename):
     plt.clf()
 
 
-def plot_streams(data, metrics, dir):
+def plot_streams(data, metrics, dir, filename):
     __plot_metrics_grid(data=data, dir=dir, metrics=metrics,
-                        filename='streams.png', col='classifier', row='dataset')
+                        filename=filename, col='classifier', row='dataset')
 
 
 def __plot_metrics_grid(data, dir, metrics, filename, col, row):
-    assert len(metrics) <= 4, 'Only support four or less metrics.'
+    assert len(metrics) <= 5, 'Only support four or less metrics.'
     setup(font_scale=2.5)
     cols_to_names = {metric.column: metric.name for metric in metrics}
     data = data.rename(cols_to_names, axis='columns')

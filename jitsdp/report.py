@@ -42,11 +42,10 @@ def generate(config):
     recalls = [
         Metric('r0', '$r_0$', False, True),
         Metric('r1', '$r_1$', False, True),
-        Metric('r0-r1', '|$r_0-r_1$|', True, True),
     ]
+    recalls_distance = Metric('r0-r1', '|$r_0-r_1$|', True, True)
     gmean = Metric('g-mean', 'g-mean', False, True)
-    recalls_gmean = recalls + [gmean]
-    metrics = recalls_gmean + [
+    metrics = recalls + [recalls_distance, gmean] + [
         Metric('th-ma', '|$fr_1-ir_1$|', True, False),
         Metric('th-pr1', '|$fr_1-pr_1$|', True, False),
     ]
@@ -55,7 +54,14 @@ def generate(config):
     table(config, df_testing, metrics)
     datasets_statistics(config)
     relative_gmean(config, df_testing, gmean)
-    streams(config, recalls_gmean, gmean)
+    recalls_gmean = recalls + [recalls_distance, gmean]
+    streams(config, recalls_gmean, gmean, 'streams.png')
+    fixed_defect_prediction_rate = Metric('th', '$fr_1$', True, False)
+    defect_rate = Metric('te1', 'defect rate', True, False)
+    gmean_defect_rate = recalls + \
+        [fixed_defect_prediction_rate, gmean, defect_rate]
+    streams(config, gmean_defect_rate, gmean,
+            'drops.png', base_learners=['LR', 'MLP'])
 
 
 def best_configs_testing(config):
@@ -295,10 +301,10 @@ def relative_gmean(config, df_testing, gmean):
     df_relative_gmean.to_csv(dir / 'relative_gmean.csv')
 
 
-def streams(config, metrics, gmean):
+def streams(config, metrics, gmean, filename, base_learners=None):
     df_testing = best_configs_testing(config)
     df_testing = df_testing[df_testing['classifier'].isin(
-        best_and_baseline(df_testing, gmean))]
+        best_and_baseline(df_testing, gmean, base_learners))]
     key_cols = ['dataset', 'classifier']
     df_streams = []
     for key_values, df_grouped_testing in df_testing.groupby(by=key_cols):
@@ -308,34 +314,54 @@ def streams(config, metrics, gmean):
         df_stream['classifier'] = keys['classifier']
         df_streams.append(df_stream)
     df_streams = pd.concat(df_streams)
-    plot_streams(df_streams, metrics, dir=dir_to_path(config['filename']))
+    plot_streams(df_streams, metrics, dir=dir_to_path(
+        config['filename']), filename=filename)
 
 
-def best_and_baseline(df_testing, gmean):
+def best_and_baseline(df_testing, gmean, base_learners=None):
     proposal, baseline = split_proposal_baseline(
         df_testing['classifier'].unique())
-    df_best = df_testing[df_testing['classifier'].isin(proposal)]
-    df_best = pd.pivot_table(
-        df_best, columns='classifier', values=gmean.column, index='dataset')
-    avg_rank = df_best.rank(axis='columns', ascending=gmean.ascending)
-    avg_rank = avg_rank.mean()
-    best = avg_rank.idxmin()
-    return [best] + baseline
+    if base_learners is None:
+        df_best = df_testing[df_testing['classifier'].isin(proposal)]
+        df_best = pd.pivot_table(
+            df_best, columns='classifier', values=gmean.column, index='dataset')
+        avg_rank = df_best.rank(axis='columns', ascending=gmean.ascending)
+        avg_rank = avg_rank.mean()
+        best = avg_rank.idxmin()
+        return [best] + baseline
+    else:
+        filtered_proposals = [
+            prop for prop in proposal if prop.split('-')[1] in base_learners]
+        assert len(filtered_proposals) == len(
+            base_learners), 'The base learners {} are expected among the proposals {}.'.format(base_learners, proposal)
+        return filtered_proposals
 
 
-def stream_by_dataset_classifier(df_grouped_testing):
+def stream_by_dataset_classifier(df_grouped_testing: pd.DataFrame):
     df_stream = None
+    th = df_grouped_testing.apply(extract_th, axis='columns')
+    th = th.unique()
+    assert len(th) == 1, 'There should be only one th.'
+    th = float(th[0])
     for artifact_uri in df_grouped_testing['artifact_uri']:
-        df_stream = add_stream(df_stream, artifact_uri)
+        df_stream = add_stream(df_stream, artifact_uri, th)
     df_stream = df_stream / len(df_grouped_testing)
     return df_stream
 
 
-def add_stream(df_stream, artifact_uri):
+def extract_th(row):
+    if row['meta_model'] == 'borb':
+        return row['borb_th']
+    else:
+        return row['orb_th']
+
+
+def add_stream(df_stream, artifact_uri, th):
     df_results = pd.read_pickle(
         '{}/{}'.format(artifact_uri, 'results.pickle'))
     df_results = df_results[[
-        'timestep', 'r0', 'r1', 'r0-r1', 'g-mean']]
+        'timestep', 'r0', 'r1', 'r0-r1', 'g-mean', 'te1']]
+    df_results['th'] = th
     if df_stream is None:
         return df_results
     else:
