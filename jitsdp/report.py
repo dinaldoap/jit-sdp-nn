@@ -35,6 +35,7 @@ def add_arguments(parser, dirname):
 
 
 def generate(config):
+    datasets_statistics(config)
     tuning_convergence(config)
     df_testing = best_configs_testing(config)
     # plotting
@@ -49,11 +50,10 @@ def generate(config):
         Metric('th-ma', '|$fr_1-ir_1$|', True, False),
         Metric('th-pr1', '|$fr_1-pr_1$|', True, False),
     ]
+    table(config, df_testing, metrics)
     scott_knott(config, df_testing, gmean)
     plots(config, df_testing, metrics)
     statistical_analysis(config, df_testing, metrics)
-    table(config, df_testing, metrics)
-    datasets_statistics(config)
     relative_gmean(config, df_testing, gmean)
     recalls_gmean = recalls + [recalls_distance, gmean]
     streams(config, recalls_gmean, gmean, 'streams.png')
