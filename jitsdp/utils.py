@@ -2,7 +2,6 @@
 from jitsdp.constants import DIR
 
 from datetime import datetime
-from itertools import product
 import logging
 import mlflow
 import numpy as np

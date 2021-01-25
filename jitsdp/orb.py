@@ -2,8 +2,6 @@ from jitsdp.utils import track_forest, track_metric, track_time
 
 import mlflow
 import numpy as np
-import pandas as pd
-from skmultiflow.utils import get_dimensions
 
 
 class ORB():

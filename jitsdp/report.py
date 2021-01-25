@@ -1,5 +1,4 @@
 # coding=utf-8
-from pathlib import Path
 from jitsdp.plot import plot_recalls_gmean, plot_streams, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance
 from jitsdp.data import DATASETS, load_runs, make_stream, save_results
 from jitsdp.utils import unique_dir, dir_to_path, split_proposal_baseline

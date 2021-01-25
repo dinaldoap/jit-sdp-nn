@@ -1,7 +1,6 @@
 # coding=utf-8
 from jitsdp.utils import filename_to_path, random_state_seed
 
-import argparse
 import itertools
 import numpy as np
 from hyperopt import hp

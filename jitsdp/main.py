@@ -1,8 +1,6 @@
 # coding=utf-8
 # torch and sklearn imported first to avoid bug
 # see https://github.com/pytorch/pytorch/issues/2575#issuecomment-523657178
-import torch
-import sklearn
 from jitsdp.evaluation import run
 from jitsdp.utils import setup_and_run, int_or_none
 from jitsdp import baseline, tuning, testing, report

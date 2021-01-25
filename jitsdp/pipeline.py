@@ -7,7 +7,6 @@ from jitsdp.utils import mkdir, track_forest, track_metric, track_time, torch_se
 from abc import ABCMeta, abstractmethod
 import joblib
 import logging
-import time
 import numpy as np
 import pandas as pd
 import pathlib
@@ -15,7 +14,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator
 from sklearn.linear_model import SGDClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier

@@ -3,16 +3,10 @@ from jitsdp.data import make_stream, make_stream_others, save_results, DATASETS,
 from jitsdp.orb import ORB
 from jitsdp.pipeline import MultiflowForest, set_seed
 from jitsdp.report import report
-from jitsdp.utils import int_or_none, setup_and_run
+from jitsdp.utils import int_or_none
 
-import argparse
-from datetime import datetime
-import logging
 import mlflow
-import pathlib
 import pandas as pd
-import numpy as np
-import sys
 from skmultiflow.data import DataStream
 from skmultiflow.meta import OzaBaggingClassifier
 from skmultiflow.trees import HoeffdingTreeClassifier

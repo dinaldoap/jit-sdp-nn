@@ -6,9 +6,7 @@ from jitsdp.data import load_runs
 
 import mlflow
 import numpy as np
-import pandas as pd
 import re
-import sys
 
 
 def add_arguments(parser, filename):
