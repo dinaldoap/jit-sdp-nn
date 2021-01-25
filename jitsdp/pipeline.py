@@ -73,7 +73,7 @@ def create_ihf_model(config):
         remove_poor_atts=config['ihf_remove_poor_atts'],
         no_preprune=config['ihf_no_preprune'],
         leaf_prediction=config['ihf_leaf_prediction'])
-    base_estimator = MultiflowBaseEstimator(hoeffding_tree)
+    base_estimator = MultiflowTree(hoeffding_tree)
     classifier = BaggingClassifier(
         base_estimator=base_estimator, n_estimators=0, warm_start=True, bootstrap=False)
     return IterativeForest(steps=[], classifier=classifier,
@@ -532,19 +532,50 @@ class MultiflowBaseEstimator(BaseEstimator):
 
     def __init__(self, mf_classifier):
         self.mf_classifier = mf_classifier
+        self.observed_classes = set()
+
+    @property
+    def trained(self):
+        return len(self.observed_classes) == 2
 
     @property
     def classes_(self):
         return self.mf_classifier.classes
 
-    def fit(self, X, y):
-        self.mf_classifier.fit(X, y, classes=[0, 1])
+    def __update_observed_classes(self, y, sample_weight):
+        if sample_weight is None:
+            return
+        mask = sample_weight > 0
+        self.observed_classes.update(y[mask])
+
+    def fit(self, X, y, sample_weight=None):
+        self.partial_fit(X, y, sample_weight=sample_weight)
+
+    def partial_fit(self, X, y, sample_weight=None):
+        self.__update_observed_classes(y, sample_weight)
+        self.mf_classifier.partial_fit(
+            X, y, classes=[0, 1], sample_weight=sample_weight)
 
     def predict(self, X):
         return self.mf_classifier.predict(X)
 
     def predict_proba(self, X):
         return self.mf_classifier.predict_proba(X)
+
+
+class MultiflowForest(MultiflowBaseEstimator):
+
+    def __init__(self, mf_classifier):
+        super().__init__(mf_classifier)
+
+    @property
+    def estimators(self):
+        return [MultiflowTree(estimator) for estimator in self.mf_classifier.ensemble]
+
+
+class MultiflowTree(MultiflowBaseEstimator):
+    def __init__(self, mf_classifier):
+        super().__init__(mf_classifier)
 
     def get_depth(self):
         return self.mf_classifier.measure_tree_depth()

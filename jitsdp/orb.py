@@ -1,16 +1,14 @@
-from jitsdp.pipeline import MultiflowBaseEstimator
 from jitsdp.utils import track_forest, track_metric, track_time
 
 import mlflow
 import numpy as np
 import pandas as pd
-from skmultiflow.meta import OzaBaggingClassifier
 from skmultiflow.utils import get_dimensions
 
 
 class ORB():
 
-    def __init__(self, features, decay_factor, ma_window_size, th, l0, l1, m, base_estimator, n_estimators):
+    def __init__(self, features, decay_factor, ma_window_size, th, l0, l1, m, base_learner):
         self.features = features
         # parameters
         self.decay_factor = decay_factor
@@ -20,26 +18,20 @@ class ORB():
         self.l1 = l1
         self.m = m
         # state
-        self.observed_classes = set()
         self.ma = th
         self.ma_window = None
         self.p1 = .5
-        self.oza_bag = OzaBaggingClassifier(
-            base_estimator=base_estimator, n_estimators=n_estimators)
-        self.estimators = [MultiflowBaseEstimator(
-            estimator) for estimator in self.oza_bag.ensemble]
+        self.base_learner = base_learner
 
     @property
     def trained(self):
-        return len(self.observed_classes) == 2
+        return self.base_learner.trained
 
     def train(self, X, y, **kwargs):
         for features, target in zip(X, y):
             self.update_state(target, **kwargs)
-            self.oza_bag.partial_fit([features], [target], classes=[
-                                     0, 1], sample_weight=[self.k])
-            if self.k > 0:
-                self.observed_classes.update(y)
+            self.base_learner.partial_fit(np.array([features]), np.array(
+                [target]), sample_weight=np.array([self.k]))
 
     def update_state(self, target, **kwargs):
         self.update_lambda(target, **kwargs)
@@ -99,7 +91,7 @@ class ORB():
         prediction['prediction'] = predictions
         prediction['probability'] = probabilities
         if kwargs['track_forest']:
-            prediction = track_forest(prediction, self)
+            prediction = track_forest(prediction, self.base_learner)
         prediction = track_metric(prediction, 'tr1', self.p1)
         prediction = track_metric(prediction, 'ma', self.ma)
         if kwargs['track_time']:
@@ -117,7 +109,7 @@ class ORB():
             return concat_window[-self.ma_window_size:]
 
     def __predict(self, df_test):
-        probabilities = self.oza_bag.predict_proba(
+        probabilities = self.base_learner.predict_proba(
             df_test[self.features].values)
         probabilities = probabilities[:, 1]
         predictions = (probabilities >= .5).round().astype('int')

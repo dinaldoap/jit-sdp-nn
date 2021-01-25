@@ -1,7 +1,7 @@
 from jitsdp import metrics as met
 from jitsdp.data import make_stream, make_stream_others, save_results, DATASETS, FEATURES
 from jitsdp.orb import ORB
-from jitsdp.pipeline import set_seed
+from jitsdp.pipeline import MultiflowForest, set_seed
 from jitsdp.report import report
 from jitsdp.utils import int_or_none, setup_and_run
 
@@ -14,6 +14,7 @@ import pandas as pd
 import numpy as np
 import sys
 from skmultiflow.data import DataStream
+from skmultiflow.meta import OzaBaggingClassifier
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 
@@ -113,6 +114,9 @@ def run(config):
         remove_poor_atts=config['oht_remove_poor_atts'],
         no_preprune=config['oht_no_preprune'],
         leaf_prediction=config['oht_leaf_prediction'])
+    n_estimators = config['oht_n_estimators']
+    base_learner = MultiflowForest(OzaBaggingClassifier(
+        base_estimator=base_estimator, n_estimators=n_estimators))
     model = ORB(features=FEATURES,
                 decay_factor=config['orb_decay_factor'],
                 ma_window_size=config['orb_ma_window_size'],
@@ -120,8 +124,7 @@ def run(config):
                 l0=config['orb_l0'],
                 l1=config['orb_l1'],
                 m=config['orb_m'],
-                base_estimator=base_estimator,
-                n_estimators=config['oht_n_estimators'],
+                base_learner=base_learner
                 )
     target_prediction = None
     train_first = len(test_steps) < len(train_steps)
