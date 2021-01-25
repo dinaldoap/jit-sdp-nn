@@ -49,6 +49,7 @@ def generate(config):
         Metric('th-ma', '|$fr_1-ir_1$|', True, False),
         Metric('th-pr1', '|$fr_1-pr_1$|', True, False),
     ]
+    scott_knott(config, df_testing, gmean)
     plots(config, df_testing, metrics)
     statistical_analysis(config, df_testing, metrics)
     table(config, df_testing, metrics)
@@ -242,6 +243,13 @@ def table(config, df_testing: pd.DataFrame, metrics):
         lambda row: format_metric(metrics, row), axis='columns')
     dir = dir_to_path(config['filename'])
     df_table.to_csv(dir / 'table.csv')
+
+
+def scott_knott(config, df_testing: pd.DataFrame, gmean):
+    df_scott = pd.pivot_table(
+        df_testing, columns=['dataset', 'seed'], values=gmean.column, index='classifier')
+    dir = dir_to_path(config['filename'])
+    df_scott.to_csv(dir / 'scott.txt', sep='\t', header=False)
 
 
 def format_metric(metrics, row):
