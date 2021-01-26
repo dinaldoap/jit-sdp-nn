@@ -11,6 +11,7 @@ from skmultiflow.data import DataStream
 from skmultiflow.meta import OzaBaggingClassifier
 from skmultiflow.trees import HoeffdingTreeClassifier
 from skmultiflow.bayes import NaiveBayes
+from skmultiflow.neural_networks import PerceptronMask
 
 
 def add_arguments(parser):
@@ -49,7 +50,7 @@ def add_arguments(parser):
     parser.add_argument('--dataset',   type=str, help='Dataset to run the experiment. (default: brackets).',
                         default='brackets', choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'])
     parser.add_argument('--model',   type=str,
-                        help='Which models must use as the base learner (default: oht).', default='oht', choices=['nb', 'oht'])
+                        help='Which models must use as the base learner (default: oht).', default='oht', choices=['lr', 'nb', 'oht'])
     parser.add_argument('--oht-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',  default=1)
     parser.add_argument('--oht-grace-period',   type=int,
@@ -212,11 +213,16 @@ def merge_others(data, dataset):
 
 def create_classifier(config):
     map_fn = {
+        'lr': create_lr_model,
         'nb': create_nb_model,
         'oht': create_oht_model,
     }
     fn_create_model = map_fn[config['model']]
     return fn_create_model(config)
+
+
+def create_lr_model(config):
+    return MultiflowBaseEstimator(PerceptronMask())
 
 
 def create_nb_model(config):

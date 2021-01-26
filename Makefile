@@ -12,6 +12,7 @@ run:
 	jitsdp borb --model nb --start 2000 --end 2050 --experiment-name dev
 	jitsdp borb --model mlp --start 2000 --end 2050 --experiment-name dev
 	jitsdp borb --model irf --start 2000 --end 2050 --experiment-name dev
+	jitsdp orb --model lr --start 2000 --end 2050 --experiment-name dev
 	jitsdp orb --model nb --start 2000 --end 2050 --experiment-name dev
 	jitsdp orb --model oht --start 2000 --end 2050 --experiment-name dev
 	jitsdp tuning --start 0 --end 1 --cross-project 0 1 --validation-end 5000 1000
