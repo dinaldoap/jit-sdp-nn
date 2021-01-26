@@ -150,23 +150,23 @@ def create_models_configs(config):
     borb_ihf.update(borb)
     borb_ihf.update(hoeffding_shared['ihf'])
 
-    linear_shared = linear_shared_config_space()
     lr = {}
-    lr.update(linear_shared['lr'])
     lr.update([
         loguniform('lr-alpha', .01, 1.),
     ])
 
     borb_lr = {}
     borb_lr.update(borb)
+    borb_lr.update(linear_shared_config_space('lr'))
     borb_lr.update(lr)
 
     orb_lr = {}
     orb_lr.update(orb)
+    orb_lr.update(linear_shared_config_space(
+        'lr', n_epochs=False, batch_size=False))
     orb_lr.update(lr)
 
     mlp = {}
-    mlp.update(linear_shared['mlp'])
     mlp.update([
         loguniform('mlp-learning-rate', .0001, .01),
         uniform('mlp-n-hidden-layers', 1, 3),
@@ -177,10 +177,13 @@ def create_models_configs(config):
 
     borb_mlp = {}
     borb_mlp.update(borb)
+    borb_mlp.update(linear_shared_config_space('mlp'))
     borb_mlp.update(mlp)
 
     orb_mlp = {}
     orb_mlp.update(orb)
+    orb_mlp.update(linear_shared_config_space(
+        'mlp', n_epochs=False, batch_size=False))
     orb_mlp.update(mlp)
 
     borb_nb = {}
@@ -283,15 +286,15 @@ def hoeffding_shared_config_space(config):
     return config_spaces
 
 
-def linear_shared_config_space():
-    config_spaces = {}
-    models = ['lr', 'mlp']
-    for model in models:
-        config_spaces[model] = [
-            uniform('{}-n-epochs'.format(model),  10, 80),
-            loguniform('{}-batch-size'.format(model), 128, 512),
-            choiceuniform('{}-log-transformation'.format(model), [0, 1]),
-        ]
+def linear_shared_config_space(model, n_epochs=True, batch_size=True):
+    config_spaces = []
+    if n_epochs:
+        config_spaces.append(uniform('{}-n-epochs'.format(model),  10, 80))
+    if batch_size:
+        config_spaces.append(loguniform(
+            '{}-batch-size'.format(model), 128, 512))
+    config_spaces.append(choiceuniform(
+        '{}-log-transformation'.format(model), [0, 1]))
     return config_spaces
 
 
