@@ -1,7 +1,7 @@
 from jitsdp import metrics as met
 from jitsdp.data import make_stream, make_stream_others, save_results, DATASETS, FEATURES
 from jitsdp.orb import ORB
-from jitsdp.pipeline import MultiflowBaseEstimator, MultiflowForest, set_seed
+from jitsdp.pipeline import linear_model_steps, MLPMask, MultiflowBaseEstimator, MultiflowForest, set_seed
 from jitsdp.report import report
 from jitsdp.utils import int_or_none
 
@@ -51,7 +51,22 @@ def add_arguments(parser):
     parser.add_argument('--dataset',   type=str, help='Dataset to run the experiment. (default: brackets).',
                         default='brackets', choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'])
     parser.add_argument('--model',   type=str,
-                        help='Which models must use as the base learner (default: oht).', default='oht', choices=['lr', 'nb', 'oht'])
+                        help='Which models must use as the base learner (default: oht).', default='oht', choices=['lr', 'mlp', 'nb', 'oht'])
+    parser.add_argument('--mlp-n-hidden-layers',   type=int,
+                        help='Number of hidden layers (default: 1).',    default=1)
+    parser.add_argument('--mlp-hidden-layers-size',   type=int,
+                        help='Hidden layers size (default: 7).',    default=7)
+    parser.add_argument('--mlp-learning-rate',   type=float,
+                        help='Learning rate (default: .001).',  default=.001)
+    parser.add_argument('--mlp-dropout-input-layer',   type=float,
+                        help='Dropout probability of the input layer (default: .2).',    default=.2)
+    parser.add_argument('--mlp-dropout-hidden-layers',   type=float,
+                        help='Dropout probability of the hidden layers (default: .5).',    default=.5)
+    parser.add_argument('--mlp-batch-size',   type=int,
+                        help='Number of commits included in each batch (default: 256).',    default=256)
+    parser.add_argument('--mlp-log-transformation',   type=int,
+                        help='Whether must use log transformation (default: 0).',
+                        default=0, choices=[0, 1])
     parser.add_argument('--oht-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',  default=1)
     parser.add_argument('--oht-grace-period',   type=int,
@@ -215,6 +230,7 @@ def merge_others(data, dataset):
 def create_classifier(config):
     map_fn = {
         'lr': create_lr_model,
+        'mlp': create_mlp_model,
         'nb': create_nb_model,
         'oht': create_oht_model,
     }
@@ -223,7 +239,16 @@ def create_classifier(config):
 
 
 def create_lr_model(config):
-    return MultiflowBaseEstimator(steps=[StandardScaler()], mf_classifier=PerceptronMask())
+def create_mlp_model(config):
+    steps = linear_model_steps(config)
+    mlp_mask = MLPMask(input_layer_size=len(FEATURES),
+                       n_hidden_layers=config['mlp_n_hidden_layers'],
+                       hidden_layers_size=config['mlp_hidden_layers_size'],
+                       dropout_input_layer=config['mlp_dropout_input_layer'],
+                       dropout_hidden_layers=config['mlp_dropout_hidden_layers'],
+                       learning_rate=config['mlp_learning_rate'],
+                       batch_size=config['mlp_batch_size'])
+    return MultiflowBaseEstimator(steps=steps, mf_classifier=mlp_mask)
 
 
 def create_nb_model(config):

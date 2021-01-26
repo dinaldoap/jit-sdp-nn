@@ -20,6 +20,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier, BaggingClassifier
 from sklearn.preprocessing import FunctionTransformer, StandardScaler
 from sklearn.exceptions import NotFittedError
+from skmultiflow.core import ClassifierMixin
 from skmultiflow.trees import HoeffdingTreeClassifier
 
 logger = logging.getLogger(__name__)
@@ -585,6 +586,151 @@ class MultiflowTree(MultiflowBaseEstimator):
 
     def get_n_leaves(self):
         return self.mf_classifier._active_leaf_node_cnt + self.mf_classifier._inactive_leaf_node_cnt
+
+
+class MLPMask(ClassifierMixin):
+    def __init__(self, input_layer_size,
+                 n_hidden_layers,
+                 hidden_layers_size,
+                 dropout_input_layer,
+                 dropout_hidden_layers,
+                 learning_rate,
+                 batch_size):
+        super().__init__()
+        self.criterion = nn.BCEWithLogitsLoss()
+        self.classifier = MLP(input_layer_size=input_layer_size,
+                              n_hidden_layers=n_hidden_layers,
+                              hidden_layers_size=hidden_layers_size,
+                              dropout_input_layer=dropout_input_layer,
+                              dropout_hidden_layers=dropout_hidden_layers)
+        self.optimizer = optim.Adam(params=self.classifier.parameters(),
+                                    lr=learning_rate)
+        self.batch_size = batch_size
+
+    def fit(self, X, y, classes=None, sample_weight=None):
+        """ Calls the Perceptron fit function from sklearn.
+
+        Parameters
+        ----------
+        X: numpy.ndarray of shape (n_samples, n_features)
+            The feature's matrix.
+
+        y: Array-like
+            The class labels for all samples in X.
+
+        classes: Not used.
+
+        sample_weight:
+            Samples weight. If not provided, uniform weights are assumed.
+
+        Returns
+        -------
+        MLPMask
+            self
+
+        """
+        return self.partial_fit(X, y, classes=classes, sample_weight=sample_weight)
+
+    def partial_fit(self, X, y, classes=None, sample_weight=None):
+        """ partial_fit
+
+        Calls the Perceptron partial_fit from sklearn.
+
+        Parameters
+        ----------
+        X: numpy.ndarray of shape (n_samples, n_features)
+            The feature's matrix.
+
+        y: Array-like
+            The class labels for all samples in X.
+
+        classes: Not used.
+
+        sample_weight:
+            Samples weight. If not provided, uniform weights are assumed.
+
+        Returns
+        -------
+        MLPMask
+            self
+
+        """
+        weights = np.array(
+            [1.] * len(y)) if sample_weight is None else sample_weight
+        weights = torch.from_numpy(weights)
+        if torch.cuda.is_available():
+            self.classifier = self.classifier.cuda()
+            weights = weights.cuda()
+
+        self.classifier.train()
+        dataloader = _dataloader(X, y, batch_size=self.batch_size)
+        for inputs, targets in dataloader:
+            if torch.cuda.is_available():
+                inputs, targets = inputs.cuda(), targets.cuda()
+
+            outputs = self.classifier(inputs.float())
+            loss = self.criterion(outputs.view(
+                outputs.shape[0]), targets.float())
+            loss = loss * weights
+
+            self.optimizer.zero_grad()
+            loss.backward()
+            self.optimizer.step()
+        return self
+
+    def predict(self, X):
+        """ predict
+
+        Uses the current model to predict samples in X.
+
+        Parameters
+        ----------
+        X: numpy.ndarray of shape (n_samples, n_features)
+            The feature's matrix.
+
+        Returns
+        -------
+        numpy.ndarray
+            A numpy.ndarray containing the predicted labels for all instances in X.
+
+        """
+        raise NotImplementedError()
+
+    def predict_proba(self, X):
+        """ Predicts the probability of each sample belonging to each one of the known classes.
+
+        Parameters
+        ----------
+        X: Numpy.ndarray of shape (n_samples, n_features)
+            A matrix of the samples we want to predict.
+
+        Returns
+        -------
+        numpy.ndarray
+            An array of shape (n_samples, n_features), in which each outer entry is 
+            associated with the X entry of the same index. And where the list in 
+            index [i] contains len(self.target_values) elements, each of which represents
+            the probability that the i-th sample of X belongs to a certain label.
+
+        """
+        if torch.cuda.is_available():
+            self.classifier = self.classifier.cuda()
+
+        probabilities = []
+        with torch.no_grad():
+            self.classifier.eval()
+            y = np.zeros(len(X))
+            dataloader = _dataloader(X, y, batch_size=self.batch_size)
+            for inputs, targets in dataloader:
+                if torch.cuda.is_available():
+                    inputs, targets = inputs.cuda(), targets.cuda()
+
+                outputs = self.classifier.forward_proba(inputs.float())
+                probabilities.append(outputs.detach().cpu().numpy())
+        probabilities = np.concatenate(probabilities, axis=0)
+        probabilities = np.concatenate(
+            (1 - probabilities, probabilities), axis=1)
+        return probabilities
 
 
 class OzaBag(Scikit):
