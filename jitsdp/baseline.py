@@ -1,7 +1,7 @@
 from jitsdp import metrics as met
 from jitsdp.data import make_stream, make_stream_others, save_results, DATASETS, FEATURES
 from jitsdp.orb import ORB
-from jitsdp.pipeline import MultiflowForest, set_seed
+from jitsdp.pipeline import MultiflowBaseEstimator, MultiflowForest, set_seed
 from jitsdp.report import report
 from jitsdp.utils import int_or_none
 
@@ -10,6 +10,7 @@ import pandas as pd
 from skmultiflow.data import DataStream
 from skmultiflow.meta import OzaBaggingClassifier
 from skmultiflow.trees import HoeffdingTreeClassifier
+from skmultiflow.bayes import NaiveBayes
 
 
 def add_arguments(parser):
@@ -48,7 +49,7 @@ def add_arguments(parser):
     parser.add_argument('--dataset',   type=str, help='Dataset to run the experiment. (default: brackets).',
                         default='brackets', choices=['brackets', 'camel', 'fabric8', 'jgroups', 'neutron', 'tomcat', 'broadleaf', 'nova', 'npm', 'spring-integration'])
     parser.add_argument('--model',   type=str,
-                        help='Which models must use as the base learner (default: oht).', default='oht', choices=['oht'])
+                        help='Which models must use as the base learner (default: oht).', default='oht', choices=['nb', 'oht'])
     parser.add_argument('--oht-n-estimators',   type=int,
                         help='The number of hoeffding trees (default: 1).',  default=1)
     parser.add_argument('--oht-grace-period',   type=int,
@@ -100,17 +101,7 @@ def run(config):
     train_steps = train_steps.to_list()
 
     train_stream = DataStream(df_train[FEATURES], y=df_train[['target']])
-    base_estimator = HoeffdingTreeClassifier(
-        grace_period=config['oht_grace_period'],
-        split_criterion=config['oht_split_criterion'],
-        split_confidence=config['oht_split_confidence'],
-        tie_threshold=config['oht_tie_threshold'],
-        remove_poor_atts=config['oht_remove_poor_atts'],
-        no_preprune=config['oht_no_preprune'],
-        leaf_prediction=config['oht_leaf_prediction'])
-    n_estimators = config['oht_n_estimators']
-    base_learner = MultiflowForest(OzaBaggingClassifier(
-        base_estimator=base_estimator, n_estimators=n_estimators))
+    base_learner = create_classifier(config)
     model = ORB(features=FEATURES,
                 decay_factor=config['orb_decay_factor'],
                 ma_window_size=config['orb_ma_window_size'],
@@ -217,3 +208,30 @@ def merge_others(data, dataset):
     last_timestamp = data['timestamp'].max()
     df_others = df_others[df_others['timestamp'] <= last_timestamp]
     return pd.concat([data, df_others])
+
+
+def create_classifier(config):
+    map_fn = {
+        'nb': create_nb_model,
+        'oht': create_oht_model,
+    }
+    fn_create_model = map_fn[config['model']]
+    return fn_create_model(config)
+
+
+def create_nb_model(config):
+    return MultiflowBaseEstimator(NaiveBayes())
+
+
+def create_oht_model(config):
+    base_estimator = HoeffdingTreeClassifier(
+        grace_period=config['oht_grace_period'],
+        split_criterion=config['oht_split_criterion'],
+        split_confidence=config['oht_split_confidence'],
+        tie_threshold=config['oht_tie_threshold'],
+        remove_poor_atts=config['oht_remove_poor_atts'],
+        no_preprune=config['oht_no_preprune'],
+        leaf_prediction=config['oht_leaf_prediction'])
+    n_estimators = config['oht_n_estimators']
+    return MultiflowForest(OzaBaggingClassifier(
+        base_estimator=base_estimator, n_estimators=n_estimators))
