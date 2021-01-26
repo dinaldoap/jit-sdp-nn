@@ -1,6 +1,7 @@
 # coding=utf-8
 from jitsdp.utils import filename_to_path, random_state_seed
 
+import argparse
 import itertools
 import numpy as np
 from hyperopt import hp
@@ -109,11 +110,12 @@ def generate(config):
 
 def configs_to_experiments(validation_end, bundle, experiment_configs, seed_dataset_configs, models_configs):
     for experiment_config in experiment_configs:
-        model = experiment_config['model']
+        classifier = '{}-{}'.format(
+            experiment_config['meta-model'], experiment_config['model'])
         experiment = Experiment(validation_end=validation_end,
                                 bundle=bundle,
                                 experiment_config=experiment_config,
-                                seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[model])
+                                seed_dataset_configs=seed_dataset_configs, models_configs=models_configs[classifier])
         yield experiment
 
 
@@ -133,9 +135,9 @@ def create_models_configs(config):
                 ])
 
     hoeffding_shared = hoeffding_shared_config_space(config)
-    oht = {}
-    oht.update(orb)
-    oht.update(hoeffding_shared['oht'])
+    orb_oht = {}
+    orb_oht.update(orb)
+    orb_oht.update(hoeffding_shared['oht'])
 
     borb = {}
     borb.update(meta_model_shared['borb'])
@@ -144,22 +146,22 @@ def create_models_configs(config):
                          8000 if 1 in config['cross_project'] else 4000),
                  ])
 
-    ihf = {}
-    ihf.update(borb)
-    ihf.update(hoeffding_shared['ihf'])
+    borb_ihf = {}
+    borb_ihf.update(borb)
+    borb_ihf.update(hoeffding_shared['ihf'])
 
     linear_shared = linear_shared_config_space()
-    lr = {}
-    lr.update(borb)
-    lr.update(linear_shared['lr'])
-    lr.update([
+    borb_lr = {}
+    borb_lr.update(borb)
+    borb_lr.update(linear_shared['lr'])
+    borb_lr.update([
         loguniform('lr-alpha', .01, 1.),
     ])
 
-    mlp = {}
-    mlp.update(borb)
-    mlp.update(linear_shared['mlp'])
-    mlp.update([
+    borb_mlp = {}
+    borb_mlp.update(borb)
+    borb_mlp.update(linear_shared['mlp'])
+    borb_mlp.update([
         loguniform('mlp-learning-rate', .0001, .01),
         uniform('mlp-n-hidden-layers', 1, 3),
         uniform('mlp-hidden-layers-size', 5, 15),
@@ -167,15 +169,15 @@ def create_models_configs(config):
         uniform('mlp-dropout-hidden-layer', .3, .5),
     ])
 
-    nb = {}
-    nb.update(borb)
-    nb.update([
+    borb_nb = {}
+    borb_nb.update(borb)
+    borb_nb.update([
         uniform('nb-n-updates', 10, 80),
     ])
 
-    irf = {}
-    irf.update(borb)
-    irf.update([
+    borb_irf = {}
+    borb_irf.update(borb)
+    borb_irf.update([
         uniform('irf-n-estimators', 20, 100),
         choiceuniform('irf-criterion', ['gini', 'entropy']),
         uniform('irf-min-samples-leaf', 100, 300),
@@ -184,12 +186,12 @@ def create_models_configs(config):
 
     start = config['start']
     end = config['end']
-    models_configs = {'oht': config_space_to_configs(oht, start, end),
-                      'ihf': config_space_to_configs(ihf, start, end),
-                      'lr': config_space_to_configs(lr, start, end),
-                      'mlp': config_space_to_configs(mlp, start, end),
-                      'nb': config_space_to_configs(nb, start, end),
-                      'irf': config_space_to_configs(irf, start, end),
+    models_configs = {'orb-oht': config_space_to_configs(orb_oht, start, end),
+                      'borb-ihf': config_space_to_configs(borb_ihf, start, end),
+                      'borb-lr': config_space_to_configs(borb_lr, start, end),
+                      'borb-mlp': config_space_to_configs(borb_mlp, start, end),
+                      'borb-nb': config_space_to_configs(borb_nb, start, end),
+                      'borb-irf': config_space_to_configs(borb_irf, start, end),
                       }
 
     return models_configs
