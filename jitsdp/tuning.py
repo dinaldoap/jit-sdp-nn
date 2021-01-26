@@ -81,7 +81,7 @@ def generate(config):
     orb_grid = {
         'meta-model': ['orb'],
         'cross-project': cross_project,
-        'model': ['oht'],
+        'model': ['oht', 'lr', 'mlp', 'nb'],
     }
     borb_grid = {
         'meta-model': ['borb'],
@@ -151,17 +151,23 @@ def create_models_configs(config):
     borb_ihf.update(hoeffding_shared['ihf'])
 
     linear_shared = linear_shared_config_space()
-    borb_lr = {}
-    borb_lr.update(borb)
-    borb_lr.update(linear_shared['lr'])
-    borb_lr.update([
+    lr = {}
+    lr.update(linear_shared['lr'])
+    lr.update([
         loguniform('lr-alpha', .01, 1.),
     ])
 
-    borb_mlp = {}
-    borb_mlp.update(borb)
-    borb_mlp.update(linear_shared['mlp'])
-    borb_mlp.update([
+    borb_lr = {}
+    borb_lr.update(borb)
+    borb_lr.update(lr)
+
+    orb_lr = {}
+    orb_lr.update(orb)
+    orb_lr.update(lr)
+
+    mlp = {}
+    mlp.update(linear_shared['mlp'])
+    mlp.update([
         loguniform('mlp-learning-rate', .0001, .01),
         uniform('mlp-n-hidden-layers', 1, 3),
         uniform('mlp-hidden-layers-size', 5, 15),
@@ -169,11 +175,22 @@ def create_models_configs(config):
         uniform('mlp-dropout-hidden-layer', .3, .5),
     ])
 
+    borb_mlp = {}
+    borb_mlp.update(borb)
+    borb_mlp.update(mlp)
+
+    orb_mlp = {}
+    orb_mlp.update(orb)
+    orb_mlp.update(mlp)
+
     borb_nb = {}
     borb_nb.update(borb)
     borb_nb.update([
         uniform('nb-n-updates', 10, 80),
     ])
+
+    orb_nb = {}
+    orb_nb.update(orb)
 
     borb_irf = {}
     borb_irf.update(borb)
@@ -187,6 +204,9 @@ def create_models_configs(config):
     start = config['start']
     end = config['end']
     models_configs = {'orb-oht': config_space_to_configs(orb_oht, start, end),
+                      'orb-lr': config_space_to_configs(orb_lr, start, end),
+                      'orb-mlp': config_space_to_configs(orb_mlp, start, end),
+                      'orb-nb': config_space_to_configs(orb_nb, start, end),
                       'borb-ihf': config_space_to_configs(borb_ihf, start, end),
                       'borb-lr': config_space_to_configs(borb_lr, start, end),
                       'borb-mlp': config_space_to_configs(borb_mlp, start, end),
