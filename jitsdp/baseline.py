@@ -7,6 +7,7 @@ from jitsdp.utils import int_or_none
 
 import mlflow
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 from skmultiflow.data import DataStream
 from skmultiflow.meta import OzaBaggingClassifier
 from skmultiflow.trees import HoeffdingTreeClassifier
@@ -222,11 +223,11 @@ def create_classifier(config):
 
 
 def create_lr_model(config):
-    return MultiflowBaseEstimator(PerceptronMask())
+    return MultiflowBaseEstimator(steps=[StandardScaler()], mf_classifier=PerceptronMask())
 
 
 def create_nb_model(config):
-    return MultiflowBaseEstimator(NaiveBayes())
+    return MultiflowBaseEstimator(steps=[], mf_classifier=NaiveBayes())
 
 
 def create_oht_model(config):

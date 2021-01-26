@@ -529,7 +529,8 @@ class Scikit(Model):
 
 class MultiflowBaseEstimator(BaseEstimator):
 
-    def __init__(self, mf_classifier):
+    def __init__(self, steps, mf_classifier):
+        self.steps = steps
         self.mf_classifier = mf_classifier
         self.observed_classes = set()
 
@@ -552,20 +553,23 @@ class MultiflowBaseEstimator(BaseEstimator):
 
     def partial_fit(self, X, y, sample_weight=None):
         self.__update_observed_classes(y, sample_weight)
+        X = _steps_fit_transform(self.steps, X, y)
         self.mf_classifier.partial_fit(
             X, y, classes=[0, 1], sample_weight=sample_weight)
 
     def predict(self, X):
+        X = _steps_transform(self.steps, X)
         return self.mf_classifier.predict(X)
 
     def predict_proba(self, X):
+        X = _steps_transform(self.steps, X)
         return self.mf_classifier.predict_proba(X)
 
 
 class MultiflowForest(MultiflowBaseEstimator):
 
     def __init__(self, mf_classifier):
-        super().__init__(mf_classifier)
+        super().__init__(steps=[], mf_classifier=mf_classifier)
 
     @property
     def estimators(self):
@@ -574,7 +578,7 @@ class MultiflowForest(MultiflowBaseEstimator):
 
 class MultiflowTree(MultiflowBaseEstimator):
     def __init__(self, mf_classifier):
-        super().__init__(mf_classifier)
+        super().__init__(steps=[], mf_classifier=mf_classifier)
 
     def get_depth(self):
         return self.mf_classifier.measure_tree_depth()
