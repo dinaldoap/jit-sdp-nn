@@ -543,6 +543,10 @@ class MultiflowBaseEstimator(BaseEstimator):
     def classes_(self):
         return self.mf_classifier.classes
 
+    @property
+    def estimators(self):
+        return []
+
     def __update_observed_classes(self, y, sample_weight):
         if sample_weight is None:
             return
