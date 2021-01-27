@@ -600,7 +600,7 @@ class MLPMask(ClassifierMixin):
                  learning_rate,
                  batch_size):
         super().__init__()
-        self.criterion = nn.BCEWithLogitsLoss()
+        self.criterion = nn.BCEWithLogitsLoss(reduction='none')
         self.classifier = MLP(input_layer_size=input_layer_size,
                               n_hidden_layers=n_hidden_layers,
                               hidden_layers_size=hidden_layers_size,
@@ -675,6 +675,7 @@ class MLPMask(ClassifierMixin):
             loss = self.criterion(outputs.view(
                 outputs.shape[0]), targets.float())
             loss = loss * weights
+            loss = loss.mean()
 
             self.optimizer.zero_grad()
             loss.backward()
