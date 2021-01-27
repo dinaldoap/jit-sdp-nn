@@ -563,8 +563,7 @@ class MultiflowBaseEstimator(BaseEstimator):
             X, y, classes=[0, 1], sample_weight=sample_weight)
 
     def predict(self, X):
-        X = _steps_transform(self.steps, X)
-        return self.mf_classifier.predict(X)
+        raise NotImplementedError()
 
     def predict_proba(self, X):
         X = _steps_transform(self.steps, X)
