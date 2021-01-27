@@ -61,7 +61,7 @@ def generate(config):
     gmean_defect_rate = recalls + \
         [fixed_defect_prediction_rate, gmean, defect_rate]
     streams(config, gmean_defect_rate, gmean,
-            'drops.png', base_learners=['LR', 'MLP'])
+            'drops.png', base_learners=['BORB-LR', 'BORB-MLP'])
 
 
 def best_configs_testing(config):
@@ -338,10 +338,14 @@ def best_and_baseline(df_testing, gmean, base_learners=None):
         return [best] + baseline
     else:
         filtered_proposals = [
-            prop for prop in proposal if prop.split('-')[1] in base_learners]
-        assert len(filtered_proposals) == len(
+            prop for prop in proposal if prefix_proposal(prop) in base_learners]
+        assert len(filtered_proposals) >= len(
             base_learners), 'The base learners {} are expected among the proposals {}.'.format(base_learners, proposal)
         return filtered_proposals
+
+
+def prefix_proposal(proposal):
+    return '-'.join(proposal.split('-')[:2])
 
 
 def stream_by_dataset_classifier(df_grouped_testing: pd.DataFrame):
