@@ -103,9 +103,11 @@ def plot_critical_distance(avg_rank, data, metric, dir):
     else:
         test = 'nemenyi'
         cdmethod = None
-
-    cd = og.evaluation.compute_CD(
-        avranks=avg_rank, n=len(data), alpha='0.05', test=test)
+    try:
+        cd = og.evaluation.compute_CD(
+            avranks=avg_rank, n=len(data), alpha='0.05', test=test)
+    except IndexError:
+        cd = None
     og.evaluation.graph_ranks(
         avranks=avg_rank, names=data.columns, cd=cd, cdmethod=cdmethod)
     plt.savefig(dir / '{}_cd.png'.format(metric.column), bbox_inches='tight')
