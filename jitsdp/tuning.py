@@ -142,8 +142,7 @@ def create_models_configs(config):
     borb = {}
     borb.update(meta_model_shared['borb'])
     borb.update([uniform('borb-pull-request-size', 50, 500),
-                 uniform('borb-sample-size', 1000,
-                         8000 if 1 in config['cross_project'] else 4000),
+                 uniform('borb-sample-size', 1000, 4000),
                  ])
 
     borb_ihf = {}
