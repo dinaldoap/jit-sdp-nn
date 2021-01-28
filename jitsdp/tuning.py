@@ -58,6 +58,10 @@ def add_arguments(parser, filename):
                         help='Whether must generate commands to the bundle executable.', default=0, choices=[0, 1])
     parser.add_argument('--validation-end', type=int,
                         help='Last commits used for hyperparameter tuning. This list will be ziped with the cross-project list.', required=True, nargs='+')
+    parser.add_argument('--orb-model',   type=str, help='Models associated with ORB. (default: [\'oht\', \'lr\', \'mlp\', \'nb\']).',
+                        default=['oht', 'lr', 'mlp', 'nb'], choices=['oht', 'lr', 'mlp', 'nb'], nargs='*')
+    parser.add_argument('--borb-model',   type=str, help='Models associated with BORB. (default: [\'ihf\', \'lr\', \'mlp\', \'nb\', \'irf\']).',
+                        default=['ihf', 'lr', 'mlp', 'nb', 'irf'], choices=['ihf', 'lr', 'mlp', 'nb', 'irf'], nargs='*')
 
 
 def add_shared_arguments(parser, filename):
@@ -81,12 +85,12 @@ def generate(config):
     orb_grid = {
         'meta-model': ['orb'],
         'cross-project': cross_project,
-        'model': ['oht', 'lr', 'mlp', 'nb'],
+        'model': config['orb_model'],
     }
     borb_grid = {
         'meta-model': ['borb'],
         'cross-project': cross_project,
-        'model': ['ihf', 'lr', 'mlp', 'nb', 'irf'],
+        'model': config['borb_model'],
     }
     experiment_configs = [
         borb_grid,
