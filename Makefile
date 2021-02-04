@@ -25,9 +25,9 @@ run:
 	jitsdp orb --model mlp --start 300 --end 350 --experiment-name dev --cross-project 1 --dataset jgroups
 	jitsdp orb --model nb --start 300 --end 350 --experiment-name dev --cross-project 1 --dataset jgroups
 	jitsdp orb --model oht --start 300 --end 350 --experiment-name dev --cross-project 1 --dataset jgroups
-	jitsdp tuning --start 0 --end 1 --cross-project 0 1 --validation-end 5000 1000
-	jitsdp testing --start 0 --end 1 --cross-project 0 1 --testing-start 5000 --tuning-experiment-name dev --no-validation
-	jitsdp report --start 0 --end 1 --cross-project 0 1 --tuning-experiment-name dev --testing-experiment-name dev --no-validation
+	jitsdp tuning --start 0 --end 1 --cross-project 0 1 --orb-model mlp --borb-model --validation-end 5000 1000
+	jitsdp testing --start 0 --end 1 --cross-project 0 1 --orb-model mlp --borb-model --testing-start 5000 --tuning-experiment-name dev --no-validation
+	jitsdp report --start 0 --end 1 --cross-project 0 1 --orb-model mlp --borb-model --tuning-experiment-name dev --testing-experiment-name dev --no-validation
 
 clean:
 	rm -rf models/ logs/ tests/logs
