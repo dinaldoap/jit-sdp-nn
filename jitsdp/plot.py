@@ -112,3 +112,23 @@ def plot_critical_distance(avg_rank, data, metric, dir):
         avranks=avg_rank, names=data.columns, cd=cd, cdmethod=cdmethod)
     plt.savefig(dir / '{}_cd.png'.format(metric.column), bbox_inches='tight')
     plt.clf()
+
+
+def plot_fix_delay(data, dir):
+    setup()
+    data['fix_delay'] = data['fix_delay'] + 1
+    ax = sns.boxenplot(x='dataset', y='fix_delay', data=data)
+    ax.set(ylabel='days (log scale)')
+    medians = data.groupby('dataset').agg({'fix_delay': 'median'})
+    medians = medians['fix_delay']
+    min_median = round(medians.min())
+    max_median = round(medians.max())
+    color = 'black'
+    alpha = .3
+    ax.axhline(min_median, ls='--', c=color, alpha=alpha,
+               label='{} and {} days (log scale)'.format(min_median, max_median))
+    ax.axhline(max_median, ls='--', c=color, alpha=alpha)
+    plt.legend()
+    plt.yscale('log')
+    plt.savefig(dir / 'fix_delay.png')
+    plt.clf()

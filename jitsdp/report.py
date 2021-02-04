@@ -1,5 +1,5 @@
 # coding=utf-8
-from jitsdp.plot import plot_recalls_gmean, plot_streams, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance
+from jitsdp.plot import plot_recalls_gmean, plot_streams, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance, plot_fix_delay
 from jitsdp.data import DATASETS, load_runs, make_stream, save_results
 from jitsdp.utils import unique_dir, dir_to_path, split_proposal_baseline
 from jitsdp import testing
@@ -35,6 +35,7 @@ def add_arguments(parser, dirname):
 
 def generate(config):
     datasets_statistics(config)
+    verification_latency(config)
     tuning_convergence(config)
     df_testing = best_configs_testing(config)
     # plotting
@@ -293,6 +294,22 @@ def datasets_statistics(config):
     dir = dir_to_path(config['filename'])
     df_datasets = pd.DataFrame(rows, columns=columns)
     df_datasets.to_csv(dir / 'datasets.csv', index=False)
+
+
+def verification_latency(config):
+    df_fix_delay = []
+    for dataset in DATASETS:
+        df_dataset = make_stream(dataset)
+        df_dataset = df_dataset[df_dataset['target'] == 1]
+        df_dataset = df_dataset[df_dataset['timestamp_fix']
+                                > df_dataset['timestamp']]
+        days_in_seconds = 24 * 60 * 60
+        df_dataset['fix_delay'] = (
+            df_dataset['timestamp_fix'] - df_dataset['timestamp']) / days_in_seconds
+        df_dataset['dataset'] = dataset
+        df_fix_delay.append(df_dataset)
+    df_fix_delay = pd.concat(df_fix_delay)
+    plot_fix_delay(df_fix_delay, dir_to_path(config['filename']))
 
 
 def relative_gmean(config, df_testing, gmean):
