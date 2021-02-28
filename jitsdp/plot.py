@@ -89,7 +89,7 @@ def __plot_metrics_grid(data, dir, metrics, filename, col, row):
                 kind='line', aspect=2.5,
                 col=col, row=row,
                 facet_kws={'sharex': False})
-    plt.savefig(dir / filename)
+    plt.savefig(dir / filename, bbox_inches='tight')
     plt.clf()
 
 
@@ -109,7 +109,7 @@ def plot_tuning_convergence(data, dir):
                      k_depth='proportion', outlier_prop=0.05,
                      showfliers=False, col_wrap=3)
     ax.set_axis_labels(x_var='experiment size')
-    plt.savefig(dir / 'tuning_convergence.png')
+    plt.savefig(dir / 'tuning_convergence.png', bbox_inches='tight')
     plt.clf()
 
 
