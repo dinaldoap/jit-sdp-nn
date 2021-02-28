@@ -1,5 +1,5 @@
 # coding=utf-8
-from jitsdp.plot import plot_recalls_gmean, plot_streams, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance, plot_fix_delay
+from jitsdp.plot import plot_oversampling_boosting_factors, plot_recalls_gmean, plot_streams, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance, plot_fix_delay
 from jitsdp.data import DATASETS, load_runs, make_stream, save_results
 from jitsdp.utils import unique_dir, dir_to_path, split_proposal_baseline
 from jitsdp import testing
@@ -11,6 +11,8 @@ import pandas as pd
 import mlflow
 from scipy.stats import friedmanchisquare, wilcoxon, spearmanr
 from statsmodels.stats.multitest import multipletests
+
+Metric = namedtuple('Metric', ['column', 'name', 'ascending', 'baseline'])
 
 
 def report(config, results):
@@ -39,7 +41,6 @@ def generate(config):
     tuning_convergence(config)
     df_testing = best_configs_testing(config)
     # plotting
-    Metric = namedtuple('Metric', ['column', 'name', 'ascending', 'baseline'])
     recalls = [
         Metric('r0', '$r_0$', False, True),
         Metric('r1', '$r_1$', False, True),
@@ -50,6 +51,7 @@ def generate(config):
         Metric('th-ma', '|$fr_1-ir_1$|', True, False),
         Metric('th-pr1', '|$fr_1-pr_1$|', True, False),
     ]
+    oversampling_boosting_factors(config)
     table(config, df_testing, metrics)
     scott_knott(config, df_testing, gmean)
     plots(config, df_testing, metrics)
@@ -232,6 +234,44 @@ def write_wilcoxon(df_inferential: pd.DataFrame, baseline, f):
             winner = 'None'
         f.write(
             '{} = {}, wilcoxon p-value: {}, reject: {}, winner: {}\n'.format(name0, name1, p_values[i], reject[i], winner))
+
+
+def oversampling_boosting_factors(config):
+    fr1 = .5
+    l0 = 9
+    l1 = 9
+    obfs = []
+    for ir1 in np.linspace(0, 1, 50):
+        for m in [10, 1000]:
+            obfs.append([ir1, obf_0(ir1, fr1, l0, m),
+                         obf_1(ir1, fr1, l1, m), m])
+    x_metric = Metric('ir_1', '$ir_1$', True, False)
+    value_metrics = [
+        Metric('obf_0', '$obf_0$', True, False),
+        Metric('obf_1', '$obf_1$', True, False),
+    ]
+    row_metric = Metric('m', 'm', True, False)
+    metrics = [x_metric] + value_metrics + [row_metric]
+    cols = [metric.column for metric in metrics]
+    df_obfs = pd.DataFrame(obfs, columns=cols)
+    plot_oversampling_boosting_factors(
+        df_obfs, x_metric, value_metrics, row_metric, dir_to_path(config['filename']))
+
+
+def obf_0(ma, th, l0, m):
+    if ma > th:
+        return ((m ** ma - m ** th) *
+                l0) / (m - m ** th) + 1
+    else:
+        return 1
+
+
+def obf_1(ma, th, l1, m):
+    if ma < th:
+        return (((m ** (th - ma) - 1) * l1) /
+                (m ** th - 1)) + 1
+    else:
+        return 1
 
 
 def table(config, df_testing: pd.DataFrame, metrics):

@@ -15,6 +15,24 @@ def setup(font_scale=None):
         sns.set(font_scale=font_scale)
 
 
+def plot_oversampling_boosting_factors(data, x_metric, value_metrics, grid_metric, dir):
+    setup()
+    cols_to_names = {metric.column: metric.name for metric in [
+        x_metric] + value_metrics + [grid_metric]}
+    data = data.rename(cols_to_names, axis='columns')
+    value_metric_names = [metric.name for metric in value_metrics]
+    data = data.melt(id_vars=[x_metric.name, grid_metric.name],
+                     value_vars=value_metric_names,
+                     var_name='factor',
+                     value_name='value')
+    sns.relplot(x=x_metric.name, y='value',
+                hue='factor', data=data,
+                kind='line', aspect=2,
+                row=grid_metric.name)
+    plt.savefig(dir / 'oversampling_boosting_factors.png', bbox_inches='tight')
+    plt.clf()
+
+
 def plot_recalls_gmean(data, config, dir=DIR):
     __plot_metrics(data=data, config=config, dir=dir, metrics=[
                    'r0', 'r1', 'r0-r1', 'g-mean'], filename='recalls_gmean.png')
