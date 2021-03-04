@@ -108,7 +108,7 @@ def plot_tuning_convergence(data, dir):
                      data=data, kind="boxen",
                      k_depth='proportion', outlier_prop=0.05,
                      showfliers=False, col_wrap=3)
-    ax.set_axis_labels(x_var='experiment size')
+    ax.set_axis_labels(x_var='number of random configurations')
     plt.savefig(dir / 'tuning_convergence.png', bbox_inches='tight')
     plt.clf()
 
