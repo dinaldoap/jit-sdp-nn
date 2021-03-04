@@ -1,5 +1,5 @@
 # coding=utf-8
-from jitsdp.plot import plot_oversampling_boosting_factors, plot_recalls_gmean, plot_streams, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance, plot_fix_delay
+from jitsdp.plot import plot_oversampling_boosting_factors, plot_recalls_gmean, plot_streams, plot_proportions, plot_boxplot, plot_tuning_convergence, plot_critical_distance, plot_fix_delay, plot_heatmap
 from jitsdp.data import DATASETS, load_runs, make_stream, save_results
 from jitsdp.utils import unique_dir, dir_to_path, split_proposal_baseline
 from jitsdp import testing
@@ -55,6 +55,7 @@ def generate(config):
     table(config, df_testing, metrics)
     scott_knott(config, df_testing, gmean)
     plots(config, df_testing, metrics)
+    heatmaps(config, df_testing, metrics)
     statistical_analysis(config, df_testing, metrics)
     relative_gmean(config, df_testing, gmean)
     recalls_gmean = recalls + [recalls_distance, gmean]
@@ -133,6 +134,14 @@ def plots(config, df_testing: pd.DataFrame, metrics):
     for metric in metrics:
         plot_data = filter_baseline(df_testing, metric)
         plot_boxplot(plot_data, metric, dir_to_path(config['filename']))
+
+
+def heatmaps(config, df_testing: pd.DataFrame, metrics):
+    for metric in metrics:
+        plot_data = filter_baseline(df_testing, metric)
+        plot_data = pd.pivot_table(
+            plot_data, columns='classifier', values=metric.column, index='dataset')
+        plot_heatmap(plot_data, metric, dir_to_path(config['filename']))
 
 
 def statistical_analysis(config, df_testing: pd.DataFrame, metrics):
