@@ -103,7 +103,8 @@ def plot_boxplot(data, metric, dir):
 
 def plot_heatmap(data, metric, dir):
     setup()
-    ax = sns.heatmap(data=data)
+    cmap = sns.cm.rocket_r if metric.ascending else sns.cm.rocket
+    ax = sns.heatmap(data=data, cmap=cmap)
     ax.set_title('{}'.format(metric.name))
     plt.savefig(dir / '{}_heatmap.png'.format(metric.column))
     plt.clf()

@@ -141,6 +141,19 @@ def heatmaps(config, df_testing: pd.DataFrame, metrics):
         plot_data = filter_baseline(df_testing, metric)
         plot_data = pd.pivot_table(
             plot_data, columns='classifier', values=metric.column, index='dataset')
+        avg_rank = plot_data.rank(
+            axis='columns', ascending=metric.ascending)
+        avg_rank = avg_rank.mean()
+        avg_rank = avg_rank.sort_values()
+        plot_data = plot_data[avg_rank.index]
+        if metric.baseline:
+            _, baseline_name = split_proposal_baseline(
+                df_testing['classifier'].unique())
+            plot_data = plot_data.sort_values(
+                baseline_name[0], ascending=False)
+        else:
+            plot_data = plot_data.sort_values(
+                avg_rank.index[0], ascending=False)
         plot_heatmap(plot_data, metric, dir_to_path(config['filename']))
 
 
