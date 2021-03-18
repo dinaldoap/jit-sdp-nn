@@ -66,6 +66,13 @@ def generate(config):
         [fixed_defect_prediction_rate, gmean, defect_rate]
     streams(config, gmean_defect_rate, gmean,
             'drops.png', base_learners=['BORB-LR', 'BORB-MLP'])
+    defect_prediction_rate = Metric(
+        'pr1', 'defect prediction rate', True, False)
+    fixed_defect_prediction_rate = Metric(
+        'th', 'fixed defect prediction rate', True, False)
+    rates = [defect_rate, defect_prediction_rate, fixed_defect_prediction_rate]
+    streams(config, rates, gmean,
+            'defect_rates.png', base_learners=['BORB-MLP'], datasets=['brackets'])
 
 
 def best_configs_testing(config):
@@ -379,10 +386,12 @@ def relative_gmean(config, df_testing, gmean):
     df_relative_gmean.to_csv(dir / 'relative_gmean.csv')
 
 
-def streams(config, metrics, gmean, filename, base_learners=None):
+def streams(config, metrics, gmean, filename, base_learners=None, datasets=None):
     df_testing = best_configs_testing(config)
     df_testing = df_testing[df_testing['classifier'].isin(
         best_and_baseline(df_testing, gmean, base_learners))]
+    df_testing = df_testing if datasets is None else df_testing[df_testing['dataset'].isin(
+        datasets)]
     key_cols = ['dataset', 'classifier']
     df_streams = []
     for key_values, df_grouped_testing in df_testing.groupby(by=key_cols):
@@ -442,7 +451,7 @@ def add_stream(df_stream, artifact_uri, th):
     df_results = pd.read_pickle(
         '{}/{}'.format(artifact_uri, 'results.pickle'))
     df_results = df_results[[
-        'timestep', 'r0', 'r1', 'r0-r1', 'g-mean', 'te1']]
+        'timestep', 'r0', 'r1', 'r0-r1', 'g-mean', 'te1', 'pr1']]
     df_results['th'] = th
     if df_stream is None:
         return df_results
