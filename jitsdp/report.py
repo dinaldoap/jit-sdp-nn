@@ -73,6 +73,8 @@ def generate(config):
     rates = [defect_rate, defect_prediction_rate, fixed_defect_prediction_rate]
     streams(config, rates, gmean,
             'defect_rates.png', base_learners=['BORB-MLP'], datasets=['brackets'])
+    streams(config, [gmean], gmean,
+            'prequential_g-mean.png', base_learners=['BORB-MLP'], datasets=['brackets'])
 
 
 def best_configs_testing(config):
