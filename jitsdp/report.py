@@ -60,21 +60,37 @@ def generate(config):
     relative_gmean(config, df_testing, gmean)
     recalls_gmean = recalls + [recalls_distance, gmean]
     streams(config, recalls_gmean, gmean, 'streams.png')
+    # prequential g-mean
+    streams(config, [gmean], gmean,
+            'prequential_g-mean.png', base_learners=['BORB-MLP'], datasets=['brackets'])
+    # drops
     fixed_defect_prediction_rate = Metric('th', '$fr_1$', True, False)
     defect_rate = Metric('te1', 'defect rate', True, False)
     gmean_defect_rate = recalls + \
         [fixed_defect_prediction_rate, gmean, defect_rate]
     streams(config, gmean_defect_rate, gmean,
             'drops.png', base_learners=['BORB-LR', 'BORB-MLP'])
+    # prediction rates...
     defect_prediction_rate = Metric(
         'pr1', 'defect prediction rate', True, False)
+    induced_defect_prediction_rate = Metric(
+        'ma', 'induced defect prediction rate', True, False)
     fixed_defect_prediction_rate = Metric(
         'th', 'fixed defect prediction rate', True, False)
+    # all
     rates = [defect_rate, defect_prediction_rate, fixed_defect_prediction_rate]
     streams(config, rates, gmean,
             'defect_rates.png', base_learners=['BORB-MLP'], datasets=['brackets'])
-    streams(config, [gmean], gmean,
-            'prequential_g-mean.png', base_learners=['BORB-MLP'], datasets=['brackets'])
+    # prediction and fixed
+    prediction_fixed_rates = [
+        defect_prediction_rate, fixed_defect_prediction_rate]
+    streams(config, prediction_fixed_rates, gmean, 'prediction_fixed_rates.png',
+            base_learners=['BORB-MLP'], datasets=['brackets'])
+    # induced and fixed
+    induced_fixed_rates = [
+        induced_defect_prediction_rate, fixed_defect_prediction_rate]
+    streams(config, induced_fixed_rates, gmean, 'induced_fixed_rates.png',
+            base_learners=['BORB-MLP'], datasets=['brackets'])
 
 
 def best_configs_testing(config):
@@ -453,7 +469,7 @@ def add_stream(df_stream, artifact_uri, th):
     df_results = pd.read_pickle(
         '{}/{}'.format(artifact_uri, 'results.pickle'))
     df_results = df_results[[
-        'timestep', 'r0', 'r1', 'r0-r1', 'g-mean', 'te1', 'pr1']]
+        'timestep', 'r0', 'r1', 'r0-r1', 'g-mean', 'te1', 'pr1', 'ma']]
     df_results['th'] = th
     if df_stream is None:
         return df_results
