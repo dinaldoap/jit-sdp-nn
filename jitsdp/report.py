@@ -324,11 +324,21 @@ def table(config, df_testing: pd.DataFrame, metrics):
     df_table.to_csv(dir / 'table.csv')
 
 
-def scott_knott(config, df_testing: pd.DataFrame, gmean):
+def scott_knott(config, df_testing: pd.DataFrame, gmean: Metric):
+    # by classifier
     df_scott = pd.pivot_table(
         df_testing, columns=['dataset', 'seed'], values=gmean.column, index='classifier')
     dir = dir_to_path(config['filename'])
     df_scott.to_csv(dir / 'scott.txt', sep='\t', header=False)
+    # by classifier and dataset
+    df_scott = pd.pivot_table(
+        df_testing, columns=['seed'], values=gmean.column, index=['classifier', 'dataset'])
+    with open(dir / 'scott_by_dataset.txt', 'w') as file:
+        for (classifier, df_classifier) in df_scott.groupby(level='classifier'):
+            file.write('{}\n'.format(classifier))
+            for (dataset, df_dataset) in df_classifier.groupby(by='dataset'):
+                file.write('{}\n'.format(dataset))
+                df_dataset.to_csv(file, sep=';', index=False, header=False)
 
 
 def format_metric(metrics, row):
