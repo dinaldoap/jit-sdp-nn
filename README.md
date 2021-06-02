@@ -18,7 +18,7 @@
     * update (before executing, go to jit-sdp-nn folder):
         ```bash
         conda activate pytorch && \
-        conda env update --file conda.yml --prune && \
+        conda env update --name pytorch --file conda.yml --prune && \
         pip install -r requirements.txt
         ```
 
