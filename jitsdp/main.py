@@ -3,7 +3,7 @@
 # see https://github.com/pytorch/pytorch/issues/2575#issuecomment-523657178
 from jitsdp.evaluation import run
 from jitsdp.utils import setup_and_run, int_or_none
-from jitsdp import baseline, tuning, testing, report
+from jitsdp import baseline, tuning, testing, report, export
 
 import argparse
 import sys
@@ -24,6 +24,8 @@ def main():
         name='testing', help='Generate testing script'), 'logs/testing.sh')
     report.add_arguments(subparsers.add_parser(
         name='report', help='Generate report'), 'logs')
+    export.add_arguments(subparsers.add_parser(
+        name='export', help='Export data'), 'logs')
 
     args = parser.parse_args()
     config = dict(vars(args))
@@ -38,6 +40,8 @@ def main():
         return testing.generate(config)
     elif meta_model_generator == 'report':
         return report.generate(config)
+    elif meta_model_generator == 'export':
+        return export.generate(config)
     else:
         raise ValueError('meta-model and script generator not supported.')
 

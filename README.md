@@ -49,6 +49,11 @@
         ```bash
         jitsdp report --start 0 --end 128 --cross-project 0 1 --filename mlruns-report
         ```
+* Export
+    * Export the datasets, the average metrics of the tuning, the average metrics of the testing and the prequential metrics of each testing run:
+        ```bash
+        jitsdp export --filename mlruns-report
+        ```
 
 ## Alternative entrypoint
 
