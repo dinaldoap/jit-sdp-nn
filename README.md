@@ -52,7 +52,7 @@
 * Export
     * Export the datasets, the average metrics of the tuning, the average metrics of the testing and the prequential metrics of each testing run:
         ```bash
-        jitsdp export --filename mlruns-report
+        jitsdp export --filename mlruns-export
         ```
 
 ## Alternative entrypoint
