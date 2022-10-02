@@ -11,7 +11,7 @@
     "--mount", "type=bind,src=${env:HOME}/.gitconfig,dst=/home/pytorch/.gitconfig",
     "--mount", "type=volume,src=jit-sdp-nn_devcontainer_vscode-server,dst=/home/pytorch/.vscode-server",
     "--mount", "type=volume,source=pip-cache,target=/home/pytorch/.cache/pip",
-    //"--gpus", "all",
+    "--gpus", "all",
   ],
   "extensions": [
     "ms-python.python",
