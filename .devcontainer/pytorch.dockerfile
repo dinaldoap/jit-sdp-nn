@@ -33,22 +33,15 @@ ENV HOME /home/$USERNAME
 RUN mkdir "${HOME}/.vscode-server" && \
   chown -R ${USERNAME}:${USERNAME} "${HOME}/.vscode-server"
 
-    
+# Config conda for rootless user mount
+ENV CONDA_ENVS_PATH /workspace/.conda/envs
+
 # Set the default user
 USER $USERNAME
 
 # Set the default shell to bash instead of sh
 ENV SHELL /bin/bash
 
-# Install python dependencies
-ADD --chown=pytorch:pytorch conda.yml /workspace/
-ADD --chown=pytorch:pytorch requirements.txt /workspace/
-ADD --chown=pytorch:pytorch setup.py /workspace/
-RUN cd /workspace && \
-    conda env create --name pytorch --file conda.yml && \
-    conda run --name pytorch pip install -r requirements.txt && \
-    rm conda.yml && \
-    rm requirements.txt && \
-    rm setup.py
+
 
 CMD ["/bin/bash"]

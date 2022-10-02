@@ -139,3 +139,6 @@ mlruns*/
 
 # data
 data/
+
+# conda
+.conda/

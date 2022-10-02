@@ -1,4 +1,4 @@
-build: clean format test run
+build: clean install format test run
 
 format:
 	autopep8 --in-place --recursive jitsdp setup.py
@@ -33,3 +33,16 @@ run:
 clean:
 	rm -rf models/ logs/ tests/logs
 	rm -rf data/joblib/jitsdp/data/load_runs/3d2a770fa5e4bb259129c123784a30b9/
+
+# Create conda environment
+conda:
+	conda env remove --name pytorch
+	conda env create --name pytorch --file conda.yml
+	@echo '==> WARNING: '\''conda activate'\'' does not work in devcontainer. <=='
+	@echo '# To activate this environment, use'
+	@echo '#'
+	@echo '#        $$ source activate pytorch'
+
+# Install python dependencies
+install:
+	pip install -r requirements.txt
