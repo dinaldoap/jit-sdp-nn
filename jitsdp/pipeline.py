@@ -56,6 +56,7 @@ def create_pipeline(config):
 
     if config['borb']:
         classifier = BORB(model=model,
+                          classifier_predict=classifier,
                           max_sample_size=config['borb_sample_size'],
                           th=config['borb_th'],
                           l0=config['borb_l0'],
@@ -246,10 +247,9 @@ def _tune_threshold(val_probabilities, test_probabilities, normal_proportion):
 
 
 class BORB(Classifier):
-    def __init__(self, model, max_sample_size, th, l0, l1, m):
+    def __init__(self, model, classifier_predict, max_sample_size, th, l0, l1, m):
         self.classifier_train = ScoreFixed(model=model)
-        self.classifier_predict = RateFixed(
-            model=model, normal_proportion=(1 - th))
+        self.classifier_predict = classifier_predict
         self.max_sample_size = max_sample_size
         self.th = th
         self.l0 = l0
