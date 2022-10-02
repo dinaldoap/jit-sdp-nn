@@ -1,5 +1,8 @@
 FROM pytorch/pytorch:1.4-cuda10.1-cudnn7-runtime
 
+# Set the default shell to bash instead of sh
+ENV SHELL /bin/bash
+
 # Install Linux tools
 RUN apt-get update -q && \
     apt-get install -yq openssh-client && \
@@ -36,12 +39,11 @@ RUN mkdir "${HOME}/.vscode-server" && \
 # Config conda for rootless user mount
 ENV CONDA_ENVS_PATH /workspace/.conda/envs
 
+# Config pip cache for rootless user mount
+RUN mkdir --parents "${HOME}/.cache/pip" && \
+    chown -R ${USERNAME}:${USERNAME} "${HOME}/.cache/pip"
+
 # Set the default user
 USER $USERNAME
-
-# Set the default shell to bash instead of sh
-ENV SHELL /bin/bash
-
-
 
 CMD ["/bin/bash"]
