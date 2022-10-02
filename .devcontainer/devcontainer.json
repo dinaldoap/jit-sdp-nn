@@ -10,7 +10,8 @@
     "--mount", "type=bind,src=${env:HOME}/.ssh,dst=/home/pytorch/.ssh",
     "--mount", "type=bind,src=${env:HOME}/.gitconfig,dst=/home/pytorch/.gitconfig",
     "--mount", "type=volume,src=jit-sdp-nn_devcontainer_vscode-server,dst=/home/pytorch/.vscode-server",
-    "--gpus", "all"],
+    //"--gpus", "all",
+  ],
   "extensions": [
     "ms-python.python",
     "VisualStudioExptTeam.vscodeintellicode",
