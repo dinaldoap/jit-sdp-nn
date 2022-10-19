@@ -1,4 +1,4 @@
-build: clean install format test run
+build: clean install lock sync format test run
 
 format:
 	autopep8 --in-place --recursive jitsdp setup.py
@@ -45,4 +45,10 @@ conda:
 
 # Install python dependencies
 install:
-	pip install -r requirements.txt
+	pip install --quiet -r requirements.txt
+
+lock:
+	pip-compile --quiet --output-file=requirements.lock --no-header --no-annotate requirements.txt
+
+sync:
+	pip-sync --quiet requirements.lock

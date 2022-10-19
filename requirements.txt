@@ -1,9 +1,7 @@
 -c constraints.txt
 # Dependencies for development
 -e .
-pylint==2.4.4
 autopep8==1.4.4
 pytest==5.3.5
-jupyter==1.0.0
-wordcloud==1.6.0
 PyInstaller==3.6
+pip-tools==6.9.0
