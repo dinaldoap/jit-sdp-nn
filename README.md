@@ -12,14 +12,14 @@
         git clone https://github.com/dinaldoap/jit-sdp-nn.git && \
         cd jit-sdp-nn && \
         conda env create --name pytorch --file conda.yml && \
-        conda run --name pytorch pip install -r requirements.txt
+        conda run --name pytorch pip install -r requirements.lock
         ```
 
     * update (before executing, go to jit-sdp-nn folder):
         ```bash
         conda activate pytorch && \
         conda env update --file conda.yml --prune && \
-        pip install -r requirements.txt
+        pip install -r requirements.lock
         ```
 
 * Hyperparameter tuning
@@ -62,3 +62,9 @@
     conda activate pytorch && \
     bash release.sh
     ```
+# Changelog
+
+## 2022-10-26
+
+* Disabled adaptive threshold by default.
+* Added requirements.lock to lock indirect dependency versions and improve reproducibility.
