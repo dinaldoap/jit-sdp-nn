@@ -1,4 +1,4 @@
--e file:///workspace
+-e .
 alembic==1.4.1
 altgraph==0.17.3
 anyio==3.6.2

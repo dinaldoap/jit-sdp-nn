@@ -49,6 +49,7 @@ install:
 
 lock:
 	pip-compile --quiet --output-file=requirements.lock --no-header --no-annotate requirements.txt
+	sed -i "s+file://$$(pwd)+\.+g" requirements.lock
 
 sync:
 	pip-sync --quiet requirements.lock
